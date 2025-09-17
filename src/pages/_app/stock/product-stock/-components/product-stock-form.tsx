@@ -15,6 +15,7 @@ export const ProductStockForm = () => {
         (acc, item) => (acc += item.AvailQuantity),
         0
       );
+      console.log(stockQuantity);
     } catch (error) {
       console.log(error);
     }

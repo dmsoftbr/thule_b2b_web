@@ -5,7 +5,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { UserGroupSchema } from "./schemas";
-import { act, useEffect } from "react";
+import { useEffect } from "react";
 import { UserGroupsService } from "@/services/security/user-groups.service";
 import { toast } from "sonner";
 import { isAxiosError } from "axios";
@@ -13,7 +13,7 @@ import type { UserGroupModel } from "@/models/user-group.model";
 
 interface Props {
   action: "ADD" | "EDIT";
-  initialData: UserGroupModel | undefined;
+  initialData?: UserGroupModel;
 }
 
 export const UserGroupForm = ({ action, initialData }: Props) => {
