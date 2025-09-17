@@ -1,0 +1,182 @@
+import { type MenuModel } from "@/models/menu-model";
+
+export const MENU_MOCK: MenuModel[] = [
+  {
+    id: "1",
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: "HomeIcon",
+    isActive: true,
+    children: [],
+  },
+  {
+    id: "1.1",
+    title: "Outlet",
+    url: "/outlet",
+    icon: "ShoppingCart",
+    isActive: false,
+    children: [],
+  },
+  {
+    id: "2",
+    title: "Pedidos",
+    url: "/orders",
+    icon: "InboxIcon",
+    isActive: false,
+    children: [],
+  },
+  {
+    id: "3",
+    title: "Simulações",
+    url: "/budgets",
+    icon: "FoldersIcon",
+    isActive: false,
+    children: [],
+  },
+  {
+    id: "4",
+    title: "Consultas",
+    url: "",
+    icon: "SearchIcon",
+    isActive: false,
+    children: [
+      {
+        id: "41",
+        title: "Estoque Disponível",
+        url: "/stock/product-stock",
+        icon: "CircleIcon",
+        isActive: false,
+      },
+      {
+        id: "42",
+        title: "ESLI011",
+        url: "/stock/esli011",
+        icon: "CircleIcon",
+        isActive: false,
+      },
+    ],
+  },
+  {
+    id: "5",
+    title: "Relatórios",
+    url: "",
+    icon: "PrinterIcon",
+    children: [
+      {
+        id: "51",
+        title: "Relatório de Pedidos",
+        url: "/relatorio-pedidos",
+        icon: "CircleIcon",
+      },
+      {
+        id: "52",
+        title: "Relatório de Vendas",
+        url: "/relatorio-vendas",
+        icon: "CircleIcon",
+      },
+    ],
+  },
+  {
+    id: "6",
+    title: "Aprovações",
+    url: "",
+    icon: "CircleCheckIcon",
+    children: [],
+  },
+  {
+    id: "7",
+    title: "Cadastros Gerais",
+    url: "",
+    icon: "FolderIcon",
+    children: [
+      {
+        id: "71",
+        title: "Metas de Representantes",
+        url: "/representatives-goals",
+        icon: "UsersIcon",
+      },
+      {
+        id: "72",
+        title: "Avisos",
+        url: "/avisos",
+        icon: "BellIcon",
+      },
+      {
+        id: "73",
+        title: "Alçadas de Aprovação",
+        url: "/alcadas",
+        icon: "CheckCircleIcon",
+      },
+      {
+        id: "74",
+        title: "Produtos",
+        url: "/products",
+        icon: "BoxIcon",
+      },
+      {
+        id: "75",
+        title: "Grupos de Venda",
+        url: "/commercial/sales-group",
+        icon: "ComponentIcon",
+      },
+    ],
+  },
+  {
+    id: "8",
+    title: "Adm. Aplicativo",
+    url: "",
+    icon: "SmartphoneIcon",
+    children: [
+      {
+        id: "71",
+        title: "Notificações",
+        url: "/app-notificacoes",
+        icon: "BellIcon",
+      },
+      {
+        id: "72",
+        title: "Comunicados",
+        url: "/app-comunicados",
+        icon: "MessageCircleIcon",
+      },
+      {
+        id: "73",
+        title: "Links Úteis",
+        url: "/app-links-uteis",
+        icon: "LinkIcon",
+      },
+    ],
+  },
+  {
+    id: "9",
+    title: "Configurações",
+    url: "",
+    icon: "SettingsIcon",
+    children: [
+      {
+        id: "93",
+        title: "Grupos de Usuários",
+        url: "/admin/user-groups",
+        icon: "FolderTreeIcon",
+      },
+      {
+        id: "91",
+        title: "Usuários",
+        url: "/admin/users",
+        icon: "UsersIcon",
+      },
+      {
+        id: "92",
+        title: "Configurações",
+        url: "/admin/settings",
+        icon: "SettingsIcon",
+      },
+      {
+        id: "93",
+        title: "Sincronização",
+        url: "/system/synchronization",
+        icon: "FolderSyncIcon",
+      },
+    ],
+  },
+];
