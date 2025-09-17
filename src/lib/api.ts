@@ -1,6 +1,8 @@
 import type { SessionModel } from "@/models/auth/session-model";
 import axios from "axios";
 
+export const API_URL = (window as any).__APP_CONFIG__.API_URL;
+
 const getToken = (refreshToken: boolean) => {
   const localSession = localStorage.getItem("b2b@session");
   if (localSession) {
@@ -21,7 +23,7 @@ const getSession = () => {
 };
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: API_URL,
   withCredentials: false,
 });
 
