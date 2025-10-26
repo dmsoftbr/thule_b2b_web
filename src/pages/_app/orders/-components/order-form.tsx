@@ -5,7 +5,7 @@ import { AvailabilityModal } from "./availability-modal";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useOrder } from "../-hooks/use-order";
-import { NEW_ORDER_EMPTY } from "../-utils/order-utils";
+import { NEW_BUDGET_EMPTY, NEW_ORDER_EMPTY } from "../-utils/order-utils";
 import { DiscountMatrizModal } from "./discount-matriz-modal";
 import { SalesChannelModal } from "./sales-channel-modal";
 import { FinishOrderModal } from "./finish-order-modal";
@@ -13,17 +13,21 @@ import { FinishOrderModal } from "./finish-order-modal";
 interface Props {
   orderId: string;
   action: "NEW" | "VIEW" | "APPROVAL" | "CANCEL";
+  orderType: "ORDER" | "BUDGET";
 }
 
-export const OrderForm = ({ orderId, action }: Props) => {
+export const OrderForm = ({ orderType, orderId, action }: Props) => {
   const navigate = useNavigate();
   const [showFinishOrderModal, setShowFinishOrderModal] = useState(false);
   const { currentOrder, setCurrentOrder } = useOrder();
 
   useEffect(() => {
-    console.log(orderId);
     if (action === "NEW") {
-      setCurrentOrder(NEW_ORDER_EMPTY);
+      setCurrentOrder(
+        orderType == "ORDER" ? NEW_ORDER_EMPTY : NEW_BUDGET_EMPTY
+      );
+    } else {
+      console.log(orderId);
     }
   }, [action]);
 
@@ -56,7 +60,7 @@ export const OrderForm = ({ orderId, action }: Props) => {
               type="button"
               onClick={() => setShowFinishOrderModal(true)}
             >
-              Concluir Pedido
+              Concluir {orderType == "ORDER" ? "Pedido" : "Simulação"}
             </Button>
           </div>
         </div>

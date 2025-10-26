@@ -1,6 +1,6 @@
-import type { CustomerModel } from "./customer.model";
 import type { OrderItemModel } from "./order-item-model";
-import type { PriceTableModel } from "./price-table.model";
+import type { PriceTableModel } from "./registrations/price-table.model";
+import type { CustomerModel } from "./registrations/customer.model";
 import type { RepresentativeModel } from "./representative.model";
 
 export type OrderModel = {
@@ -25,4 +25,5 @@ export type OrderModel = {
   customer?: CustomerModel;
   branchId: string;
   portalId: string;
+  isBudget: boolean;
 };

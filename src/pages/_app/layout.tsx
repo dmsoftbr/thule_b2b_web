@@ -16,7 +16,8 @@ function AppLayout() {
   if (isPending) {
     return <AppSkeleton />;
   }
-  if (!isAuthenticated == null) {
+  
+  if (!isAuthenticated) {
     return <Navigate to="/auth/login" replace />;
   }
 

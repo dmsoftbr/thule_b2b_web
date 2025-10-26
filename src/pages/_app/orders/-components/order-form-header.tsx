@@ -6,12 +6,12 @@ import {
 } from "@/components/ui/search-combo";
 
 import { CustomersCombo } from "@/components/app/customers-combo";
-import type { CustomerModel } from "@/models/customer.model";
 import { useState } from "react";
 import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 import { useOrder } from "../-hooks/use-order";
-import type { PriceTableModel } from "@/models/price-table.model";
+import type { PriceTableModel } from "@/models/registrations/price-table.model";
 import { formatNumber } from "@/lib/number-utils";
+import type { CustomerModel } from "@/models/registrations/customer.model";
 
 export const OrderFormHeader = () => {
   const {

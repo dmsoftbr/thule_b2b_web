@@ -1,17 +1,24 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { AppPageHeader } from "@/components/layout/app-page-header";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { UserForm } from "./-components/user-form";
 
 export const Route = createFileRoute("/_app/admin/users/new-user")({
-  component: RouteComponent,
+  component: NewUserPageComponent,
 });
 
-function RouteComponent() {
+function NewUserPageComponent() {
+  const navigate = useNavigate();
+
   return (
-    <div className="m-2 bg-white border shadow rounded w-full relative">
-      <h1 className="font-semibold text-lg px-2 bg-neutral-200">
-        Novo Usuário
-      </h1>
-      <UserForm />
-    </div>
+    <AppPageHeader titleSlot={`Novo Usuário`}>
+      <div className="p-2 max-w-lg ml-auto mr-auto">
+        <UserForm
+          initialData={null}
+          isOpen={true}
+          mode={"ADD"}
+          onClose={() => navigate({ to: "/admin/users" })}
+        />
+      </div>
+    </AppPageHeader>
   );
 }

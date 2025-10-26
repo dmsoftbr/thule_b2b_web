@@ -14,8 +14,10 @@ import { UserChangePasswordModal } from "./user-change-password-modal";
 import { useState } from "react";
 import { getInitials } from "@/lib/string-utils";
 import { useNavigate } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/use-auth";
 
 export const AppUserDropDown = () => {
+  const { session } = useAuth();
   const navigate = useNavigate();
 
   const [showChangePasswordModal, setShowPasswordModal] = useState(false);
@@ -28,6 +30,8 @@ export const AppUserDropDown = () => {
   const onChangePassword = () => {
     setShowPasswordModal(true);
   };
+
+  const isDomain = !!session?.user?.networkDomain;
 
   return (
     <>
@@ -50,7 +54,10 @@ export const AppUserDropDown = () => {
             <UserIcon />
             Perfil
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onChangePassword()}>
+          <DropdownMenuItem
+            disabled={isDomain}
+            onClick={() => onChangePassword()}
+          >
             <LockIcon />
             Altere sua Senha
           </DropdownMenuItem>

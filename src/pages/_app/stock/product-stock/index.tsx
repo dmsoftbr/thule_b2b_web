@@ -7,9 +7,13 @@ export const Route = createFileRoute("/_app/stock/product-stock/")({
 
 function RouteComponent() {
   return (
-    <div className="m-2 p-2 bg-white border shadow rounded">
-      <h1 className="font-semibold text-lg mb-2">Estoque Disponível</h1>
-      <ProductStockForm />
+    <div className="m-2 bg-white border shadow rounded w-full relative">
+      <h1 className="font-semibold text-lg px-2 bg-neutral-200">
+        Estoque Disponível
+      </h1>
+      <div className="max-w-lg ml-auto mr-auto pt-4 pb-6">
+        <ProductStockForm />
+      </div>
     </div>
   );
 }

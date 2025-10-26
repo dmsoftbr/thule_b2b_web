@@ -5,6 +5,7 @@ export function getTimeAgo(fromDate: Date) {
   return formatDistanceToNow(fromDate, { addSuffix: true, locale: ptBR });
 }
 
-export const formatDate = (dateString: string | Date) => {
+export const formatDate = (dateString: string | Date | null | undefined) => {
+  if (!dateString) return "";
   return new Date(dateString).toLocaleDateString("pt-BR");
 };

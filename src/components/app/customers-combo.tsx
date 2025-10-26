@@ -16,9 +16,9 @@ import { Button } from "@/components/ui/button";
 import { ChevronsUpDownIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
-import type { CustomerModel } from "@/models/customer.model";
 import { formatCpfCnpj } from "@/lib/string-utils";
 import { useDebounceCallback } from "usehooks-ts";
+import type { CustomerModel } from "@/models/registrations/customer.model";
 
 interface Props {
   onSelect?: (customer: CustomerModel | undefined) => void;
@@ -32,7 +32,7 @@ export const CustomersCombo = ({ disabled, onSelect, defaultValue }: Props) => {
   const [value, setValue] = useState(defaultValue);
   const [searchText, setSearchText] = useState("");
 
-  const debouncedValue = useDebounceCallback(setSearchText, 300);
+  const debouncedValue = useDebounceCallback(setSearchText, 200);
 
   function getSelectedItem() {
     const item = data.find((item) => item.id === value);

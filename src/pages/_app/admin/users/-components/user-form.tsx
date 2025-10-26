@@ -1,37 +1,35 @@
-import { FormCheckBox } from "@/components/form/form-checkbox";
-import { FormInput } from "@/components/form/form-input";
-import { FormSearchCombo } from "@/components/form/form-search-combo";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { USER_ROLES } from "@/constants";
-import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
-import { useNavigate } from "@tanstack/react-router";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm, useWatch, type Resolver } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { type UserSchema } from "./schemas";
-import { CustomersCombo } from "@/components/app/customers-combo";
+import { Form } from "@/components/ui/form";
+import { useEffect, useState } from "react";
+import { api, handleError } from "@/lib/api";
+import { toast } from "sonner";
+import type { FORM_ACTIONS } from "@/@types/form-actions";
+import { FormInput } from "@/components/form/form-input";
+import type { UserModel } from "@/models/user.model";
+import { UserSchema } from "./schemas";
+import { FormSearchCombo } from "@/components/form/form-search-combo";
+import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
+import { USER_ROLES } from "@/constants";
+import { FormCheckBox } from "@/components/form/form-checkbox";
+import { cn } from "@/lib/utils";
+import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 
-export const UserForm = () => {
-  const navigate = useNavigate();
+interface Props {
+  initialData: UserModel | null;
+  isOpen: boolean;
+  onClose: (refresh: boolean) => void;
+  mode: FORM_ACTIONS;
+}
+
+export const UserForm = ({ initialData, mode, onClose }: Props) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const { showAppDialog } = useAppDialog();
+
   const form = useForm<z.infer<typeof UserSchema>>({
-    defaultValues: {
-      customerId: 0,
-      email: "",
-      groupId: "",
-      id: "",
-      isActive: true,
-      name: "",
-      networkDomain: "",
-      representativeId: 0,
-      role: "",
-    },
+    resolver: zodResolver(UserSchema) as Resolver<z.infer<typeof UserSchema>>,
   });
 
   const roleWatch = useWatch({
@@ -39,97 +37,143 @@ export const UserForm = () => {
     name: "role",
   });
 
-  async function onSubmit(values: z.infer<typeof UserSchema>) {
-    console.log(values);
-    navigate({ to: "/admin/users" });
-  }
+  const onSubmit = async (values: z.infer<typeof UserSchema>) => {
+    try {
+      let newRole = 3;
+      if (values.role == "ADMINISTRATOR") newRole = 0;
+      if (values.role == "ADMINISTRATIVE") newRole = 1;
+      if (values.role == "REPRESENTATIVE") newRole = 2;
+      if (values.role == "CUSTOMER") newRole = 3;
+
+      let data = { ...values, role: newRole };
+
+      setIsLoading(true);
+      if (mode == "ADD") {
+        await api.post("/admin/users", data);
+        toast.success("Usuário criado com sucesso!");
+        showAppDialog({
+          message: "Senha Inicial é: thule@123",
+          title: "Atenção",
+          type: "warning",
+          buttons: [
+            {
+              text: "Fechar",
+              variant: "secondary",
+              value: "",
+              autoClose: true,
+            },
+          ],
+        });
+      } else {
+        await api.patch("/admin/users", data);
+        toast.success("Usuário alterado com sucesso!");
+      }
+
+      onClose(true);
+      setIsLoading(false);
+    } catch (error: any) {
+      console.log(error);
+      toast.error(handleError(error));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (initialData) form.reset(initialData);
+  }, [initialData]);
+
+  const isInputsDisabled = mode == "VIEW";
 
   return (
-    <div className="flex flex-col items-center justify-center w-full">
+    <>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="w-full flex items-center justify-center flex-col"
+          onSubmit={form.handleSubmit(onSubmit, (errors) =>
+            console.log(errors)
+          )}
+          className="space-y-4"
         >
-          <div className="flex flex-col w-full space-y-2 p-4 container max-w-lg">
-            <FormInput label="Usuário" control={form.control} name="id" />
-            <FormInput label="Nome" control={form.control} name="name" />
-            <FormInput label="E-mail" control={form.control} name="email" />
-            <FormSearchCombo
-              control={form.control}
-              items={convertArrayToSearchComboItem(USER_ROLES, "id", "name")}
-              label="Perfil"
-              name="role"
-              placeholder="Selecione o Perfil do Usuário"
-              searchPlaceholder="Buscar Perfil"
-            />
-            <FormInput
-              label="Domínio da Rede"
-              control={form.control}
-              name="networkDomain"
-            />
-            <FormSearchCombo
-              control={form.control}
-              items={convertArrayToSearchComboItem(USER_ROLES, "id", "name")}
-              label="Grupo de Usuários"
-              name="groupId"
-              placeholder="Selecione o Grupo de Usuários"
-              searchPlaceholder="Buscar Grupo"
-            />
-            <div className="form-group">
-              <FormField
-                control={form.control}
-                name="customerId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cliente</FormLabel>
-                    <FormControl>
-                      <CustomersCombo
-                        disabled={roleWatch != "CUSTOMER"}
-                        defaultValue={field.value}
-                        onSelect={(customer) => {
-                          field.onChange(customer?.id);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <FormSearchCombo
-              disabled={roleWatch != "REPRESENTATIVE"}
-              control={form.control}
-              apiEndpoint="/registrations/representatives/all"
-              queryStringName=""
-              labelProp="abbreviation"
-              valueProp="id"
-              label="Representante"
-              name="representativeId"
-              placeholder="Selecione o Representante"
-              searchPlaceholder="Buscar Representante"
-            />
-            <FormCheckBox
-              control={form.control}
-              name="isActive"
-              label="Ativo"
-            />
-          </div>
-          <div className="bg-neutral-100 border-t px-2 py-2 flex items-center justify-end gap-x-2 w-full">
+          <FormInput
+            readOnly={mode != "ADD"}
+            control={form.control}
+            name="id"
+            label="Código"
+          />
+          <FormInput control={form.control} name="name" label="Nome" />
+          <FormInput label="E-mail" control={form.control} name="email" />
+          <FormSearchCombo
+            control={form.control}
+            items={convertArrayToSearchComboItem(USER_ROLES, "id", "name")}
+            label="Perfil"
+            name="role"
+            placeholder="Selecione o Perfil do Usuário"
+            searchPlaceholder="Buscar Perfil"
+          />
+          <FormInput
+            label="Domínio da Rede"
+            control={form.control}
+            name="networkDomain"
+          />
+          <FormSearchCombo
+            control={form.control}
+            apiEndpoint="/admin/user-groups/all"
+            queryStringName=""
+            labelProp="name"
+            valueProp="id"
+            label="Grupo de Usuários"
+            name="groupId"
+            placeholder="Selecione o Grupo de Usuário"
+            searchPlaceholder="Buscar Grupo de Usuário"
+          />
+          <FormSearchCombo
+            className={cn(
+              "hidden space-y-2",
+              roleWatch == "CUSTOMER" && "block"
+            )}
+            control={form.control}
+            apiEndpoint="/registrations/customers/all"
+            queryStringName=""
+            labelProp="abbreviation"
+            valueProp="id"
+            label="Cliente"
+            name="customerId"
+            placeholder="Selecione o Cliente"
+            searchPlaceholder="Buscar Cliente"
+          />
+          <FormSearchCombo
+            className={cn(
+              "hidden space-y-2",
+              roleWatch == "REPRESENTATIVE" && "block"
+            )}
+            control={form.control}
+            apiEndpoint="/registrations/representatives/all"
+            queryStringName=""
+            labelProp="abbreviation"
+            valueProp="id"
+            label="Representante"
+            name="representativeId"
+            placeholder="Selecione o Representante"
+            searchPlaceholder="Buscar Representante"
+          />
+          <FormCheckBox control={form.control} name="isActive" label="Ativo" />
+          <div className="flex items-end justify-end gap-x-2">
+            {!isInputsDisabled && (
+              <Button disabled={isLoading} type="submit" variant="green">
+                Gravar
+              </Button>
+            )}
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate({ to: "/admin/users" })}
+              disabled={isLoading}
+              type="button"
+              variant="secondary"
+              onClick={() => onClose(false)}
             >
-              Cancelar
-            </Button>
-
-            <Button size="sm" type="submit">
-              Gravar
+              Voltar p/Lista
             </Button>
           </div>
         </form>
       </Form>
-    </div>
+    </>
   );
 };

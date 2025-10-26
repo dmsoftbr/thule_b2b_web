@@ -19,4 +19,26 @@ export const NEW_ORDER_EMPTY: OrderModel = {
   branchId: "",
   items: [],
   portalId: uuidv7(),
+  isBudget: false,
+};
+
+export const NEW_BUDGET_EMPTY: OrderModel = {
+  id: "",
+  customerId: 0,
+  createdAt: new Date(),
+  representativeId: 0,
+  carrierId: 0,
+  orderRepId: "",
+  deliveryLocationId: "",
+  discountPercent: 0,
+  integrationStatusId: "",
+  paymentConditionId: 0,
+  totalOrderValue: 0,
+  statusId: "OPEN",
+  whatsappNumber: "",
+  priceTableId: "",
+  branchId: "",
+  items: [],
+  isBudget: true,
+  portalId: uuidv7(),
 };

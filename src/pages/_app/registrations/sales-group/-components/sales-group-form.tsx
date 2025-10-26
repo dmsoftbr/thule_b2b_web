@@ -9,6 +9,7 @@ import { SalesGroupsService } from "@/services/registrations/sales-group.service
 import { useNavigate } from "@tanstack/react-router";
 import type { SalesGroupModel } from "@/models/registrations/sales-group.model";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 interface Props {
   formAction: "ADD" | "VIEW" | "EDIT";
@@ -27,6 +28,8 @@ export const SalesGroupForm = ({ initialData, formAction }: Props) => {
   const onSubmit = async (values: z.infer<typeof SalesGroupSchema>) => {
     if (formAction == "ADD") {
       await SalesGroupsService.create(values);
+      toast.success("Grupo criado com sucesso");
+      navigate({ to: "/registrations/sales-group" });
     } else if (formAction == "EDIT") {
       await SalesGroupsService.update(values.id, values);
     }
@@ -46,6 +49,7 @@ export const SalesGroupForm = ({ initialData, formAction }: Props) => {
           name="id"
           label="Código"
           maxLength={50}
+          readOnly={formAction != "ADD"}
         />
         <FormTextarea
           control={form.control}

@@ -25,7 +25,6 @@ import {
 import { api } from "@/lib/api";
 import { useNavigate } from "@tanstack/react-router";
 import { LoginSchema } from "./schemas";
-import Alink from "@/components/ui/alink";
 import { useAuth } from "@/hooks/use-auth";
 import type { SessionModel } from "@/models/auth/session-model";
 
@@ -53,6 +52,7 @@ export const LoginForm = ({ onGotoForgotPassword }: Props) => {
 
       const { data } = await api.post<SessionModel>("/auth/login", {
         ...values,
+        clientType: "web",
       });
 
       login(data);
@@ -77,7 +77,7 @@ export const LoginForm = ({ onGotoForgotPassword }: Props) => {
           <Logo inverse={false} />
           <div className="relative">
             <img
-              src="/assets/images/thule_group.png"
+              src="assets/images/thule_group.png"
               width={200}
               height={200}
               alt="Thule Group"
@@ -137,13 +137,13 @@ export const LoginForm = ({ onGotoForgotPassword }: Props) => {
               />
             </div>
             <div className="flex justify-end">
-              <Alink
-                href="#"
+              <button
+                type="button"
                 className="text-blue-600"
                 onClick={() => onGotoForgotPassword()}
               >
                 Esqueci minha senha
-              </Alink>
+              </button>
             </div>
             <Button type="submit" className="text-sm font-normal uppercase">
               Acessar

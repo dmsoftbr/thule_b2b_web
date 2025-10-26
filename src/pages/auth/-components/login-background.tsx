@@ -2,9 +2,9 @@ import { cn } from "@/lib/utils";
 import React from "react";
 
 const IMAGES_URL = [
-  "/assets/images/login_bg1.jpg",
-  "/assets/images/login_bg2.jpg",
-  "/assets/images/login_bg3.jpg",
+  "assets/images/login_bg1.jpg",
+  "assets/images/login_bg2.jpg",
+  "assets/images/login_bg3.jpg",
 ];
 interface Props {
   children: React.ReactNode | React.ReactNode[];

@@ -6,6 +6,7 @@ export type SessionModel = {
     role: number;
     representativeId: number;
     customerId: string;
+    networkDomain?: string;
   };
   token: string;
   refreshToken: string;

@@ -12,6 +12,7 @@ import {
 import { Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { OutletItemSkeleton } from "./-components/outlet-item-skeleton";
+import { OutletCartProvider } from "./-components/outlet-context";
 
 export const Route = createFileRoute("/_app/outlet/")({
   component: OutletPage,
@@ -43,49 +44,51 @@ function OutletPage() {
   });
 
   return (
-    <div className="m-2 p-2 bg-white border shadow rounded w-full">
-      <h1 className="font-semibold text-lg flex items-center justify-between mb-2">
-        Produtos em Outlet
-        <div className="flex items-center justify-center gap-x-2">
-          <Input placeholder="Buscar Produto" />
-          <Select defaultValue="0">
-            <SelectTrigger>
-              <SelectValue placeholder="Filtrar Outlet" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="0">Todos os Outlets</SelectItem>
-              <SelectItem value="outlet1">Outlet 1</SelectItem>
-              <SelectItem value="outlet2">Outlet 2</SelectItem>
-              <SelectItem value="outlet3">Outlet 3</SelectItem>
-              <SelectItem value="outlet4">Outlet 4</SelectItem>
-            </SelectContent>
-          </Select>
-          <OutletShoppingCartModal />
-        </div>
-      </h1>
+    <OutletCartProvider>
+      <div className="m-2 p-2 bg-white border shadow rounded w-full">
+        <h1 className="font-semibold text-lg flex items-center justify-between mb-2">
+          Produtos em Outlet
+          <div className="flex items-center justify-center gap-x-2">
+            <Input placeholder="Buscar Produto" />
+            <Select defaultValue="0">
+              <SelectTrigger>
+                <SelectValue placeholder="Filtrar Outlet" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Todos os Outlets</SelectItem>
+                <SelectItem value="outlet1">Outlet 1</SelectItem>
+                <SelectItem value="outlet2">Outlet 2</SelectItem>
+                <SelectItem value="outlet3">Outlet 3</SelectItem>
+                <SelectItem value="outlet4">Outlet 4</SelectItem>
+              </SelectContent>
+            </Select>
+            <OutletShoppingCartModal />
+          </div>
+        </h1>
 
-      <div className="flex flex-wrap gap-4 justify-center">
-        <Suspense
-          fallback={
-            <>
-              <OutletItemSkeleton />
-              <OutletItemSkeleton />
-              <OutletItemSkeleton />
-              <OutletItemSkeleton />
-              <OutletItemSkeleton />
-              <OutletItemSkeleton />
-            </>
-          }
-        ></Suspense>
-        {products.map((item, index) => (
-          <OutletItem
-            key={index}
-            productId={item.productId}
-            description={item.description}
-            photo={item.photo}
-          />
-        ))}
+        <div className="flex flex-wrap gap-4 justify-center">
+          <Suspense
+            fallback={
+              <>
+                <OutletItemSkeleton />
+                <OutletItemSkeleton />
+                <OutletItemSkeleton />
+                <OutletItemSkeleton />
+                <OutletItemSkeleton />
+                <OutletItemSkeleton />
+              </>
+            }
+          ></Suspense>
+          {products.map((item, index) => (
+            <OutletItem
+              key={index}
+              productId={item.productId}
+              description={item.description}
+              photo={item.photo}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </OutletCartProvider>
   );
 }

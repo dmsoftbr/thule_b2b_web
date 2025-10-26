@@ -42,7 +42,7 @@ export const ForgotPasswordForm = ({ onGotoBackToLogin }: Props) => {
           <Logo inverse={false} />
           <div className="relative">
             <img
-              src="/assets/images/thule_group.png"
+              src="assets/images/thule_group.png"
               width={200}
               height={200}
               alt="Thule Group"

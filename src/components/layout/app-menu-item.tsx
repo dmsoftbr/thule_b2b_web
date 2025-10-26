@@ -14,7 +14,7 @@ import {
 
 import { type MenuModel } from "@/models/menu-model";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
-import { useLocation } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 
 interface Props {
   item: MenuModel;
@@ -22,9 +22,20 @@ interface Props {
 }
 export const AppMenuItem = ({ item, index }: Props) => {
   const location = useLocation();
+
   function getIsActive(item: MenuModel) {
-    if (item.children && item.url) return false;
-    return location.pathname.endsWith(item.url);
+    if (item.children?.length && !item.url) return false;
+    if (!item.url) return false;
+
+    // exact match
+    if (location.pathname.endsWith(item.url)) return true;
+
+    // se o pathname contiver parte do item.url (ex.: último segmento)
+    const parts = item.url.split("/").filter(Boolean);
+    const lastPart = parts.length ? parts[parts.length - 1] : "";
+    if (lastPart && location.pathname.includes(lastPart)) return true;
+
+    return false;
   }
 
   if (item.children && item.children.length > 0) {
@@ -36,7 +47,10 @@ export const AppMenuItem = ({ item, index }: Props) => {
       >
         <SidebarMenuItem>
           <CollapsibleTrigger asChild>
-            <SidebarMenuButton className="group/subMenu">
+            <SidebarMenuButton
+              className="group/subMenu"
+              isActive={getIsActive(item)}
+            >
               {item.icon && (
                 <DynamicIcon
                   iconName={item.icon as any}
@@ -62,8 +76,8 @@ export const AppMenuItem = ({ item, index }: Props) => {
                       asChild
                       isActive={getIsActive(subItem)}
                     >
-                      <a
-                        href={subItem.url}
+                      <Link
+                        to={subItem.url}
                         onClick={() => (subItem.isActive = true)}
                         className="text-sm text-white"
                       >
@@ -71,7 +85,7 @@ export const AppMenuItem = ({ item, index }: Props) => {
                           <DynamicIcon iconName={subItem.icon as any} />
                         )}
                         <span>{subItem.title}</span>
-                      </a>
+                      </Link>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                 ))}
@@ -84,9 +98,9 @@ export const AppMenuItem = ({ item, index }: Props) => {
   }
   return (
     <SidebarMenuItem className="">
-      <SidebarMenuButton asChild isActive={item.isActive} className="">
-        <a
-          href={item.url}
+      <SidebarMenuButton asChild isActive={getIsActive(item)} className="">
+        <Link
+          to={item.url}
           className="text-sm group/menuItem"
           onClick={() => {}}
         >
@@ -98,7 +112,7 @@ export const AppMenuItem = ({ item, index }: Props) => {
           )}
 
           <span>{item.title}</span>
-        </a>
+        </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );

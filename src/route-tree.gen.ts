@@ -15,21 +15,39 @@ import { Route as AuthLoginRouteImport } from './pages/auth/login'
 import { Route as AppOutletIndexRouteImport } from './pages/_app/outlet/index'
 import { Route as AppOrdersIndexRouteImport } from './pages/_app/orders/index'
 import { Route as AppDashboardIndexRouteImport } from './pages/_app/dashboard/index'
+import { Route as AppBudgetsIndexRouteImport } from './pages/_app/budgets/index'
 import { Route as AppOrdersNewOrderRouteImport } from './pages/_app/orders/new-order'
 import { Route as AppBudgetsNewBudgetRouteImport } from './pages/_app/budgets/new-budget'
 import { Route as AppSystemSyncStatusIndexRouteImport } from './pages/_app/system/sync-status/index'
 import { Route as AppStockProductStockIndexRouteImport } from './pages/_app/stock/product-stock/index'
 import { Route as AppStockEsli011IndexRouteImport } from './pages/_app/stock/esli011/index'
 import { Route as AppRegistrationsSalesGroupIndexRouteImport } from './pages/_app/registrations/sales-group/index'
+import { Route as AppRegistrationsRepresentativeGoalsIndexRouteImport } from './pages/_app/registrations/representative-goals/index'
+import { Route as AppRegistrationsProductsIndexRouteImport } from './pages/_app/registrations/products/index'
+import { Route as AppRegistrationsCustomersIndexRouteImport } from './pages/_app/registrations/customers/index'
+import { Route as AppRegistrationsCustomerPriceTablesIndexRouteImport } from './pages/_app/registrations/customer-price-tables/index'
 import { Route as AppOrdersOrderIdIndexRouteImport } from './pages/_app/orders/$orderId/index'
+import { Route as AppMobileNotificationsIndexRouteImport } from './pages/_app/mobile/notifications/index'
+import { Route as AppMobileLinksIndexRouteImport } from './pages/_app/mobile/links/index'
+import { Route as AppMobileCommunicationsIndexRouteImport } from './pages/_app/mobile/communications/index'
 import { Route as AppAdminUsersIndexRouteImport } from './pages/_app/admin/users/index'
 import { Route as AppAdminUserGroupsIndexRouteImport } from './pages/_app/admin/user-groups/index'
 import { Route as AppAdminSettingsIndexRouteImport } from './pages/_app/admin/settings/index'
 import { Route as AppRegistrationsSalesGroupNewGroupRouteImport } from './pages/_app/registrations/sales-group/new-group'
+import { Route as AppMobileLinksNewLinkRouteImport } from './pages/_app/mobile/links/new-link'
+import { Route as AppMobileCommunicationsNewCommunicateRouteImport } from './pages/_app/mobile/communications/new-communicate'
 import { Route as AppAdminUsersNewUserRouteImport } from './pages/_app/admin/users/new-user'
-import { Route as AppAdminUserGroupsNewGroupRouteImport } from './pages/_app/admin/user-groups/new-group'
+import { Route as AppAdminUserGroupsNewUserGroupRouteImport } from './pages/_app/admin/user-groups/new-user-group'
 import { Route as AppRegistrationsSalesGroupGroupIdIndexRouteImport } from './pages/_app/registrations/sales-group/$groupId/index'
+import { Route as AppRegistrationsProductsProductIdIndexRouteImport } from './pages/_app/registrations/products/$productId/index'
+import { Route as AppRegistrationsCustomersCustomerIdIndexRouteImport } from './pages/_app/registrations/customers/$customerId/index'
+import { Route as AppMobileNotificationsNewNotificationIndexRouteImport } from './pages/_app/mobile/notifications/new-notification/index'
+import { Route as AppMobileNotificationsNotificationIdIndexRouteImport } from './pages/_app/mobile/notifications/$notificationId/index'
+import { Route as AppMobileLinksLinkIdIndexRouteImport } from './pages/_app/mobile/links/$linkId/index'
+import { Route as AppMobileCommunicationsCommunicationIdIndexRouteImport } from './pages/_app/mobile/communications/$communicationId/index'
+import { Route as AppAdminUsersUserIdIndexRouteImport } from './pages/_app/admin/users/$userId/index'
 import { Route as AppAdminUserGroupsGroupIdIndexRouteImport } from './pages/_app/admin/user-groups/$groupId/index'
+import { Route as AppAdminSettingsSettingIdIndexRouteImport } from './pages/_app/admin/settings/$settingId/index'
 
 const AppLayoutRoute = AppLayoutRouteImport.update({
   id: '/_app',
@@ -58,6 +76,11 @@ const AppOrdersIndexRoute = AppOrdersIndexRouteImport.update({
 const AppDashboardIndexRoute = AppDashboardIndexRouteImport.update({
   id: '/dashboard/',
   path: '/dashboard/',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
+const AppBudgetsIndexRoute = AppBudgetsIndexRouteImport.update({
+  id: '/budgets/',
+  path: '/budgets/',
   getParentRoute: () => AppLayoutRoute,
 } as any)
 const AppOrdersNewOrderRoute = AppOrdersNewOrderRouteImport.update({
@@ -93,11 +116,52 @@ const AppRegistrationsSalesGroupIndexRoute =
     path: '/registrations/sales-group/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
+const AppRegistrationsRepresentativeGoalsIndexRoute =
+  AppRegistrationsRepresentativeGoalsIndexRouteImport.update({
+    id: '/registrations/representative-goals/',
+    path: '/registrations/representative-goals/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppRegistrationsProductsIndexRoute =
+  AppRegistrationsProductsIndexRouteImport.update({
+    id: '/registrations/products/',
+    path: '/registrations/products/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppRegistrationsCustomersIndexRoute =
+  AppRegistrationsCustomersIndexRouteImport.update({
+    id: '/registrations/customers/',
+    path: '/registrations/customers/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppRegistrationsCustomerPriceTablesIndexRoute =
+  AppRegistrationsCustomerPriceTablesIndexRouteImport.update({
+    id: '/registrations/customer-price-tables/',
+    path: '/registrations/customer-price-tables/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 const AppOrdersOrderIdIndexRoute = AppOrdersOrderIdIndexRouteImport.update({
   id: '/orders/$orderId/',
   path: '/orders/$orderId/',
   getParentRoute: () => AppLayoutRoute,
 } as any)
+const AppMobileNotificationsIndexRoute =
+  AppMobileNotificationsIndexRouteImport.update({
+    id: '/mobile/notifications/',
+    path: '/mobile/notifications/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppMobileLinksIndexRoute = AppMobileLinksIndexRouteImport.update({
+  id: '/mobile/links/',
+  path: '/mobile/links/',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
+const AppMobileCommunicationsIndexRoute =
+  AppMobileCommunicationsIndexRouteImport.update({
+    id: '/mobile/communications/',
+    path: '/mobile/communications/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 const AppAdminUsersIndexRoute = AppAdminUsersIndexRouteImport.update({
   id: '/admin/users/',
   path: '/admin/users/',
@@ -119,15 +183,26 @@ const AppRegistrationsSalesGroupNewGroupRoute =
     path: '/registrations/sales-group/new-group',
     getParentRoute: () => AppLayoutRoute,
   } as any)
+const AppMobileLinksNewLinkRoute = AppMobileLinksNewLinkRouteImport.update({
+  id: '/mobile/links/new-link',
+  path: '/mobile/links/new-link',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
+const AppMobileCommunicationsNewCommunicateRoute =
+  AppMobileCommunicationsNewCommunicateRouteImport.update({
+    id: '/mobile/communications/new-communicate',
+    path: '/mobile/communications/new-communicate',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 const AppAdminUsersNewUserRoute = AppAdminUsersNewUserRouteImport.update({
   id: '/admin/users/new-user',
   path: '/admin/users/new-user',
   getParentRoute: () => AppLayoutRoute,
 } as any)
-const AppAdminUserGroupsNewGroupRoute =
-  AppAdminUserGroupsNewGroupRouteImport.update({
-    id: '/admin/user-groups/new-group',
-    path: '/admin/user-groups/new-group',
+const AppAdminUserGroupsNewUserGroupRoute =
+  AppAdminUserGroupsNewUserGroupRouteImport.update({
+    id: '/admin/user-groups/new-user-group',
+    path: '/admin/user-groups/new-user-group',
     getParentRoute: () => AppLayoutRoute,
   } as any)
 const AppRegistrationsSalesGroupGroupIdIndexRoute =
@@ -136,10 +211,58 @@ const AppRegistrationsSalesGroupGroupIdIndexRoute =
     path: '/registrations/sales-group/$groupId/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
+const AppRegistrationsProductsProductIdIndexRoute =
+  AppRegistrationsProductsProductIdIndexRouteImport.update({
+    id: '/registrations/products/$productId/',
+    path: '/registrations/products/$productId/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppRegistrationsCustomersCustomerIdIndexRoute =
+  AppRegistrationsCustomersCustomerIdIndexRouteImport.update({
+    id: '/registrations/customers/$customerId/',
+    path: '/registrations/customers/$customerId/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppMobileNotificationsNewNotificationIndexRoute =
+  AppMobileNotificationsNewNotificationIndexRouteImport.update({
+    id: '/mobile/notifications/new-notification/',
+    path: '/mobile/notifications/new-notification/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppMobileNotificationsNotificationIdIndexRoute =
+  AppMobileNotificationsNotificationIdIndexRouteImport.update({
+    id: '/mobile/notifications/$notificationId/',
+    path: '/mobile/notifications/$notificationId/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppMobileLinksLinkIdIndexRoute =
+  AppMobileLinksLinkIdIndexRouteImport.update({
+    id: '/mobile/links/$linkId/',
+    path: '/mobile/links/$linkId/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppMobileCommunicationsCommunicationIdIndexRoute =
+  AppMobileCommunicationsCommunicationIdIndexRouteImport.update({
+    id: '/mobile/communications/$communicationId/',
+    path: '/mobile/communications/$communicationId/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppAdminUsersUserIdIndexRoute =
+  AppAdminUsersUserIdIndexRouteImport.update({
+    id: '/admin/users/$userId/',
+    path: '/admin/users/$userId/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 const AppAdminUserGroupsGroupIdIndexRoute =
   AppAdminUserGroupsGroupIdIndexRouteImport.update({
     id: '/admin/user-groups/$groupId/',
     path: '/admin/user-groups/$groupId/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppAdminSettingsSettingIdIndexRoute =
+  AppAdminSettingsSettingIdIndexRouteImport.update({
+    id: '/admin/settings/$settingId/',
+    path: '/admin/settings/$settingId/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
 
@@ -148,21 +271,39 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
   '/orders/new-order': typeof AppOrdersNewOrderRoute
+  '/budgets': typeof AppBudgetsIndexRoute
   '/dashboard': typeof AppDashboardIndexRoute
   '/orders': typeof AppOrdersIndexRoute
   '/outlet': typeof AppOutletIndexRoute
-  '/admin/user-groups/new-group': typeof AppAdminUserGroupsNewGroupRoute
+  '/admin/user-groups/new-user-group': typeof AppAdminUserGroupsNewUserGroupRoute
   '/admin/users/new-user': typeof AppAdminUsersNewUserRoute
+  '/mobile/communications/new-communicate': typeof AppMobileCommunicationsNewCommunicateRoute
+  '/mobile/links/new-link': typeof AppMobileLinksNewLinkRoute
   '/registrations/sales-group/new-group': typeof AppRegistrationsSalesGroupNewGroupRoute
   '/admin/settings': typeof AppAdminSettingsIndexRoute
   '/admin/user-groups': typeof AppAdminUserGroupsIndexRoute
   '/admin/users': typeof AppAdminUsersIndexRoute
+  '/mobile/communications': typeof AppMobileCommunicationsIndexRoute
+  '/mobile/links': typeof AppMobileLinksIndexRoute
+  '/mobile/notifications': typeof AppMobileNotificationsIndexRoute
   '/orders/$orderId': typeof AppOrdersOrderIdIndexRoute
+  '/registrations/customer-price-tables': typeof AppRegistrationsCustomerPriceTablesIndexRoute
+  '/registrations/customers': typeof AppRegistrationsCustomersIndexRoute
+  '/registrations/products': typeof AppRegistrationsProductsIndexRoute
+  '/registrations/representative-goals': typeof AppRegistrationsRepresentativeGoalsIndexRoute
   '/registrations/sales-group': typeof AppRegistrationsSalesGroupIndexRoute
   '/stock/esli011': typeof AppStockEsli011IndexRoute
   '/stock/product-stock': typeof AppStockProductStockIndexRoute
   '/system/sync-status': typeof AppSystemSyncStatusIndexRoute
+  '/admin/settings/$settingId': typeof AppAdminSettingsSettingIdIndexRoute
   '/admin/user-groups/$groupId': typeof AppAdminUserGroupsGroupIdIndexRoute
+  '/admin/users/$userId': typeof AppAdminUsersUserIdIndexRoute
+  '/mobile/communications/$communicationId': typeof AppMobileCommunicationsCommunicationIdIndexRoute
+  '/mobile/links/$linkId': typeof AppMobileLinksLinkIdIndexRoute
+  '/mobile/notifications/$notificationId': typeof AppMobileNotificationsNotificationIdIndexRoute
+  '/mobile/notifications/new-notification': typeof AppMobileNotificationsNewNotificationIndexRoute
+  '/registrations/customers/$customerId': typeof AppRegistrationsCustomersCustomerIdIndexRoute
+  '/registrations/products/$productId': typeof AppRegistrationsProductsProductIdIndexRoute
   '/registrations/sales-group/$groupId': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -170,21 +311,39 @@ export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
   '/orders/new-order': typeof AppOrdersNewOrderRoute
+  '/budgets': typeof AppBudgetsIndexRoute
   '/dashboard': typeof AppDashboardIndexRoute
   '/orders': typeof AppOrdersIndexRoute
   '/outlet': typeof AppOutletIndexRoute
-  '/admin/user-groups/new-group': typeof AppAdminUserGroupsNewGroupRoute
+  '/admin/user-groups/new-user-group': typeof AppAdminUserGroupsNewUserGroupRoute
   '/admin/users/new-user': typeof AppAdminUsersNewUserRoute
+  '/mobile/communications/new-communicate': typeof AppMobileCommunicationsNewCommunicateRoute
+  '/mobile/links/new-link': typeof AppMobileLinksNewLinkRoute
   '/registrations/sales-group/new-group': typeof AppRegistrationsSalesGroupNewGroupRoute
   '/admin/settings': typeof AppAdminSettingsIndexRoute
   '/admin/user-groups': typeof AppAdminUserGroupsIndexRoute
   '/admin/users': typeof AppAdminUsersIndexRoute
+  '/mobile/communications': typeof AppMobileCommunicationsIndexRoute
+  '/mobile/links': typeof AppMobileLinksIndexRoute
+  '/mobile/notifications': typeof AppMobileNotificationsIndexRoute
   '/orders/$orderId': typeof AppOrdersOrderIdIndexRoute
+  '/registrations/customer-price-tables': typeof AppRegistrationsCustomerPriceTablesIndexRoute
+  '/registrations/customers': typeof AppRegistrationsCustomersIndexRoute
+  '/registrations/products': typeof AppRegistrationsProductsIndexRoute
+  '/registrations/representative-goals': typeof AppRegistrationsRepresentativeGoalsIndexRoute
   '/registrations/sales-group': typeof AppRegistrationsSalesGroupIndexRoute
   '/stock/esli011': typeof AppStockEsli011IndexRoute
   '/stock/product-stock': typeof AppStockProductStockIndexRoute
   '/system/sync-status': typeof AppSystemSyncStatusIndexRoute
+  '/admin/settings/$settingId': typeof AppAdminSettingsSettingIdIndexRoute
   '/admin/user-groups/$groupId': typeof AppAdminUserGroupsGroupIdIndexRoute
+  '/admin/users/$userId': typeof AppAdminUsersUserIdIndexRoute
+  '/mobile/communications/$communicationId': typeof AppMobileCommunicationsCommunicationIdIndexRoute
+  '/mobile/links/$linkId': typeof AppMobileLinksLinkIdIndexRoute
+  '/mobile/notifications/$notificationId': typeof AppMobileNotificationsNotificationIdIndexRoute
+  '/mobile/notifications/new-notification': typeof AppMobileNotificationsNewNotificationIndexRoute
+  '/registrations/customers/$customerId': typeof AppRegistrationsCustomersCustomerIdIndexRoute
+  '/registrations/products/$productId': typeof AppRegistrationsProductsProductIdIndexRoute
   '/registrations/sales-group/$groupId': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
 }
 export interface FileRoutesById {
@@ -194,21 +353,39 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
   '/_app/orders/new-order': typeof AppOrdersNewOrderRoute
+  '/_app/budgets/': typeof AppBudgetsIndexRoute
   '/_app/dashboard/': typeof AppDashboardIndexRoute
   '/_app/orders/': typeof AppOrdersIndexRoute
   '/_app/outlet/': typeof AppOutletIndexRoute
-  '/_app/admin/user-groups/new-group': typeof AppAdminUserGroupsNewGroupRoute
+  '/_app/admin/user-groups/new-user-group': typeof AppAdminUserGroupsNewUserGroupRoute
   '/_app/admin/users/new-user': typeof AppAdminUsersNewUserRoute
+  '/_app/mobile/communications/new-communicate': typeof AppMobileCommunicationsNewCommunicateRoute
+  '/_app/mobile/links/new-link': typeof AppMobileLinksNewLinkRoute
   '/_app/registrations/sales-group/new-group': typeof AppRegistrationsSalesGroupNewGroupRoute
   '/_app/admin/settings/': typeof AppAdminSettingsIndexRoute
   '/_app/admin/user-groups/': typeof AppAdminUserGroupsIndexRoute
   '/_app/admin/users/': typeof AppAdminUsersIndexRoute
+  '/_app/mobile/communications/': typeof AppMobileCommunicationsIndexRoute
+  '/_app/mobile/links/': typeof AppMobileLinksIndexRoute
+  '/_app/mobile/notifications/': typeof AppMobileNotificationsIndexRoute
   '/_app/orders/$orderId/': typeof AppOrdersOrderIdIndexRoute
+  '/_app/registrations/customer-price-tables/': typeof AppRegistrationsCustomerPriceTablesIndexRoute
+  '/_app/registrations/customers/': typeof AppRegistrationsCustomersIndexRoute
+  '/_app/registrations/products/': typeof AppRegistrationsProductsIndexRoute
+  '/_app/registrations/representative-goals/': typeof AppRegistrationsRepresentativeGoalsIndexRoute
   '/_app/registrations/sales-group/': typeof AppRegistrationsSalesGroupIndexRoute
   '/_app/stock/esli011/': typeof AppStockEsli011IndexRoute
   '/_app/stock/product-stock/': typeof AppStockProductStockIndexRoute
   '/_app/system/sync-status/': typeof AppSystemSyncStatusIndexRoute
+  '/_app/admin/settings/$settingId/': typeof AppAdminSettingsSettingIdIndexRoute
   '/_app/admin/user-groups/$groupId/': typeof AppAdminUserGroupsGroupIdIndexRoute
+  '/_app/admin/users/$userId/': typeof AppAdminUsersUserIdIndexRoute
+  '/_app/mobile/communications/$communicationId/': typeof AppMobileCommunicationsCommunicationIdIndexRoute
+  '/_app/mobile/links/$linkId/': typeof AppMobileLinksLinkIdIndexRoute
+  '/_app/mobile/notifications/$notificationId/': typeof AppMobileNotificationsNotificationIdIndexRoute
+  '/_app/mobile/notifications/new-notification/': typeof AppMobileNotificationsNewNotificationIndexRoute
+  '/_app/registrations/customers/$customerId/': typeof AppRegistrationsCustomersCustomerIdIndexRoute
+  '/_app/registrations/products/$productId/': typeof AppRegistrationsProductsProductIdIndexRoute
   '/_app/registrations/sales-group/$groupId/': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -218,21 +395,39 @@ export interface FileRouteTypes {
     | '/'
     | '/budgets/new-budget'
     | '/orders/new-order'
+    | '/budgets'
     | '/dashboard'
     | '/orders'
     | '/outlet'
-    | '/admin/user-groups/new-group'
+    | '/admin/user-groups/new-user-group'
     | '/admin/users/new-user'
+    | '/mobile/communications/new-communicate'
+    | '/mobile/links/new-link'
     | '/registrations/sales-group/new-group'
     | '/admin/settings'
     | '/admin/user-groups'
     | '/admin/users'
+    | '/mobile/communications'
+    | '/mobile/links'
+    | '/mobile/notifications'
     | '/orders/$orderId'
+    | '/registrations/customer-price-tables'
+    | '/registrations/customers'
+    | '/registrations/products'
+    | '/registrations/representative-goals'
     | '/registrations/sales-group'
     | '/stock/esli011'
     | '/stock/product-stock'
     | '/system/sync-status'
+    | '/admin/settings/$settingId'
     | '/admin/user-groups/$groupId'
+    | '/admin/users/$userId'
+    | '/mobile/communications/$communicationId'
+    | '/mobile/links/$linkId'
+    | '/mobile/notifications/$notificationId'
+    | '/mobile/notifications/new-notification'
+    | '/registrations/customers/$customerId'
+    | '/registrations/products/$productId'
     | '/registrations/sales-group/$groupId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -240,21 +435,39 @@ export interface FileRouteTypes {
     | '/'
     | '/budgets/new-budget'
     | '/orders/new-order'
+    | '/budgets'
     | '/dashboard'
     | '/orders'
     | '/outlet'
-    | '/admin/user-groups/new-group'
+    | '/admin/user-groups/new-user-group'
     | '/admin/users/new-user'
+    | '/mobile/communications/new-communicate'
+    | '/mobile/links/new-link'
     | '/registrations/sales-group/new-group'
     | '/admin/settings'
     | '/admin/user-groups'
     | '/admin/users'
+    | '/mobile/communications'
+    | '/mobile/links'
+    | '/mobile/notifications'
     | '/orders/$orderId'
+    | '/registrations/customer-price-tables'
+    | '/registrations/customers'
+    | '/registrations/products'
+    | '/registrations/representative-goals'
     | '/registrations/sales-group'
     | '/stock/esli011'
     | '/stock/product-stock'
     | '/system/sync-status'
+    | '/admin/settings/$settingId'
     | '/admin/user-groups/$groupId'
+    | '/admin/users/$userId'
+    | '/mobile/communications/$communicationId'
+    | '/mobile/links/$linkId'
+    | '/mobile/notifications/$notificationId'
+    | '/mobile/notifications/new-notification'
+    | '/registrations/customers/$customerId'
+    | '/registrations/products/$productId'
     | '/registrations/sales-group/$groupId'
   id:
     | '__root__'
@@ -263,21 +476,39 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/budgets/new-budget'
     | '/_app/orders/new-order'
+    | '/_app/budgets/'
     | '/_app/dashboard/'
     | '/_app/orders/'
     | '/_app/outlet/'
-    | '/_app/admin/user-groups/new-group'
+    | '/_app/admin/user-groups/new-user-group'
     | '/_app/admin/users/new-user'
+    | '/_app/mobile/communications/new-communicate'
+    | '/_app/mobile/links/new-link'
     | '/_app/registrations/sales-group/new-group'
     | '/_app/admin/settings/'
     | '/_app/admin/user-groups/'
     | '/_app/admin/users/'
+    | '/_app/mobile/communications/'
+    | '/_app/mobile/links/'
+    | '/_app/mobile/notifications/'
     | '/_app/orders/$orderId/'
+    | '/_app/registrations/customer-price-tables/'
+    | '/_app/registrations/customers/'
+    | '/_app/registrations/products/'
+    | '/_app/registrations/representative-goals/'
     | '/_app/registrations/sales-group/'
     | '/_app/stock/esli011/'
     | '/_app/stock/product-stock/'
     | '/_app/system/sync-status/'
+    | '/_app/admin/settings/$settingId/'
     | '/_app/admin/user-groups/$groupId/'
+    | '/_app/admin/users/$userId/'
+    | '/_app/mobile/communications/$communicationId/'
+    | '/_app/mobile/links/$linkId/'
+    | '/_app/mobile/notifications/$notificationId/'
+    | '/_app/mobile/notifications/new-notification/'
+    | '/_app/registrations/customers/$customerId/'
+    | '/_app/registrations/products/$productId/'
     | '/_app/registrations/sales-group/$groupId/'
   fileRoutesById: FileRoutesById
 }
@@ -330,6 +561,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/budgets/': {
+      id: '/_app/budgets/'
+      path: '/budgets'
+      fullPath: '/budgets'
+      preLoaderRoute: typeof AppBudgetsIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/orders/new-order': {
       id: '/_app/orders/new-order'
       path: '/orders/new-order'
@@ -372,11 +610,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRegistrationsSalesGroupIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/registrations/representative-goals/': {
+      id: '/_app/registrations/representative-goals/'
+      path: '/registrations/representative-goals'
+      fullPath: '/registrations/representative-goals'
+      preLoaderRoute: typeof AppRegistrationsRepresentativeGoalsIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/registrations/products/': {
+      id: '/_app/registrations/products/'
+      path: '/registrations/products'
+      fullPath: '/registrations/products'
+      preLoaderRoute: typeof AppRegistrationsProductsIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/registrations/customers/': {
+      id: '/_app/registrations/customers/'
+      path: '/registrations/customers'
+      fullPath: '/registrations/customers'
+      preLoaderRoute: typeof AppRegistrationsCustomersIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/registrations/customer-price-tables/': {
+      id: '/_app/registrations/customer-price-tables/'
+      path: '/registrations/customer-price-tables'
+      fullPath: '/registrations/customer-price-tables'
+      preLoaderRoute: typeof AppRegistrationsCustomerPriceTablesIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/orders/$orderId/': {
       id: '/_app/orders/$orderId/'
       path: '/orders/$orderId'
       fullPath: '/orders/$orderId'
       preLoaderRoute: typeof AppOrdersOrderIdIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/mobile/notifications/': {
+      id: '/_app/mobile/notifications/'
+      path: '/mobile/notifications'
+      fullPath: '/mobile/notifications'
+      preLoaderRoute: typeof AppMobileNotificationsIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/mobile/links/': {
+      id: '/_app/mobile/links/'
+      path: '/mobile/links'
+      fullPath: '/mobile/links'
+      preLoaderRoute: typeof AppMobileLinksIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/mobile/communications/': {
+      id: '/_app/mobile/communications/'
+      path: '/mobile/communications'
+      fullPath: '/mobile/communications'
+      preLoaderRoute: typeof AppMobileCommunicationsIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/admin/users/': {
@@ -407,6 +694,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRegistrationsSalesGroupNewGroupRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/mobile/links/new-link': {
+      id: '/_app/mobile/links/new-link'
+      path: '/mobile/links/new-link'
+      fullPath: '/mobile/links/new-link'
+      preLoaderRoute: typeof AppMobileLinksNewLinkRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/mobile/communications/new-communicate': {
+      id: '/_app/mobile/communications/new-communicate'
+      path: '/mobile/communications/new-communicate'
+      fullPath: '/mobile/communications/new-communicate'
+      preLoaderRoute: typeof AppMobileCommunicationsNewCommunicateRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/admin/users/new-user': {
       id: '/_app/admin/users/new-user'
       path: '/admin/users/new-user'
@@ -414,11 +715,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminUsersNewUserRouteImport
       parentRoute: typeof AppLayoutRoute
     }
-    '/_app/admin/user-groups/new-group': {
-      id: '/_app/admin/user-groups/new-group'
-      path: '/admin/user-groups/new-group'
-      fullPath: '/admin/user-groups/new-group'
-      preLoaderRoute: typeof AppAdminUserGroupsNewGroupRouteImport
+    '/_app/admin/user-groups/new-user-group': {
+      id: '/_app/admin/user-groups/new-user-group'
+      path: '/admin/user-groups/new-user-group'
+      fullPath: '/admin/user-groups/new-user-group'
+      preLoaderRoute: typeof AppAdminUserGroupsNewUserGroupRouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/registrations/sales-group/$groupId/': {
@@ -428,11 +729,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRegistrationsSalesGroupGroupIdIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/registrations/products/$productId/': {
+      id: '/_app/registrations/products/$productId/'
+      path: '/registrations/products/$productId'
+      fullPath: '/registrations/products/$productId'
+      preLoaderRoute: typeof AppRegistrationsProductsProductIdIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/registrations/customers/$customerId/': {
+      id: '/_app/registrations/customers/$customerId/'
+      path: '/registrations/customers/$customerId'
+      fullPath: '/registrations/customers/$customerId'
+      preLoaderRoute: typeof AppRegistrationsCustomersCustomerIdIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/mobile/notifications/new-notification/': {
+      id: '/_app/mobile/notifications/new-notification/'
+      path: '/mobile/notifications/new-notification'
+      fullPath: '/mobile/notifications/new-notification'
+      preLoaderRoute: typeof AppMobileNotificationsNewNotificationIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/mobile/notifications/$notificationId/': {
+      id: '/_app/mobile/notifications/$notificationId/'
+      path: '/mobile/notifications/$notificationId'
+      fullPath: '/mobile/notifications/$notificationId'
+      preLoaderRoute: typeof AppMobileNotificationsNotificationIdIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/mobile/links/$linkId/': {
+      id: '/_app/mobile/links/$linkId/'
+      path: '/mobile/links/$linkId'
+      fullPath: '/mobile/links/$linkId'
+      preLoaderRoute: typeof AppMobileLinksLinkIdIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/mobile/communications/$communicationId/': {
+      id: '/_app/mobile/communications/$communicationId/'
+      path: '/mobile/communications/$communicationId'
+      fullPath: '/mobile/communications/$communicationId'
+      preLoaderRoute: typeof AppMobileCommunicationsCommunicationIdIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/admin/users/$userId/': {
+      id: '/_app/admin/users/$userId/'
+      path: '/admin/users/$userId'
+      fullPath: '/admin/users/$userId'
+      preLoaderRoute: typeof AppAdminUsersUserIdIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/admin/user-groups/$groupId/': {
       id: '/_app/admin/user-groups/$groupId/'
       path: '/admin/user-groups/$groupId'
       fullPath: '/admin/user-groups/$groupId'
       preLoaderRoute: typeof AppAdminUserGroupsGroupIdIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/admin/settings/$settingId/': {
+      id: '/_app/admin/settings/$settingId/'
+      path: '/admin/settings/$settingId'
+      fullPath: '/admin/settings/$settingId'
+      preLoaderRoute: typeof AppAdminSettingsSettingIdIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
   }
@@ -442,21 +799,39 @@ interface AppLayoutRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppBudgetsNewBudgetRoute: typeof AppBudgetsNewBudgetRoute
   AppOrdersNewOrderRoute: typeof AppOrdersNewOrderRoute
+  AppBudgetsIndexRoute: typeof AppBudgetsIndexRoute
   AppDashboardIndexRoute: typeof AppDashboardIndexRoute
   AppOrdersIndexRoute: typeof AppOrdersIndexRoute
   AppOutletIndexRoute: typeof AppOutletIndexRoute
-  AppAdminUserGroupsNewGroupRoute: typeof AppAdminUserGroupsNewGroupRoute
+  AppAdminUserGroupsNewUserGroupRoute: typeof AppAdminUserGroupsNewUserGroupRoute
   AppAdminUsersNewUserRoute: typeof AppAdminUsersNewUserRoute
+  AppMobileCommunicationsNewCommunicateRoute: typeof AppMobileCommunicationsNewCommunicateRoute
+  AppMobileLinksNewLinkRoute: typeof AppMobileLinksNewLinkRoute
   AppRegistrationsSalesGroupNewGroupRoute: typeof AppRegistrationsSalesGroupNewGroupRoute
   AppAdminSettingsIndexRoute: typeof AppAdminSettingsIndexRoute
   AppAdminUserGroupsIndexRoute: typeof AppAdminUserGroupsIndexRoute
   AppAdminUsersIndexRoute: typeof AppAdminUsersIndexRoute
+  AppMobileCommunicationsIndexRoute: typeof AppMobileCommunicationsIndexRoute
+  AppMobileLinksIndexRoute: typeof AppMobileLinksIndexRoute
+  AppMobileNotificationsIndexRoute: typeof AppMobileNotificationsIndexRoute
   AppOrdersOrderIdIndexRoute: typeof AppOrdersOrderIdIndexRoute
+  AppRegistrationsCustomerPriceTablesIndexRoute: typeof AppRegistrationsCustomerPriceTablesIndexRoute
+  AppRegistrationsCustomersIndexRoute: typeof AppRegistrationsCustomersIndexRoute
+  AppRegistrationsProductsIndexRoute: typeof AppRegistrationsProductsIndexRoute
+  AppRegistrationsRepresentativeGoalsIndexRoute: typeof AppRegistrationsRepresentativeGoalsIndexRoute
   AppRegistrationsSalesGroupIndexRoute: typeof AppRegistrationsSalesGroupIndexRoute
   AppStockEsli011IndexRoute: typeof AppStockEsli011IndexRoute
   AppStockProductStockIndexRoute: typeof AppStockProductStockIndexRoute
   AppSystemSyncStatusIndexRoute: typeof AppSystemSyncStatusIndexRoute
+  AppAdminSettingsSettingIdIndexRoute: typeof AppAdminSettingsSettingIdIndexRoute
   AppAdminUserGroupsGroupIdIndexRoute: typeof AppAdminUserGroupsGroupIdIndexRoute
+  AppAdminUsersUserIdIndexRoute: typeof AppAdminUsersUserIdIndexRoute
+  AppMobileCommunicationsCommunicationIdIndexRoute: typeof AppMobileCommunicationsCommunicationIdIndexRoute
+  AppMobileLinksLinkIdIndexRoute: typeof AppMobileLinksLinkIdIndexRoute
+  AppMobileNotificationsNotificationIdIndexRoute: typeof AppMobileNotificationsNotificationIdIndexRoute
+  AppMobileNotificationsNewNotificationIndexRoute: typeof AppMobileNotificationsNewNotificationIndexRoute
+  AppRegistrationsCustomersCustomerIdIndexRoute: typeof AppRegistrationsCustomersCustomerIdIndexRoute
+  AppRegistrationsProductsProductIdIndexRoute: typeof AppRegistrationsProductsProductIdIndexRoute
   AppRegistrationsSalesGroupGroupIdIndexRoute: typeof AppRegistrationsSalesGroupGroupIdIndexRoute
 }
 
@@ -464,22 +839,48 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppBudgetsNewBudgetRoute: AppBudgetsNewBudgetRoute,
   AppOrdersNewOrderRoute: AppOrdersNewOrderRoute,
+  AppBudgetsIndexRoute: AppBudgetsIndexRoute,
   AppDashboardIndexRoute: AppDashboardIndexRoute,
   AppOrdersIndexRoute: AppOrdersIndexRoute,
   AppOutletIndexRoute: AppOutletIndexRoute,
-  AppAdminUserGroupsNewGroupRoute: AppAdminUserGroupsNewGroupRoute,
+  AppAdminUserGroupsNewUserGroupRoute: AppAdminUserGroupsNewUserGroupRoute,
   AppAdminUsersNewUserRoute: AppAdminUsersNewUserRoute,
+  AppMobileCommunicationsNewCommunicateRoute:
+    AppMobileCommunicationsNewCommunicateRoute,
+  AppMobileLinksNewLinkRoute: AppMobileLinksNewLinkRoute,
   AppRegistrationsSalesGroupNewGroupRoute:
     AppRegistrationsSalesGroupNewGroupRoute,
   AppAdminSettingsIndexRoute: AppAdminSettingsIndexRoute,
   AppAdminUserGroupsIndexRoute: AppAdminUserGroupsIndexRoute,
   AppAdminUsersIndexRoute: AppAdminUsersIndexRoute,
+  AppMobileCommunicationsIndexRoute: AppMobileCommunicationsIndexRoute,
+  AppMobileLinksIndexRoute: AppMobileLinksIndexRoute,
+  AppMobileNotificationsIndexRoute: AppMobileNotificationsIndexRoute,
   AppOrdersOrderIdIndexRoute: AppOrdersOrderIdIndexRoute,
+  AppRegistrationsCustomerPriceTablesIndexRoute:
+    AppRegistrationsCustomerPriceTablesIndexRoute,
+  AppRegistrationsCustomersIndexRoute: AppRegistrationsCustomersIndexRoute,
+  AppRegistrationsProductsIndexRoute: AppRegistrationsProductsIndexRoute,
+  AppRegistrationsRepresentativeGoalsIndexRoute:
+    AppRegistrationsRepresentativeGoalsIndexRoute,
   AppRegistrationsSalesGroupIndexRoute: AppRegistrationsSalesGroupIndexRoute,
   AppStockEsli011IndexRoute: AppStockEsli011IndexRoute,
   AppStockProductStockIndexRoute: AppStockProductStockIndexRoute,
   AppSystemSyncStatusIndexRoute: AppSystemSyncStatusIndexRoute,
+  AppAdminSettingsSettingIdIndexRoute: AppAdminSettingsSettingIdIndexRoute,
   AppAdminUserGroupsGroupIdIndexRoute: AppAdminUserGroupsGroupIdIndexRoute,
+  AppAdminUsersUserIdIndexRoute: AppAdminUsersUserIdIndexRoute,
+  AppMobileCommunicationsCommunicationIdIndexRoute:
+    AppMobileCommunicationsCommunicationIdIndexRoute,
+  AppMobileLinksLinkIdIndexRoute: AppMobileLinksLinkIdIndexRoute,
+  AppMobileNotificationsNotificationIdIndexRoute:
+    AppMobileNotificationsNotificationIdIndexRoute,
+  AppMobileNotificationsNewNotificationIndexRoute:
+    AppMobileNotificationsNewNotificationIndexRoute,
+  AppRegistrationsCustomersCustomerIdIndexRoute:
+    AppRegistrationsCustomersCustomerIdIndexRoute,
+  AppRegistrationsProductsProductIdIndexRoute:
+    AppRegistrationsProductsProductIdIndexRoute,
   AppRegistrationsSalesGroupGroupIdIndexRoute:
     AppRegistrationsSalesGroupGroupIdIndexRoute,
 }

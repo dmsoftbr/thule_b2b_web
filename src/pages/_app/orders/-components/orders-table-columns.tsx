@@ -7,6 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { formatDate } from "@/lib/datetime-utils";
 import { formatNumber } from "@/lib/number-utils";
 import type { OrderModel } from "@/models/order-model";
 import {
@@ -62,7 +63,7 @@ export const createOrdersTableColumns = ({
     dataKey: "createdAt",
     header: "Dt Implantação",
     render: (order) => (
-      <div className="text-center">{order.createdAt.toLocaleDateString()}</div>
+      <div className="text-center">{formatDate(order.createdAt)}</div>
     ),
     sortable: true,
   },
@@ -83,12 +84,12 @@ export const createOrdersTableColumns = ({
       <div className="flex items-center justify-center">
         <span
           className={`px-2 py-1 text-xs font-medium rounded-full ${
-            order.statusId === "active"
+            order.statusId === "Aberto"
               ? "bg-red-100 text-red-800"
               : "bg-green-100 text-green-800"
           }`}
         >
-          {order.statusId === "active" ? "Ativo" : "Aprovado"}
+          {order.statusId}
         </span>
         <button>
           <FileIcon className="size-4" />

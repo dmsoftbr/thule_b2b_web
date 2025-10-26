@@ -8,14 +8,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { SalesGroupModel } from "@/models/registrations/sales-group.model";
-import { CopyIcon, MenuIcon, SearchIcon, TrashIcon } from "lucide-react";
+import { MenuIcon } from "lucide-react";
 
 interface Props {
-  fnView: (order: SalesGroupModel) => void;
+  fnEdit: (data: SalesGroupModel) => void;
+  fnDelete: (data: SalesGroupModel) => void;
+  fnDetails: (data: SalesGroupModel) => void;
 }
 
 export const createSalesGroupTableColumns = ({
-  fnView,
+  fnEdit,
+  fnDelete,
+  fnDetails,
 }: Props): ServerTableColumn<SalesGroupModel>[] => [
   {
     id: "id",
@@ -40,9 +44,6 @@ export const createSalesGroupTableColumns = ({
     header: "Ações",
     render: (group) => (
       <div className="flex justify-end">
-        <Button onClick={() => fnView(group)} variant="secondary" size="sm">
-          <SearchIcon className="size-4" />
-        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button size="sm" variant="secondary">
@@ -50,14 +51,16 @@ export const createSalesGroupTableColumns = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="">
-            <DropdownMenuItem>
-              <CopyIcon className="size-4" />
-              Duplicar
+            <DropdownMenuItem onClick={() => fnEdit(group)}>
+              Alterar
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <TrashIcon className="size-4 text-red-500" />
+            <DropdownMenuItem onClick={() => fnDelete(group)}>
               Excluir
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => fnDetails(group)}>
+              Detalhe
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

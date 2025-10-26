@@ -1,81 +1,93 @@
-import { FormInput } from "@/components/form/form-input";
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
-import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import type { UserGroupSchema } from "./schemas";
-import { useEffect } from "react";
-import { UserGroupsService } from "@/services/security/user-groups.service";
+import { Form } from "@/components/ui/form";
+import { useEffect, useState } from "react";
+import { api, handleError } from "@/lib/api";
 import { toast } from "sonner";
-import { isAxiosError } from "axios";
+import type { FORM_ACTIONS } from "@/@types/form-actions";
+import { FormInput } from "@/components/form/form-input";
 import type { UserGroupModel } from "@/models/user-group.model";
+import { UserGroupSchema } from "./schemas";
 
 interface Props {
-  action: "ADD" | "EDIT";
-  initialData?: UserGroupModel;
+  initialData: UserGroupModel | null;
+  isOpen: boolean;
+  onClose: (refresh: boolean) => void;
+  mode: FORM_ACTIONS;
 }
 
-export const UserGroupForm = ({ action, initialData }: Props) => {
-  const navigate = useNavigate();
-  const userGroupService = new UserGroupsService();
+export const UserGroupForm = ({ initialData, mode, onClose }: Props) => {
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof UserGroupSchema>>({
+    resolver: zodResolver(UserGroupSchema),
     defaultValues: {
       id: "",
       name: "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof UserGroupSchema>) {
+  const onSubmit = async (values: z.infer<typeof UserGroupSchema>) => {
     try {
-      if (action === "ADD") await userGroupService.create(values);
-      if (action === "EDIT") await userGroupService.update(values);
-      navigate({ to: "/admin/user-groups" });
-    } catch (error) {
+      let data = { ...values };
+
+      setIsLoading(true);
+      if (mode == "ADD") {
+        await api.post("/admin/user-groups", data);
+        toast.success("Grupo criado com sucesso!");
+      } else {
+        await api.patch("/admin/user-groups", data);
+        toast.success("Grupo alterado com sucesso!");
+      }
+
+      onClose(true);
+      setIsLoading(false);
+    } catch (error: any) {
       console.log(error);
-      if (isAxiosError(error)) toast.error(error.response?.data);
+      toast.error(handleError(error));
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    if (action === "EDIT" && initialData) {
-      form.reset(initialData);
-    }
+    if (initialData) form.reset(initialData);
   }, [initialData]);
 
-  return (
-    <div className="flex flex-col items-center justify-center w-full">
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="w-full flex items-center justify-center flex-col"
-        >
-          <div className="flex flex-col w-full space-y-2 p-4 container max-w-lg">
-            <FormInput
-              readOnly={action === "EDIT"}
-              label="Código"
-              control={form.control}
-              name="id"
-            />
-            <FormInput label="Nome" control={form.control} name="name" />
-          </div>
-          <div className="bg-neutral-100 border-t px-2 py-2 flex items-center justify-end gap-x-2 w-full">
-            <Button
-              variant="outline"
-              size="sm"
-              type="button"
-              onClick={() => navigate({ to: "/admin/user-groups" })}
-            >
-              Cancelar
-            </Button>
+  const isInputsDisabled = mode == "VIEW";
 
-            <Button size="sm" type="submit">
+  return (
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit, (errors) => console.log(errors))}
+        className="space-y-4"
+      >
+        <FormInput
+          readOnly={mode != "ADD"}
+          control={form.control}
+          name="id"
+          label="Código"
+        />
+        <FormInput control={form.control} name="name" label="Nome" />
+
+        <div className="flex items-end justify-end gap-x-2">
+          {!isInputsDisabled && (
+            <Button disabled={isLoading} type="submit" variant="green">
               Gravar
             </Button>
-          </div>
-        </form>
-      </Form>
-    </div>
+          )}
+          <Button
+            disabled={isLoading}
+            type="button"
+            variant="secondary"
+            onClick={() => onClose(false)}
+          >
+            Voltar p/Lista
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 };

@@ -1,82 +1,100 @@
+import { AppTooltip } from "@/components/layout/app-tooltip";
 import type { ServerTableColumn } from "@/components/server-table/server-table";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { getUserRoleName } from "@/lib/user-role-utils";
 import type { UserModel } from "@/models/user.model";
-import { MenuIcon, SearchIcon } from "lucide-react";
+import { EditIcon, LockIcon, Settings2Icon, TrashIcon } from "lucide-react";
 
-export const columns: ServerTableColumn<UserModel>[] = [
+interface Props {
+  fnEdit: (data: UserModel) => void;
+  fnDelete: (data: UserModel) => void;
+  fnPermissions: (data: UserModel) => void;
+  fnChangePassword: (data: UserModel) => void;
+}
+
+export const columns = ({
+  fnEdit,
+  fnDelete,
+  fnPermissions,
+  fnChangePassword,
+}: Props): ServerTableColumn[] => [
   {
-    id: "id",
-    dataKey: "id",
-    header: "Usuário",
-    render: (user) => (
-      <span className="font-semibold text-blue-600 ">{user.id}</span>
-    ),
+    title: "Código",
+    dataIndex: "id",
+    key: "id",
+    sortable: true,
+    renderItem: (item: UserModel) => {
+      return <span className="text-blue-600 font-semibold">{item.id}</span>;
+    },
+  },
+  {
+    title: "Nome",
+    dataIndex: "name",
+    key: "name",
     sortable: true,
   },
   {
-    id: "name",
-    dataKey: "name",
-    header: "Nome",
-    render: (user) => <span>{user.name}</span>,
+    title: "E-mail",
+    dataIndex: "email",
+    key: "email",
     sortable: true,
   },
   {
-    id: "email",
-    dataKey: "email",
-    header: "E-mail",
-    render: (user) => <span>{user.email}</span>,
+    title: "Grupo",
+    dataIndex: "groupId",
+    key: "groupId",
     sortable: true,
   },
   {
-    id: "groupId",
-    dataKey: "groupId",
-    header: "Grupo",
-    render: (user) => <span>{user.groupId}</span>,
-    sortable: true,
-  },
-  {
-    id: "role",
-    dataKey: "role",
-    header: "Perfil",
-    render: (user) => (
-      <div className="text-center">{getUserRoleName(user.role)}</div>
-    ),
-    sortable: true,
-  },
-  {
-    id: "id",
-    dataKey: "id",
-    header: "Ações",
-    render: (order) => (
-      <div className="flex justify-end">
-        <Button onClick={() => handleView(order)} variant="secondary" size="sm">
-          <SearchIcon className="size-4" />
+    title: "Ações",
+    dataIndex: "id",
+    key: "actions",
+    renderItem: (row: UserModel) => (
+      <div className="flex flex-wrap gap-x-1 items-center">
+        <Button
+          size="sm"
+          type="button"
+          onClick={() => {
+            fnEdit(row);
+          }}
+        >
+          <EditIcon className="size-4" />
         </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="secondary">
-              <MenuIcon className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem>Duplicar</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Alterar Senha</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          size="sm"
+          type="button"
+          variant="destructive"
+          onClick={() => {
+            fnDelete(row);
+          }}
+        >
+          <TrashIcon className="size-4" />
+        </Button>
+        <AppTooltip message="Permissões do Usuário">
+          <Button
+            size="sm"
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              fnPermissions(row);
+            }}
+          >
+            <Settings2Icon className="size-4" />
+          </Button>
+        </AppTooltip>
+
+        <AppTooltip message="Alterar a senha do Usuário">
+          <Button
+            size="sm"
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              fnChangePassword(row);
+            }}
+          >
+            <LockIcon className="size-4" />
+          </Button>
+        </AppTooltip>
       </div>
     ),
   },
 ];
-
-function handleView(user: UserModel) {
-  console.log(user);
-}

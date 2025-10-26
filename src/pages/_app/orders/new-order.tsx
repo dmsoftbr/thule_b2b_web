@@ -29,7 +29,7 @@ function NewOrderPage() {
       <h1 className="font-semibold text-lg px-2 bg-neutral-200">
         Novo Pedido de Venda
       </h1>
-      <OrderForm orderId={uuidv7()} action="NEW" />
+      <OrderForm orderId={uuidv7()} action="NEW" orderType="ORDER" />
     </div>
   );
 }

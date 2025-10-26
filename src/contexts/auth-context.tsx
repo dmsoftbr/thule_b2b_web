@@ -6,6 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import eventBus from "@/lib/event-bus";
 
 interface AuthContextType {
   isPending: boolean;
@@ -25,7 +26,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = (userData: SessionModel) => {
     setSession(userData);
-    console.log("vou definir no login", userData);
     localStorage.setItem("b2b@session", JSON.stringify(userData));
   };
 
@@ -35,12 +35,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    const localTokenJson = localStorage.getItem("b2b@session");
-    if (localTokenJson) {
-      const localSession: SessionModel = JSON.parse(localTokenJson);
-      if (localSession) setSession(localSession);
+    // Carrega a sessão inicial do localStorage
+    const localSessionJson = localStorage.getItem("b2b@session");
+    if (localSessionJson) {
+      try {
+        const localSession = JSON.parse(localSessionJson);
+        setSession(localSession);
+      } catch (error) {
+        console.error("Failed to parse session from localStorage", error);
+        localStorage.removeItem("b2b@session");
+      }
     }
     setIsPending(false);
+
+    // Listener para quando o token for atualizado pelo interceptor
+    const handleSessionRefreshed = (newSession: SessionModel) => {
+      setSession(newSession);
+    };
+
+    // Listener para quando o refresh token falhar
+    const handleLogout = () => {
+      setSession(null);
+    };
+
+    eventBus.on("sessionRefreshed", handleSessionRefreshed);
+    eventBus.on("logout", handleLogout);
+
+    return () => {
+      eventBus.remove("sessionRefreshed", handleSessionRefreshed);
+      eventBus.remove("logout", handleLogout);
+    };
   }, []);
 
   return (

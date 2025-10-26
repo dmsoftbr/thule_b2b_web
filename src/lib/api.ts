@@ -1,25 +1,15 @@
 import type { SessionModel } from "@/models/auth/session-model";
 import axios from "axios";
+import eventBus from "./event-bus";
 
 export const API_URL = (window as any).__APP_CONFIG__.API_URL;
 
-const getToken = (refreshToken: boolean) => {
+const getSession = (): SessionModel | null => {
   const localSession = localStorage.getItem("b2b@session");
   if (localSession) {
-    const session: SessionModel = JSON.parse(localSession);
-    if (session) {
-      if (refreshToken) return session.refreshToken;
-      return session.token;
-    }
+    return JSON.parse(localSession) as SessionModel;
   }
-};
-
-const getSession = () => {
-  const localSession = localStorage.getItem("b2b@session");
-  if (localSession) {
-    const session: SessionModel = JSON.parse(localSession);
-    return session;
-  }
+  return null;
 };
 
 const api = axios.create({
@@ -29,11 +19,12 @@ const api = axios.create({
 
 // Adiciona o token JWT (Bearer) em cada requisição, se existir
 api.interceptors.request.use((config) => {
-  const token = getToken(false);
+  const session = getSession();
+  config.headers = config.headers || {};
+  config.headers["waftoken"] = "B5557774-329D-46DD-A265-C3ABECA8B449";
 
-  if (token) {
-    config.headers = config.headers || {};
-    config.headers.Authorization = `Bearer ${token}`;
+  if (session?.token) {
+    config.headers.Authorization = `Bearer ${session.token}`;
   }
   return config;
 });
@@ -43,39 +34,42 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    // Evita loop infinito
+    const session = getSession();
+
     if (
-      error.response &&
-      error.response.status === 401 &&
-      !originalRequest._retry
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      session?.refreshToken
     ) {
       originalRequest._retry = true;
       try {
-        const refreshToken = getToken(true);
-        const token = getToken(false);
-        if (!refreshToken) throw error;
+        const { data } = await axios.post<{
+          token: string;
+          refreshToken: string;
+        }>(`${API_URL}/auth/refresh-token`, {
+          token: session.token,
+          refreshToken: session.refreshToken,
+        });
 
-        // Troque a URL abaixo para o endpoint correto do seu backend
-        const { data } = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh-token`,
-          { refreshToken, token }
-        );
-        const session = getSession();
-        if (session) {
-          console.log(data.token);
-          //session.token = data.token;
-          //localStorage.setItem("b2b@session", JSON.stringify(session));
-        }
+        // Atualiza a sessão com os novos tokens
+        const newSession: SessionModel = {
+          ...session,
+          token: data.token,
+          refreshToken: data.refreshToken,
+        };
+        localStorage.setItem("b2b@session", JSON.stringify(newSession));
 
-        // Atualiza o header e repete a requisição original
+        // Dispara o evento para que o AuthContext possa atualizar o estado
+        eventBus.dispatch("sessionRefreshed", newSession);
+
+        // Atualiza o header da requisição original e a repete
         originalRequest.headers.Authorization = `Bearer ${data.token}`;
         return api(originalRequest);
       } catch (refreshError) {
-        console.log("vou remover");
-        // Opcional: logout ou redirecionamento
-        //localStorage.removeItem("b2b@session");
-
-        //window.location.href = "/auth/login";
+        // Se o refresh token falhar, limpa a sessão e redireciona para o login
+        localStorage.removeItem("b2b@session");
+        eventBus.dispatch("logout");
+        window.location.href = "/b2b/auth/login"; // Use o basepath correto
         return Promise.reject(refreshError);
       }
     }
@@ -84,3 +78,12 @@ api.interceptors.response.use(
 );
 
 export { api };
+
+export function handleError(error: any) {
+  if (axios.isAxiosError(error)) {
+    if (error.response?.data.message) return error.response?.data.message;
+    if (error.response?.data) return error.response?.data;
+    return error.message;
+  }
+  return error.message;
+}

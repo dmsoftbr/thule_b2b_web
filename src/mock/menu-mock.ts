@@ -6,7 +6,7 @@ export const MENU_MOCK: MenuModel[] = [
     title: "Dashboard",
     url: "/dashboard",
     icon: "HomeIcon",
-    isActive: true,
+    isActive: false,
     children: [],
   },
   {
@@ -79,7 +79,7 @@ export const MENU_MOCK: MenuModel[] = [
   {
     id: "6",
     title: "Aprovações",
-    url: "",
+    url: "/approvals",
     icon: "CircleCheckIcon",
     children: [],
   },
@@ -92,7 +92,7 @@ export const MENU_MOCK: MenuModel[] = [
       {
         id: "71",
         title: "Metas de Representantes",
-        url: "/representatives-goals",
+        url: "/registrations/representative-goals",
         icon: "UsersIcon",
       },
       {
@@ -110,13 +110,19 @@ export const MENU_MOCK: MenuModel[] = [
       {
         id: "74",
         title: "Produtos",
-        url: "/products",
+        url: "/registrations/products",
         icon: "BoxIcon",
+      },
+      {
+        id: "76",
+        title: "Clientes",
+        url: "/registrations/customers",
+        icon: "UsersIcon",
       },
       {
         id: "75",
         title: "Grupos de Venda",
-        url: "/commercial/sales-group",
+        url: "/registrations/sales-group",
         icon: "ComponentIcon",
       },
     ],
@@ -130,19 +136,19 @@ export const MENU_MOCK: MenuModel[] = [
       {
         id: "71",
         title: "Notificações",
-        url: "/app-notificacoes",
+        url: "/mobile/notifications",
         icon: "BellIcon",
       },
       {
         id: "72",
         title: "Comunicados",
-        url: "/app-comunicados",
+        url: "/mobile/communications",
         icon: "MessageCircleIcon",
       },
       {
         id: "73",
         title: "Links Úteis",
-        url: "/app-links-uteis",
+        url: "/mobile/links",
         icon: "LinkIcon",
       },
     ],
@@ -174,7 +180,7 @@ export const MENU_MOCK: MenuModel[] = [
       {
         id: "93",
         title: "Sincronização",
-        url: "/system/synchronization",
+        url: "/system/sync-status",
         icon: "FolderSyncIcon",
       },
     ],

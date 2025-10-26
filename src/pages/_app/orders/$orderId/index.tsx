@@ -14,7 +14,7 @@ function OrderIdPage() {
       <h1 className="font-semibold text-lg px-2 bg-neutral-200">
         Pedido de Venda: {orderId}
       </h1>
-      <OrderForm orderId="" action="VIEW" />
+      <OrderForm orderId="" action="VIEW" orderType="ORDER" />
     </div>
   );
 }

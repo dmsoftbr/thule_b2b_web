@@ -1,3 +1,5 @@
+import type { UserGroupModel } from "./user-group.model";
+
 export type UserModel = {
   id: string;
   name: string;
@@ -8,4 +10,5 @@ export type UserModel = {
   representativeId: number;
   customerId: number;
   isActive: boolean;
+  group?: UserGroupModel;
 };

@@ -11,8 +11,10 @@ export class SalesGroupsService {
     return response.data;
   }
 
-  static async getById(id: number): Promise<SalesGroupModel> {
-    const response = await api.get<SalesGroupModel>(`/${this.basePath}/${id}`);
+  static async getById(id: string): Promise<SalesGroupModel> {
+    const response = await api.get<SalesGroupModel>(
+      `/${this.basePath}/id/${id}`
+    );
     return response.data;
   }
 
@@ -44,7 +46,7 @@ export class SalesGroupsService {
     return response.data;
   }
 
-  static async delete(id: number): Promise<void> {
+  static async delete(id: string): Promise<void> {
     await api.delete(`/${this.basePath}/${id}`);
   }
 }

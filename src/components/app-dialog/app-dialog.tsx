@@ -57,7 +57,7 @@ const AppDialogItem: React.FC<{ dialog: AppDialog }> = ({ dialog }) => {
         return {
           icon: AlertTriangle,
           iconColor: "text-yellow-600",
-          iconBg: "bg-yellow-100",
+          iconBg: "bg-yellow-100 fill-yellow-100",
         };
       case "error":
         return {

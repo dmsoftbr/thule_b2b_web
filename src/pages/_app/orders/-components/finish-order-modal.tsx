@@ -41,8 +41,12 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
     onClose();
     await showAppDialog({
       type: "success",
-      title: "Pedido Enviado com sucesso!",
-      message: "Gerado o Pedido P000000",
+      title: currentOrder.isBudget
+        ? "Simulação Enviada com Sucesso"
+        : "Pedido Enviado com sucesso!",
+      message: currentOrder.isBudget
+        ? "Gerada a Simulação S000000"
+        : "Gerado o Pedido P000000",
       buttons: [
         { text: "OK", variant: "primary", value: "ok", autoClose: true },
       ],
@@ -54,13 +58,17 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="min-w-[50%]">
         <DialogHeader>
-          <DialogTitle>Finalizar Pedido</DialogTitle>
+          <DialogTitle>
+            {currentOrder.isBudget ? "Finalizar Simulação" : "Finalizar Pedido"}
+          </DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-x-4">
           <div className="flex flex-col space-y-4 mt-2">
             <div className="form-group">
-              <Label>Tipo do Pedido</Label>
+              <Label>
+                {currentOrder.isBudget ? "Tipo da Simulação" : "Tipo do Pedido"}
+              </Label>
               <Select defaultValue="1">
                 <SelectTrigger className="w-full bg-white">
                   <SelectValue placeholder="Selecione uma opção" />
@@ -76,7 +84,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               </Select>
             </div>
             <div className="form-group">
-              <Label>Pedido do Cliente</Label>
+              <Label>Nº Pedido do Cliente</Label>
               <Input />
             </div>
             <div className="form-group">
@@ -197,7 +205,10 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
             <FreightTable />
             <div className="bg-neutral-100 px-4 rounded-md py-2 space-y-2">
               <div className="flex justify-between pr-2">
-                <span>Sub-Total do Pedido:</span>
+                <span>
+                  Sub-Total{" "}
+                  {currentOrder.isBudget ? "da Simulação" : "do Pedido"}:
+                </span>
                 <span>R$ 0,00</span>
               </div>
               <div className="flex justify-between text-sm">
@@ -225,7 +236,11 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               </div>
 
               <div className="flex justify-between font-medium pr-2 bg-neutral-500 rounded-md py-2 px-2 text-white">
-                <span>Total do Pedido</span>
+                <span>
+                  {currentOrder.isBudget
+                    ? "Total da Simulação"
+                    : "Total do Pedido"}{" "}
+                </span>
                 <span>R$ 0,00</span>
               </div>
             </div>
@@ -235,8 +250,18 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
           <Button variant="secondary" onClick={() => onClose()}>
             Voltar
           </Button>
-
-          <Button onClick={handleSendOrder}>Enviar Pedido</Button>
+          {currentOrder.isBudget && (
+            <Button
+              variant="green"
+              onClick={handleSendOrder}
+              className="text-emerald-900"
+            >
+              Gravar Simulação
+            </Button>
+          )}
+          <Button onClick={handleSendOrder}>
+            {currentOrder.isBudget ? "Gerar" : "Enviar"} Pedido
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

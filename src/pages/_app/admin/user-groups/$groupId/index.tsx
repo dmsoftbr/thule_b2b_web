@@ -1,37 +1,43 @@
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { AppPageHeader } from "@/components/layout/app-page-header";
+import { UserGroupsService } from "@/services/admin/user-groups.service";
+import { useQuery } from "@tanstack/react-query";
+import {
+  createFileRoute,
+  useNavigate,
+  useParams,
+} from "@tanstack/react-router";
 import { UserGroupForm } from "../-components/user-group-form";
-import { Suspense, useEffect, useState } from "react";
-import { type UserGroupModel } from "@/models/user-group.model";
-import { UserGroupsService } from "@/services/security/user-groups.service";
 
 export const Route = createFileRoute("/_app/admin/user-groups/$groupId/")({
-  component: UserGroupIdPage,
+  component: UserGroupIdPageComponent,
 });
 
-function UserGroupIdPage() {
-  const { groupId } = useParams({ from: "/_app/admin/user-groups/$groupId/" });
-  const [groupData, setGroupData] = useState<UserGroupModel>();
+function UserGroupIdPageComponent() {
+  const navigate = useNavigate();
+  const { groupId } = useParams({
+    from: "/_app/admin/user-groups/$groupId/",
+  });
 
-  useEffect(() => {
-    getData();
-  }, []);
+  const { data } = useQuery({
+    queryKey: ["user-group-id", groupId],
+    queryFn: async () => {
+      const data = await new UserGroupsService().getById(groupId);
+      return data;
+    },
+    enabled: !!groupId,
+  });
 
-  async function getData() {
-    const userGroupService = new UserGroupsService();
-    const data = await userGroupService.getById(groupId);
-    setGroupData(data);
-  }
-
-  if (!groupData) return null;
-
+  if (!data) return;
   return (
-    <Suspense fallback={<div>Aguarde</div>}>
-      <div className="m-2 bg-white border shadow rounded w-full relative">
-        <h1 className="font-semibold text-lg px-2 bg-neutral-200">
-          Manutenção de Grupo de Usuário
-        </h1>
-        <UserGroupForm action="EDIT" initialData={groupData} />
+    <AppPageHeader titleSlot={`Alterar Grupo de Usuário: ${groupId}`}>
+      <div className="p-2 max-w-lg ml-auto mr-auto">
+        <UserGroupForm
+          initialData={data}
+          isOpen={true}
+          mode={"EDIT"}
+          onClose={() => navigate({ to: "/admin/user-groups" })}
+        />
       </div>
-    </Suspense>
+    </AppPageHeader>
   );
 }

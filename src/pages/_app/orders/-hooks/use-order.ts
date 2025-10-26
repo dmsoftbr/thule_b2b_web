@@ -2,10 +2,10 @@
 import { create } from "zustand";
 import type { OrderModel } from "@/models/order-model";
 import type { RepresentativeModel } from "@/models/representative.model";
-import type { CustomerModel } from "@/models/customer.model";
-import type { PriceTableModel } from "@/models/price-table.model";
+import type { PriceTableModel } from "@/models/registrations/price-table.model";
 import { NEW_ORDER_EMPTY } from "../-utils/order-utils";
 import type { OrderItemModel } from "@/models/order-item-model";
+import type { CustomerModel } from "@/models/registrations/customer.model";
 
 type OrderState = {
   currentOrder: OrderModel;

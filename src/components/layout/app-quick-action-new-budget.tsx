@@ -9,7 +9,7 @@ export const QuickActionNewBudget = () => {
       variant="ghost"
       size="sm"
       className="text-neutral-400 hover:text-neutral-800 flex flex-col items-center gap-0 h-10"
-      onClick={() => navigate({ to: "/budgets/new-budget" })}
+      onClick={() => navigate({ to: "/budgets/new-budget", from: "/" })}
     >
       <BlocksIcon className="size-5" />
       <span className="sr-only">Nova Simulação</span>

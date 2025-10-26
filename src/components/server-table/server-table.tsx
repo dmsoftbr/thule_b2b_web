@@ -1,447 +1,823 @@
-import React, { useState, useEffect } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  ArrowDownNarrowWideIcon,
-  ArrowUpWideNarrowIcon,
-  LoaderCircle,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+import {
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronUpIcon,
+  RefreshCwIcon,
+  SearchIcon,
+  SortAscIcon,
+  SortDescIcon,
+} from "lucide-react";
+import { type PagedResponseModel } from "@/models/dto/responses/paged-response.model";
+import { AppTooltip } from "../layout/app-tooltip";
+import { api } from "@/lib/api";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { useDebounceValue } from "usehooks-ts";
+import React from "react";
 
-// Tipos
-export type ServerTableSortDirection = "asc" | "desc" | null;
-
-export interface ServerTableColumn<T> {
+export type ServerTableSearchField = {
   id: string;
-  header: string;
-  dataKey: string;
-  render: (row: T) => React.ReactNode;
-  sortable?: boolean;
-}
-
-export interface ServerTablePaginationOptions {
-  noPagination?: boolean;
-  pageSizeOptions: number[];
-  defaultPageSize: number;
-}
-
-export interface ServerTableSearchFields {
-  value: string;
   label: string;
-  default?: boolean;
+  customWhere?: string;
+};
+
+export type ServerTableColumn = {
+  title: string;
+  dataIndex: string;
+  key: string;
+  className?: string;
+  cellClassName?: string;
+  renderItem?: (row: any) => React.ReactNode;
+  sortable?: boolean;
+};
+
+export type ServerTableGroupConfig = {
+  field: string;
+  label?: string;
+  renderGroupHeader?: (
+    groupValue: any,
+    items: any[],
+    groupId?: any
+  ) => React.ReactNode;
+  defaultExpanded?: boolean;
+  orderBy?: string;
+  orderDirection?: "asc" | "desc";
+  idField?: string;
+  showEmptyGroups?: boolean;
+  allPossibleGroups?: any[];
+};
+
+interface ServerTableProps<T> {
+  items?: T[];
+  tableId?: string;
+  columns: ServerTableColumn[];
+  dataUrl: string;
+  dataMethod?: "GET" | "POST";
+  showAddButton?: boolean;
+  addButtonContent?: React.ReactNode;
+  defaultSortFieldDataIndex?: string;
+  defaultSearchField?: string;
+  defaultPageSize?: number;
+  searchFields: ServerTableSearchField[];
+  isPending?: boolean;
+  additionalInfo?: {};
+  tableClassNames?: string;
+  groupedBy?: string;
+  groupConfig?: ServerTableGroupConfig;
+  refreshDataToken?: string | number | Date | undefined;
+  additionalButtons?: React.ReactNode | React.ReactNode[];
+  onAdd?: () => void;
+  onAfterGetData?: (data: any) => void;
+  rowCss?: (row: T) => string;
 }
 
-export interface ServerTableDefaultSortField {
-  dataKey: string;
-  direction: "ASC" | "DESC";
-}
+type GroupedData<T> = {
+  [key: string]: T[];
+};
 
-export interface ServerTableProps<T> {
-  columns: ServerTableColumn<T>[];
-  data: T[];
-  totalItems: number;
-  loading?: boolean;
-  pagination?: ServerTablePaginationOptions;
-  fixedHeight?: string;
-  sortField?: ServerTableDefaultSortField;
-  responsive?: boolean;
-  enableRowSelection?: boolean;
-  tdClassName?: string;
-  thClassName?: string;
-  keyExtractor: (item: T) => string | number;
-  onSort?: (columnId: string, direction: ServerTableSortDirection) => void;
-  onPageChange?: (page: number) => void;
-  onPageSizeChange?: (pageSize: number) => void;
-  onRowsSelected?: (selectedRows: T[]) => void;
-  onRowDblClick?: (row: T) => void;
-}
+const DEBUG_GROUP_INFO = false;
 
-export function ServerTable<T>({
+export const ServerTable = <T,>({
+  items,
+  tableId,
   columns,
-  data,
-  totalItems,
-  loading = false,
-  pagination = { pageSizeOptions: [10, 25, 50, 100], defaultPageSize: 10 },
-  fixedHeight,
-  enableRowSelection = false,
-  responsive = true,
-  tdClassName,
-  thClassName,
-  keyExtractor,
-  onSort,
-  onPageChange,
-  onPageSizeChange,
-  onRowsSelected,
-  onRowDblClick,
-}: ServerTableProps<T>) {
-  // Estados
-  const [sortedColumn, setSortedColumn] = useState<string | null>(null);
-  const [sortDirection, setSortDirection] =
-    useState<ServerTableSortDirection>(null);
-  const [pageSize, setPageSize] = useState(pagination.defaultPageSize);
-  const [selectedRows, setSelectedRows] = useState<T[]>([]);
-  const [isMobile, setIsMobile] = useState(false);
-  const [currentRow, setCurrentRow] = useState<T | null>(null);
-  const [page, setPage] = useState(1);
+  dataUrl,
+  dataMethod = "POST",
+  showAddButton = true,
+  addButtonContent = "Adicionar",
+  defaultSortFieldDataIndex,
+  defaultSearchField,
+  defaultPageSize = 10,
+  searchFields,
+  isPending = false,
 
-  // Verifica a largura da tela
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+  additionalInfo = {},
+  tableClassNames = "",
+  refreshDataToken = "",
+  additionalButtons,
+  rowCss = (_) => "",
+  groupConfig,
+  onAdd,
+  onAfterGetData,
+}: ServerTableProps<T>) => {
+  const [searchText, setSearchText] = useDebounceValue("", 300);
+  const [pageSize, setPageSize] = useState(defaultPageSize);
+  const [searchField, setSearchField] = useState(defaultSearchField);
+  const [customWhere, setCustomWhere] = useState("");
+  const [sortField, setSortField] = useState(defaultSortFieldDataIndex);
+  const [sortAsc, setSortAsc] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState<PagedResponseModel<T>>();
+  const [selectedItem, setSelectedItem] = useState<T | undefined>(undefined);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
+  // Função para acessar propriedades aninhadas usando notação de ponto
+  const getNestedProperty = (obj: any, path: string) => {
+    if (DEBUG_GROUP_INFO)
+      console.log("getNestedProperty chamada:", { obj, path });
+    const result = path.split(".").reduce((current, key) => {
+      return current && current[key] !== undefined ? current[key] : null;
+    }, obj);
+    if (DEBUG_GROUP_INFO) console.log("getNestedProperty resultado:", result);
+    return result;
+  };
 
-    return () => {
-      window.removeEventListener("resize", checkScreenSize);
-    };
-  }, []);
+  // Função para agrupar dados
+  const groupData = (items: T[]): GroupedData<T> => {
+    // console.log("=== INICIO groupData ===", {
+    //   field: groupConfig?.field,
+    //   showEmptyGroups: groupConfig?.showEmptyGroups,
+    //   hasAllPossibleGroups: !!groupConfig?.allPossibleGroups,
+    //   allPossibleGroupsLength: groupConfig?.allPossibleGroups?.length,
+    //   itemsLength: items?.length,
+    //   allPossibleGroups: groupConfig?.allPossibleGroups,
+    // });
 
-  // Calcula o número total de páginas
-  const totalPages = Math.ceil(totalItems / pageSize);
+    if (!groupConfig?.field) {
+      //console.log("Saindo - sem field configurado");
+      return {};
+    }
 
-  // Manipuladores de eventos
-  const handleSort = (columnId: string) => {
-    let newDirection: ServerTableSortDirection = "asc";
+    // Criar grupos baseado nos itens existentes
+    const grouped = (items || []).reduce((acc, item) => {
+      const groupValue =
+        getNestedProperty(item, groupConfig.field) || "Sem Categoria";
+      const groupKey = String(groupValue);
 
-    if (sortedColumn === columnId) {
-      if (sortDirection === "asc") {
-        newDirection = "desc";
-      } else if (sortDirection === "desc") {
-        newDirection = null;
+      //console.log("Processando item:", { item, groupValue, groupKey });
+
+      if (!acc[groupKey]) {
+        acc[groupKey] = [];
       }
-    }
+      acc[groupKey].push(item);
 
-    setSortedColumn(columnId);
-    setSortDirection(newDirection);
+      return acc;
+    }, {} as GroupedData<T>);
 
-    if (onSort) {
-      onSort(columnId, newDirection);
-    }
-  };
+    //console.log("Grupos baseados nos itens existentes:", Object.keys(grouped));
 
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
+    // Se deve mostrar grupos vazios e há uma lista de todos os grupos possíveis
+    if (groupConfig.showEmptyGroups && groupConfig.allPossibleGroups) {
+      //console.log("Processando grupos vazios...");
 
-    if (onPageChange) {
-      onPageChange(newPage);
-    }
-  };
+      groupConfig.allPossibleGroups.forEach((possibleGroup) => {
+        const groupValue =
+          getNestedProperty(possibleGroup, groupConfig.field) ||
+          "Sem Categoria";
+        const groupKey = String(groupValue);
 
-  const handlePageSizeChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const newPageSize = parseInt(event.target.value, 10);
-    setPageSize(newPageSize);
-    setPage(1); // Reset to first page when changing page size
+        // console.log("Verificando grupo possível:", {
+        //   possibleGroup,
+        //   groupValue,
+        //   groupKey,
+        //   jaExiste: !!grouped[groupKey],
+        // });
 
-    if (onPageSizeChange) {
-      onPageSizeChange(newPageSize);
-    }
-  };
+        // Se o grupo não existe nos dados agrupados, criar um array vazio
+        if (!grouped[groupKey]) {
+          grouped[groupKey] = [];
+          //console.log("Adicionado grupo vazio:", groupKey);
+        }
+      });
 
-  const handleRowSelection = (row: T) => {
-    let newSelectedRows: T[];
-
-    if (
-      selectedRows.some(
-        (selectedRow) => keyExtractor(selectedRow) === keyExtractor(row)
-      )
-    ) {
-      newSelectedRows = selectedRows.filter(
-        (selectedRow) => keyExtractor(selectedRow) !== keyExtractor(row)
-      );
+      //console.log("Grupos finais após adicionar vazios:", Object.keys(grouped));
     } else {
-      newSelectedRows = [...selectedRows, row];
+      if (DEBUG_GROUP_INFO)
+        console.log("Não processando grupos vazios:", {
+          showEmptyGroups: groupConfig.showEmptyGroups,
+          hasAllPossibleGroups: !!groupConfig?.allPossibleGroups,
+        });
     }
 
-    setSelectedRows(newSelectedRows);
+    //console.log("=== FIM groupData ===", grouped);
+    return grouped;
+  };
 
-    if (onRowsSelected) {
-      onRowsSelected(newSelectedRows);
+  // Função para ordenar grupos
+  const getSortedGroupKeys = (groupedData: GroupedData<T>): string[] => {
+    const groupKeys = Object.keys(groupedData);
+
+    if (!groupConfig?.orderBy) {
+      return groupKeys.sort();
+    }
+
+    return groupKeys.sort((keyA, keyB) => {
+      const itemsA = groupedData[keyA];
+      const itemsB = groupedData[keyB];
+
+      let valueA, valueB;
+
+      if (itemsA.length > 0) {
+        valueA = getNestedProperty(itemsA[0], groupConfig.orderBy!);
+      } else if (groupConfig.allPossibleGroups) {
+        const possibleGroupA = groupConfig.allPossibleGroups.find((pg) => {
+          const pgValue =
+            getNestedProperty(pg, groupConfig.field) || "Sem Categoria";
+          return String(pgValue) === keyA;
+        });
+        valueA = possibleGroupA
+          ? getNestedProperty(possibleGroupA, groupConfig.orderBy!)
+          : null;
+      }
+
+      if (itemsB.length > 0) {
+        valueB = getNestedProperty(itemsB[0], groupConfig.orderBy!);
+      } else if (groupConfig.allPossibleGroups) {
+        const possibleGroupB = groupConfig.allPossibleGroups.find((pg) => {
+          const pgValue =
+            getNestedProperty(pg, groupConfig.field) || "Sem Categoria";
+          return String(pgValue) === keyB;
+        });
+        valueB = possibleGroupB
+          ? getNestedProperty(possibleGroupB, groupConfig.orderBy!)
+          : null;
+      }
+
+      if (valueA === null && valueB === null) return keyA.localeCompare(keyB);
+      if (valueA === null) return 1;
+      if (valueB === null) return -1;
+
+      if (typeof valueA === "number" && typeof valueB === "number") {
+        const result = valueA - valueB;
+        return groupConfig.orderDirection === "desc" ? -result : result;
+      }
+
+      const stringA = String(valueA).toLowerCase();
+      const stringB = String(valueB).toLowerCase();
+
+      if (stringA < stringB) {
+        return groupConfig.orderDirection === "desc" ? 1 : -1;
+      }
+      if (stringA > stringB) {
+        return groupConfig.orderDirection === "desc" ? -1 : 1;
+      }
+
+      return 0;
+    });
+  };
+
+  // Função para alternar expansão do grupo
+  const toggleGroupExpansion = (groupKey: string) => {
+    setExpandedGroups((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(groupKey)) {
+        newSet.delete(groupKey);
+      } else {
+        newSet.add(groupKey);
+      }
+      return newSet;
+    });
+  };
+
+  // Função para expandir/recolher todos os grupos
+  const toggleAllGroups = (expand: boolean) => {
+    if (expand && data?.result) {
+      const groupedData = groupData(data.result);
+      setExpandedGroups(new Set(Object.keys(groupedData)));
+    } else {
+      setExpandedGroups(new Set());
     }
   };
 
-  const toggleAllRows = () => {
-    const newSelectedRows =
-      selectedRows.length === data.length ? [] : [...data];
-    setSelectedRows(newSelectedRows);
+  // Inicializar grupos expandidos com base na configuração
+  useEffect(() => {
+    if (groupConfig?.defaultExpanded && data?.result) {
+      const groupedData = groupData(data.result);
+      setExpandedGroups(new Set(Object.keys(groupedData)));
+    }
+  }, [data, groupConfig]);
 
-    if (onRowsSelected) {
-      onRowsSelected(newSelectedRows);
+  const handleChangePage = (direction: "next" | "previous") => {
+    let newPage = currentPage;
+    if (direction == "next" && currentPage + 1 == totalPages) return;
+    if (direction == "previous" && currentPage == 0) return;
+
+    if (direction == "next") newPage++;
+
+    if (direction == "previous") newPage--;
+
+    setCurrentPage(newPage);
+  };
+
+  const handleGetData = async () => {
+    try {
+      setIsLoading(true);
+      if (!dataUrl) {
+        setData({
+          result: [],
+          totalRecords: 0,
+        });
+
+        if (items) {
+          setData({
+            result: items,
+            totalRecords: items.length,
+          });
+        }
+
+        onAfterGetData?.([]);
+        return;
+      }
+      if (dataMethod == "POST") {
+        const { data: serverData } = await api.post<PagedResponseModel<T>>(
+          dataUrl,
+          {
+            currentPage,
+            pageSize,
+            searchField,
+            searchText,
+            sortField,
+            sortAsc,
+            customWhere,
+            ...additionalInfo,
+          }
+        );
+        if (serverData.result == null) serverData.result = [];
+        setData(serverData);
+        onAfterGetData?.(serverData.result);
+        // set pages
+        if (pageSize > 0) {
+          setTotalPages(Math.ceil(serverData.totalRecords / pageSize));
+          if (serverData.totalRecords == 0) setTotalPages(1);
+        } else {
+          setTotalPages(1);
+        }
+      } else {
+        const { data: serverData } =
+          await api.get<PagedResponseModel<T>>(dataUrl);
+        if (serverData.result == null) serverData.result = [];
+        setData(serverData);
+        onAfterGetData?.(serverData.result);
+        // set pages
+        if (pageSize > 0) {
+          setTotalPages(Math.ceil(serverData.totalRecords / pageSize));
+          if (serverData.totalRecords == 0) setTotalPages(1);
+        } else {
+          setTotalPages(1);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Renderização condicional baseada no modo de visualização (desktop ou mobile)
-  return (
-    <div className="w-full overflow-hidden bg-white rounded-md shadow">
-      {/* Indicador de carregamento */}
-      {loading && (
-        <div className="flex justify-center items-center p-8">
-          <LoaderCircle className="animate-spin text-blue-600" />
-        </div>
-      )}
+  const handleFilter = () => {
+    setTimeout(() => {}, 300);
+    handleGetData();
+  };
 
-      {/* Tabela (para desktop) */}
-      {!isMobile || !responsive ? (
-        <div
-          className={`w-full overflow-x-auto ${
-            fixedHeight ? "overflow-y-auto" : ""
-          }`}
-          style={fixedHeight ? { height: fixedHeight } : {}}
-        >
-          <table className="min-w-full table-fixed">
-            <thead
-              className={`bg-gray-200 ${fixedHeight ? "sticky top-0" : ""}`}
-            >
-              <tr>
-                {enableRowSelection && (
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <input
-                      type="checkbox"
-                      checked={
-                        selectedRows.length === data.length && data.length > 0
-                      }
-                      onChange={toggleAllRows}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                  </th>
-                )}
+  useEffect(() => {
+    handleFilter();
+  }, [searchText]);
 
-                {columns.map((column, index) => (
-                  <th
-                    key={`${column.id}_${index}`}
-                    className={cn(
-                      "px-2 py-3 text-left text-xs font-semibold text-black uppercase tracking-wider border border-neutral-300 relative h-fit",
-                      column.sortable && "hover:bg-gray-300 cursor-pointer",
-                      thClassName
+  useEffect(() => {
+    handleGetData();
+  }, [currentPage, pageSize, sortAsc, sortField, searchField]);
+
+  useEffect(() => {
+    setIsLoading(isPending);
+  }, [isPending]);
+
+  useEffect(() => {
+    handleGetData();
+  }, [refreshDataToken]);
+
+  // Renderizar conteúdo da tabela (agrupado ou normal)
+  const renderTableContent = () => {
+    //console.log("renderTableContent chamada");
+
+    if (!data?.result || data.result.length === 0) {
+      if (groupConfig?.showEmptyGroups && groupConfig?.allPossibleGroups) {
+        if (DEBUG_GROUP_INFO)
+          console.log("Sem dados, mas tem grupos vazios para mostrar");
+        const emptyGroupedData = groupData([]);
+        const groupKeys = getSortedGroupKeys(emptyGroupedData);
+
+        return groupKeys.map((groupKey) => {
+          const groupItems = emptyGroupedData[groupKey];
+          const isExpanded = expandedGroups.has(groupKey);
+
+          return (
+            <React.Fragment key={`empty-group-${groupKey}`}>
+              <tr
+                className="bg-neutral-200 hover:bg-neutral-300 cursor-pointer border-b-2 border-neutral-400"
+                onClick={() => toggleGroupExpansion(groupKey)}
+              >
+                <td
+                  colSpan={columns.length}
+                  className="border px-2 py-3 font-semibold text-sm"
+                >
+                  <div className="flex items-center gap-2">
+                    {isExpanded ? (
+                      <ChevronDownIcon className="size-4 text-neutral-600" />
+                    ) : (
+                      <ChevronRightIcon className="size-4 text-neutral-600" />
                     )}
-                  >
-                    <div
-                      className="flex items-center gap-2 select-none"
-                      onClick={() => {
-                        if (!column.sortable) return;
-                        handleSort(column.id);
-                      }}
-                    >
-                      {column.header}
+                    <>
+                      {groupConfig.renderGroupHeader
+                        ? groupConfig.renderGroupHeader(
+                            groupKey,
+                            groupItems,
+                            groupConfig.idField && groupConfig.allPossibleGroups
+                              ? (() => {
+                                  const possibleGroup =
+                                    groupConfig.allPossibleGroups!.find(
+                                      (pg) => {
+                                        const pgValue =
+                                          getNestedProperty(
+                                            pg,
+                                            groupConfig.field
+                                          ) || "Sem Categoria";
+                                        return String(pgValue) === groupKey;
+                                      }
+                                    );
+                                  return possibleGroup
+                                    ? getNestedProperty(
+                                        possibleGroup,
+                                        groupConfig.idField!
+                                      )
+                                    : undefined;
+                                })()
+                              : undefined
+                          )
+                        : `${
+                            groupConfig.label || groupConfig.field
+                          }: ${groupKey} (${groupItems.length})`}
+                    </>
+                  </div>
+                </td>
+              </tr>
+            </React.Fragment>
+          );
+        });
+      }
 
-                      {column.sortable && (
-                        <div>
-                          {sortedColumn === column.id &&
-                            sortDirection === "asc" && (
-                              <ArrowDownNarrowWideIcon className="size-4" />
-                            )}
-                          {sortedColumn === column.id &&
-                            sortDirection === "desc" && (
-                              <ArrowUpWideNarrowIcon
-                                size={12}
-                                className="size-4"
-                              />
-                            )}
-                        </div>
-                      )}
-                    </div>
-                  </th>
+      return (
+        <tr>
+          <td className="text-center p-4 border" colSpan={columns.length}>
+            Sem dados para exibir
+          </td>
+        </tr>
+      );
+    }
+
+    if (!groupConfig?.field) {
+      // Renderização normal (sem agrupamento)
+      return data.result.map((row, rowIndex) => (
+        <tr
+          key={rowIndex}
+          className={cn(
+            "even:bg-neutral-100 hover:bg-neutral-50 cursor-pointer",
+            selectedItem == row ? "!bg-primary/30 " : "",
+            rowCss?.(row)
+          )}
+          onClick={(e) => {
+            setSelectedItem(row);
+            e.preventDefault();
+          }}
+        >
+          {columns.map((column, index) => (
+            <td
+              className={cn(
+                "border px-1.5 py-2 text-sm break-words break-all",
+                column.cellClassName
+              )}
+              key={index}
+            >
+              {column.renderItem
+                ? column.renderItem(row)
+                : (row as any)[column.dataIndex]}
+            </td>
+          ))}
+        </tr>
+      ));
+    }
+
+    // Renderização com agrupamento
+    const groupedData = groupData(data.result);
+    const groupKeys = getSortedGroupKeys(groupedData);
+
+    return groupKeys.map((groupKey) => {
+      const groupItems = groupedData[groupKey];
+      const isExpanded = expandedGroups.has(groupKey);
+
+      return (
+        <React.Fragment key={`group-${groupKey}`}>
+          {/* Linha do cabeçalho do grupo */}
+          <tr
+            className="bg-neutral-200 hover:bg-neutral-300 cursor-pointer border-b-2 border-neutral-400"
+            onClick={() => toggleGroupExpansion(groupKey)}
+          >
+            <td
+              colSpan={columns.length}
+              className="border px-2 py-3 font-semibold text-sm"
+            >
+              <div className="flex items-center gap-2">
+                {isExpanded ? (
+                  <ChevronDownIcon className="size-4 text-neutral-600" />
+                ) : (
+                  <ChevronRightIcon className="size-4 text-neutral-600" />
+                )}
+                <span className="w-full">
+                  {groupConfig.renderGroupHeader
+                    ? groupConfig.renderGroupHeader(
+                        groupKey,
+                        groupItems,
+                        groupItems.length > 0
+                          ? groupConfig.idField
+                            ? getNestedProperty(
+                                groupItems[0],
+                                groupConfig.idField
+                              )
+                            : undefined
+                          : groupConfig.allPossibleGroups && groupConfig.idField
+                            ? (() => {
+                                const possibleGroup =
+                                  groupConfig.allPossibleGroups!.find((pg) => {
+                                    const pgValue =
+                                      getNestedProperty(
+                                        pg,
+                                        groupConfig.field
+                                      ) || "Sem Categoria";
+                                    return String(pgValue) === groupKey;
+                                  });
+                                return possibleGroup
+                                  ? getNestedProperty(
+                                      possibleGroup,
+                                      groupConfig.idField!
+                                    )
+                                  : undefined;
+                              })()
+                            : undefined
+                      )
+                    : `${
+                        groupConfig.label || groupConfig.field
+                      }: ${groupKey} (${groupItems.length})`}
+                </span>
+              </div>
+            </td>
+          </tr>
+
+          {/* Linhas dos itens do grupo (se expandido) */}
+          {isExpanded &&
+            groupItems.map((row, rowIndex) => (
+              <tr
+                key={`${groupKey}-${rowIndex}`}
+                className={cn(
+                  "even:bg-neutral-50 odd:bg-white hover:bg-neutral-100 cursor-pointer",
+                  selectedItem == row ? "!bg-primary/30" : "",
+                  rowCss?.(row)
+                )}
+                onClick={(e) => {
+                  setSelectedItem(row);
+                  e.preventDefault();
+                }}
+              >
+                {columns.map((column, index) => (
+                  <td
+                    className={cn(
+                      "border px-1.5 py-2 text-sm break-words break-all",
+                      column.cellClassName,
+                      index === 0 && "pl-8" // Indentação para mostrar hierarquia
+                    )}
+                    key={index}
+                  >
+                    {column.renderItem
+                      ? column.renderItem(row)
+                      : (row as any)[column.dataIndex]}
+                  </td>
                 ))}
               </tr>
-            </thead>
+            ))}
+        </React.Fragment>
+      );
+    });
+  };
 
-            <tbody className="bg-white divide-y divide-gray-200">
-              {data.length > 0 ? (
-                data.map((row) => (
-                  <tr
-                    key={keyExtractor(row)}
-                    className={cn(
-                      "hover:bg-gray-100 even:bg-gray-50",
-                      currentRow === row ? "!bg-blue-200" : ""
-                    )}
-                    onClick={() => {
-                      setCurrentRow(row);
-                    }}
-                    onDoubleClick={(e) => {
-                      e.preventDefault();
-                      onRowDblClick?.(row);
-                    }}
-                  >
-                    {enableRowSelection && (
-                      <td className="px-6 py-2 whitespace-nowrap">
-                        <input
-                          type="checkbox"
-                          checked={selectedRows.some(
-                            (selectedRow) =>
-                              keyExtractor(selectedRow) === keyExtractor(row)
-                          )}
-                          onChange={() => handleRowSelection(row)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                      </td>
-                    )}
+  return (
+    <div className="w-full relative min-h-full">
+      <div className="flex flex-wrap md:flex-nowrap gap-y-1.5 items-center justify-between gap-x-2">
+        <AppTooltip message="Atualizar Lista">
+          <Button
+            size="sm"
+            className="h-9"
+            type="button"
+            onClick={handleGetData}
+          >
+            <RefreshCwIcon className="size-4" />
+          </Button>
+        </AppTooltip>
 
-                    {columns.map((column, index) => (
-                      <td
-                        key={`${column.dataKey}_${index}`}
-                        className={cn(
-                          "px-2 py-2 whitespace-nowrap border relative h-fit",
-                          tdClassName
-                        )}
-                      >
-                        {column.render(row)}
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={
-                      enableRowSelection ? columns.length + 1 : columns.length
-                    }
-                    className="px-6 py-4 text-center text-gray-500"
-                  >
-                    Nenhum resultado encontrado
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        // Visualização de cards para dispositivos móveis
-        <div className="divide-y divide-gray-200">
-          {data.length > 0 ? (
-            data.map((row) => (
-              <div key={keyExtractor(row)} className="p-4 hover:bg-gray-50">
-                {enableRowSelection && (
-                  <div className="mb-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedRows.some(
-                        (selectedRow) =>
-                          keyExtractor(selectedRow) === keyExtractor(row)
-                      )}
-                      onChange={() => handleRowSelection(row)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                  </div>
-                )}
-
-                {columns.map((column) => (
-                  <div key={column.dataKey} className="py-2">
-                    <div className="text-xs font-medium text-gray-500 uppercase">
-                      {column.header}
-                    </div>
-                    <div>{column.render(row)}</div>
-                  </div>
-                ))}
-              </div>
-            ))
-          ) : (
-            <div className="p-8 text-center text-gray-500">
-              Nenhum resultado encontrado
+        {/* Botões de controle de agrupamento */}
+        {groupConfig?.field &&
+          ((data?.result && data.result.length > 0) ||
+            groupConfig.allPossibleGroups) && (
+            <div className="flex gap-1">
+              <AppTooltip message="Expandir Todos">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-9 px-2"
+                  type="button"
+                  onClick={() => toggleAllGroups(true)}
+                >
+                  <ChevronDownIcon className="size-4" />
+                </Button>
+              </AppTooltip>
+              <AppTooltip message="Recolher Todos">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-9 px-2"
+                  type="button"
+                  onClick={() => toggleAllGroups(false)}
+                >
+                  <ChevronUpIcon className="size-4" />
+                </Button>
+              </AppTooltip>
             </div>
           )}
-        </div>
-      )}
 
-      {/* Paginação */}
-
-      {!pagination.noPagination && (
-        <div className="flex flex-col md:flex-row items-center justify-between p-4 border-t">
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">
-              Exibindo {Math.min((page - 1) * pageSize + 1, totalItems)} -{" "}
-              {Math.min(page * pageSize, totalItems)} de {totalItems}
-            </span>
-
-            <select
-              value={pageSize}
-              onChange={handlePageSizeChange}
-              className="px-2 py-1 text-sm border rounded-md"
-            >
-              {pagination.pageSizeOptions.map((size) => (
-                <option key={size} value={size}>
-                  {size} por página
-                </option>
+        <Select
+          onValueChange={(e) => {
+            setSearchField(e);
+            const _searchField = searchFields.find((f) => f.id == e);
+            setCustomWhere(_searchField?.customWhere ?? "");
+          }}
+          value={searchField}
+        >
+          <SelectTrigger className="flex-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {searchFields &&
+              searchFields.length > 0 &&
+              searchFields.map((item, index) => (
+                <SelectItem key={index} value={item.id}>
+                  {item.label}
+                </SelectItem>
               ))}
-            </select>
+          </SelectContent>
+        </Select>
+        <div className="relative flex items-center justify-center w-full">
+          <div className="absolute left-3 select-none text-neutral-600">
+            <SearchIcon className="size-3" />
           </div>
-          <div className="mb-4 md:mb-0 text-sm text-gray-600">
-            Página {page} de {totalPages || 1}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handlePageChange(1)}
-              disabled={page === 1}
-              className="p-2 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          <Input
+            placeholder="Pesquisar..."
+            defaultValue={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className={cn(searchText && "bg-yellow-50", "pl-8")}
+            type="search"
+          />
+        </div>
+        <div className="flex gap-x-2">
+          {additionalButtons}
+          {showAddButton && (
+            <Button
+              type="button"
+              onClick={() => {
+                onAdd?.();
+              }}
+              className="w-full md:w-fit"
             >
-              <ChevronsLeft size={16} />
-            </button>
+              {addButtonContent}
+            </Button>
+          )}
+        </div>
+      </div>
 
-            <button
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page === 1}
-              className="p-2 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft size={16} />
-            </button>
-
-            <div className="flex items-center gap-1">
-              {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                let pageNumber;
-
-                // Lógica para mostrar 5 números de página em torno da página atual
-                if (totalPages <= 5) {
-                  pageNumber = i + 1;
-                } else if (page <= 3) {
-                  pageNumber = i + 1;
-                } else if (page >= totalPages - 2) {
-                  pageNumber = totalPages - 4 + i;
-                } else {
-                  pageNumber = page - 2 + i;
-                }
-
-                return (
-                  <button
-                    key={i}
-                    onClick={() => handlePageChange(pageNumber)}
-                    className={`
-                    w-8 h-8 flex items-center justify-center rounded-md text-sm
-                    ${
-                      page === pageNumber
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                    }
-                  `}
-                  >
-                    {pageNumber}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page === totalPages}
-              className="p-2 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronRight size={16} />
-            </button>
-
-            <button
-              onClick={() => handlePageChange(totalPages)}
-              disabled={page === totalPages}
-              className="p-2 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronsRight size={16} />
-            </button>
+      {isLoading && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-neutral-800 opacity-30"></div>
+          <div className="p-8 w-52 h-20 flex items-center justify-center rounded-md bg-white z-50">
+            Aguarde...
           </div>
         </div>
       )}
+      <div className="rounded-t-md mt-2 overflow-hidden">
+        <table
+          id={tableId}
+          className={cn("w-full table-fixed", tableClassNames)}
+        >
+          <thead>
+            <tr>
+              {columns.map((column) => (
+                <th
+                  className={cn(
+                    "border border-neutral-300 text-sm h-8 text-left font-semibold bg-neutral-200",
+                    column.className
+                  )}
+                  key={column.key}
+                >
+                  {!column.sortable && (
+                    <span className="p-1">{column.title}</span>
+                  )}
+                  {column.sortable && (
+                    <div
+                      className={cn(
+                        "flex items-center justify-between p-1 h-full w-full cursor-pointer",
+                        column.dataIndex == sortField && "bg-neutral-300",
+                        column.sortable && "hover:bg-neutral-400/45"
+                      )}
+                    >
+                      <div
+                        className="w-full"
+                        role="button"
+                        onClick={() => {
+                          if (sortField == column.dataIndex) {
+                            setSortAsc(!sortAsc);
+                          } else {
+                            setSortField(column.dataIndex);
+                            setSortAsc(true);
+                          }
+                        }}
+                      >
+                        {column.title}
+                      </div>
+
+                      {sortField == column.dataIndex && (
+                        <span>
+                          {sortAsc && <SortAscIcon className="size-3" />}
+                          {!sortAsc && <SortDescIcon className="size-3" />}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>{renderTableContent()}</tbody>
+        </table>
+      </div>
+
+      <div className="mt-1 flex justify-between">
+        <div className="text-xs flex items-center gap-x-1">
+          Exibir:
+          <Select
+            onValueChange={(e) => setPageSize(parseInt(e))}
+            value={pageSize.toString()}
+          >
+            <SelectTrigger className="text-xs">
+              <SelectValue placeholder="" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem className="text-xs" value="0">
+                Todos
+              </SelectItem>
+              <SelectItem className="text-xs" value="10">
+                10
+              </SelectItem>
+              <SelectItem className="text-xs" value="25">
+                25
+              </SelectItem>
+              <SelectItem className="text-xs" value="50">
+                50
+              </SelectItem>
+              <SelectItem className="text-xs" value="100">
+                100
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="hidden md:block ml-1 text-xs">
+            Total de Registros: {data?.totalRecords}
+          </span>
+        </div>
+        <div className="flex items-center gap-x-2 justify-end text-xs">
+          Página: {currentPage + 1} / {totalPages == 0 ? 1 : totalPages}
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => handleChangePage("previous")}
+            disabled={(totalPages == 0 || totalPages == 1) && currentPage == 0}
+          >
+            <ChevronLeftIcon className="size-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => handleChangePage("next")}
+            disabled={(totalPages == 0 || totalPages == 1) && currentPage == 0}
+          >
+            <ChevronRightIcon className="size-4" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
-}
+};

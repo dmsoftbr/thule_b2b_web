@@ -23,12 +23,14 @@ import { createOrdersTableColumns } from "./orders-table-columns";
 import { RepresentativesService } from "@/services/representatives.service";
 import { useQuery } from "@tanstack/react-query";
 import { DatePicker } from "@/components/ui/date-picker";
-
-const data: any = [];
+import { api } from "@/lib/api";
+import { type PagedRequestModel } from "@/models/dto/requests/paged-request.model";
+import { type PagedResponseModel } from "@/models/dto/responses/paged-response.model";
 
 export const OrdersTable = () => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [data, setData] = useState<PagedResponseModel<OrderModel>>();
 
   const { data: representativesData } = useQuery({
     queryKey: ["representatives"],
@@ -54,14 +56,22 @@ export const OrdersTable = () => {
   };
 
   const handleView = (order: OrderModel) => {
-    console.log(order);
+    navigate({ to: `/orders/${order.id}` });
   };
 
   const columns = createOrdersTableColumns({ fnView: handleView });
 
   const getData = async () => {
-    console.log("buscar dados");
-    //TODO: IMPLEMENTAR A BUSCA DOS PEDIDOS DE VENDA
+    const params: PagedRequestModel = {
+      currentPage: 0,
+      pageSize: 10,
+      search: "",
+      searchField: "id",
+      sortDir: "asc",
+      sortField: "id",
+    };
+    const { data } = await api.post("/orders/list-paged", params);
+    setData(data);
   };
 
   useEffect(() => {
@@ -71,7 +81,12 @@ export const OrdersTable = () => {
   return (
     <div className="">
       <div className="flex items-center gap-x-1 mb-2">
-        <Button size="sm" variant="blue" className="h-9" onClick={() => {}}>
+        <Button
+          size="sm"
+          variant="blue"
+          className="h-9"
+          onClick={() => getData()}
+        >
           <RefreshCcwIcon className="size-4" />
         </Button>
         <Select defaultValue="pedido">
@@ -182,9 +197,10 @@ export const OrdersTable = () => {
       </Collapsible>
       <ServerTable
         columns={columns}
-        data={data}
+        sortField={{ dataKey: "id", direction: "DESC" }}
+        data={data?.result ?? []}
         pagination={{ defaultPageSize: 8, pageSizeOptions: [8, 16, 32] }}
-        totalItems={data.length}
+        totalItems={data?.totalRecords ?? 0}
         tdClassName="text-xs"
         onRowDblClick={(row) => handleView(row)}
         keyExtractor={function (item: OrderModel): string | number {

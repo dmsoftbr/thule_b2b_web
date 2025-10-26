@@ -1,60 +1,54 @@
 import type { ServerTableColumn } from "@/components/server-table/server-table";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import type { UserGroupModel } from "@/models/user-group.model";
-import { MenuIcon } from "lucide-react";
+import { EditIcon, TrashIcon } from "lucide-react";
 
 interface Props {
-  onEdit: (data: UserGroupModel) => void;
-  onDelete: (data: UserGroupModel) => void;
+  fnEdit: (data: UserGroupModel) => void;
+  fnDelete: (data: UserGroupModel) => void;
 }
 
-export const columns = ({
-  onEdit,
-  onDelete,
-}: Props): ServerTableColumn<UserGroupModel>[] => [
+export const columns = ({ fnEdit, fnDelete }: Props): ServerTableColumn[] => [
   {
-    id: "id",
-    dataKey: "id",
-    header: "Código",
-    render: (group) => (
-      <span className="font-semibold text-blue-600 ">{group.id}</span>
-    ),
+    title: "Código",
+    dataIndex: "id",
+    key: "id",
+    sortable: true,
+    renderItem: (item: UserGroupModel) => {
+      return <span className="text-blue-600 font-semibold">{item.id}</span>;
+    },
+  },
+  {
+    title: "Nome",
+    dataIndex: "name",
+    key: "name",
     sortable: true,
   },
   {
-    id: "name",
-    dataKey: "name",
-    header: "Nome",
-    render: (group) => <span>{group.name}</span>,
-    sortable: true,
-  },
-  {
-    id: "id",
-    dataKey: "id",
-    header: "Ações",
-    render: (group) => (
-      <div className="flex justify-end">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="secondary">
-              <MenuIcon className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => onEdit(group)}>
-              Alterar
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onDelete(group)}>
-              Excluir
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+    title: "Ações",
+    dataIndex: "id",
+    key: "actions",
+    renderItem: (row: UserGroupModel) => (
+      <div className="flex flex-wrap gap-x-1 items-center">
+        <Button
+          size="sm"
+          type="button"
+          onClick={() => {
+            fnEdit(row);
+          }}
+        >
+          <EditIcon className="size-4" />
+        </Button>
+        <Button
+          size="sm"
+          variant="destructive"
+          type="button"
+          onClick={() => {
+            fnDelete(row);
+          }}
+        >
+          <TrashIcon className="size-4" />
+        </Button>
       </div>
     ),
   },
