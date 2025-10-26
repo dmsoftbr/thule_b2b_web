@@ -15,42 +15,42 @@ interface Props {
 
 export const createCustomersTableColumns = ({
   fnDetails,
-}: Props): ServerTableColumn<CustomerModel>[] => [
+}: Props): ServerTableColumn[] => [
   {
-    id: "id",
-    dataKey: "id",
-    header: "Código",
-    render: (group) => (
+    key: "id",
+    dataIndex: "id",
+    title: "Código",
+    renderItem: (group) => (
       <span className="font-semibold text-blue-600 ">{group.id}</span>
     ),
     sortable: true,
   },
   {
-    id: "abbreviation",
-    dataKey: "abbreviation",
-    header: "Nome Abreviado",
-    render: (customer) => <span>{customer.abbreviation}</span>,
+    key: "abbreviation",
+    dataIndex: "abbreviation",
+    title: "Nome Abreviado",
+    renderItem: (customer) => <span>{customer.abbreviation}</span>,
     sortable: true,
   },
   {
-    id: "name",
-    dataKey: "name",
-    header: "Nome",
-    render: (customer) => <span>{customer.name}</span>,
+    key: "name",
+    dataIndex: "name",
+    title: "Nome",
+    renderItem: (customer) => <span>{customer.name}</span>,
     sortable: true,
   },
   {
-    id: "documentNumber",
-    dataKey: "documentNumber",
-    header: "CPF/CNPJ",
-    render: (customer) => <span>{customer.documentNumber}</span>,
+    key: "documentNumber",
+    dataIndex: "documentNumber",
+    title: "CPF/CNPJ",
+    renderItem: (customer: any) => <span>{customer.documentNumber}</span>,
     sortable: true,
   },
   {
-    id: "id",
-    dataKey: "id",
-    header: "Ações",
-    render: (customer) => (
+    key: "id",
+    dataIndex: "id",
+    title: "Ações",
+    renderItem: (customer: any) => (
       <div className="flex justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

@@ -20,29 +20,29 @@ export const createSalesGroupTableColumns = ({
   fnEdit,
   fnDelete,
   fnDetails,
-}: Props): ServerTableColumn<SalesGroupModel>[] => [
+}: Props): ServerTableColumn[] => [
   {
-    id: "id",
-    dataKey: "id",
-    header: "Código",
-    render: (group) => (
+    key: "id",
+    dataIndex: "id",
+    title: "Código",
+    renderItem: (group: any) => (
       <span className="font-semibold text-blue-600 ">{group.id}</span>
     ),
     sortable: true,
   },
   {
-    id: "name",
-    dataKey: "name",
-    header: "Nome",
-    render: (group) => <span>{group.name}</span>,
+    key: "name",
+    dataIndex: "name",
+    title: "Nome",
+    renderItem: (group: any) => <span>{group.name}</span>,
     sortable: true,
   },
 
   {
-    id: "id",
-    dataKey: "id",
-    header: "Ações",
-    render: (group) => (
+    key: "id",
+    dataIndex: "id",
+    title: "Ações",
+    renderItem: (group: any) => (
       <div className="flex justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

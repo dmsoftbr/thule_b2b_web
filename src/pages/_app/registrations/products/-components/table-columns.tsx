@@ -15,28 +15,28 @@ interface Props {
 
 export const createProductsTableColumns = ({
   fnDetails,
-}: Props): ServerTableColumn<ProductModel>[] => [
+}: Props): ServerTableColumn[] => [
   {
-    id: "id",
-    dataKey: "id",
-    header: "Código",
-    render: (product) => (
+    key: "id",
+    dataIndex: "id",
+    title: "Código",
+    renderItem: (product) => (
       <span className="font-semibold text-blue-600 ">{product.id}</span>
     ),
     sortable: true,
   },
   {
-    id: "description",
-    dataKey: "description",
-    header: "Descrição",
-    render: (product) => <span>{product.description}</span>,
+    key: "description",
+    dataIndex: "description",
+    title: "Descrição",
+    renderItem: (product: any) => <span>{product.description}</span>,
     sortable: true,
   },
   {
-    id: "id",
-    dataKey: "id",
-    header: "Ações",
-    render: (product) => (
+    key: "id",
+    dataIndex: "id",
+    title: "Ações",
+    renderItem: (product: any) => (
       <div className="flex justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

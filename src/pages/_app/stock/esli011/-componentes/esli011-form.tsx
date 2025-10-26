@@ -169,11 +169,25 @@ export const Esli011Form = () => {
           <TableFooter>
             <TableRow className="bg-neutral-200">
               <TableHead colSpan={3}>Total</TableHead>
-              <TableHead>{0}</TableHead>
-              <TableHead>{0}</TableHead>
-              <TableHead>{0}</TableHead>
-              <TableHead>{0}</TableHead>
-              <TableHead>{0}</TableHead>
+              <TableHead>
+                {esli11Data?.stock.reduce(
+                  (a, b) =>
+                    (a += b.qtAtu - b.qtAlocPed - b.qtAlocProd - b.qtAlocada),
+                  0
+                )}
+              </TableHead>
+              <TableHead>
+                {esli11Data?.stock.reduce((a, b) => (a += b.qtAtu), 0)}
+              </TableHead>
+              <TableHead>
+                {esli11Data?.stock.reduce((a, b) => (a += b.qtAlocada), 0)}
+              </TableHead>
+              <TableHead>
+                {esli11Data?.stock.reduce((a, b) => (a += b.qtAlocPed), 0)}
+              </TableHead>
+              <TableHead>
+                {esli11Data?.stock.reduce((a, b) => (a += b.qtAlocProd), 0)}
+              </TableHead>
             </TableRow>
           </TableFooter>
         </Table>

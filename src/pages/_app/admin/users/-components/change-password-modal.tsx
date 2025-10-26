@@ -8,13 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { UserModel } from "@/models/user.model";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -63,11 +57,21 @@ export const ChangePasswordModal = ({ user, isOpen, onClose }: Props) => {
         <div className="space-y-2">
           <div className="form-group">
             <Label>Nova Senha:</Label>
-            <Input type="password" maxLength={50} />
+            <Input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              maxLength={50}
+            />
           </div>
           <div className="form-group">
             <Label>Confirmação:</Label>
-            <Input type="password" maxLength={50} />
+            <Input
+              type="password"
+              maxLength={50}
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+            />
           </div>
         </div>
         <DialogFooter>

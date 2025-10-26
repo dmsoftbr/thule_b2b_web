@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { ServerTable } from "@/components/server-table/server-table";
 import { RefreshCcwIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+
 import {
   Select,
   SelectContent,
@@ -14,7 +13,6 @@ import {
 import { useDebounceCallback } from "usehooks-ts";
 
 import type { ProductModel } from "@/models/product.model";
-import { createProductsTableColumns } from "./table-columns";
 import { ProductsService } from "@/services/registrations/products.service";
 import { DetailsModal } from "./details-modal";
 
@@ -30,12 +28,14 @@ export const ProductsTable = () => {
   const [currentData, setCurrentData] = useState<ProductModel | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
-  const debouncedSearchText = useDebounceCallback(setSearchText, 500);
-  const navigate = useNavigate();
+  console.log(tableData, totalRecords);
 
-  const columns = createProductsTableColumns({
-    fnDetails: handleDetails,
-  });
+  const debouncedSearchText = useDebounceCallback(setSearchText, 500);
+  //const navigate = useNavigate();
+
+  // const columns = createProductsTableColumns({
+  //   fnDetails: handleDetails,
+  // });
 
   async function getData() {
     const response = await ProductsService.listPaged({
@@ -50,13 +50,18 @@ export const ProductsTable = () => {
     setTotalRecords(response.totalRecords);
   }
 
-  function handleDetails(data: ProductModel) {
-    setCurrentData(data);
-    //setShowDetails(true);
-    navigate({ to: `/registrations/products/${data.id}` });
-  }
+  // function handleDetails(data: ProductModel) {
+  //   setCurrentData(data);
+  //   //setShowDetails(true);
+  //   navigate({ to: `/registrations/products/${data.id}` });
+  // }
 
   useEffect(() => {
+    setSortFieldId("id");
+    setPageSize(8);
+    setSortDir("asc");
+    setCurrentPage(0);
+    setCurrentData(null);
     getData();
   }, [searchText, searchFieldId, sortDir, sortFieldId, pageSize, currentPage]);
 
@@ -92,23 +97,9 @@ export const ProductsTable = () => {
           />
         </div>
 
-        <ServerTable
+        {/* <ServerTable
           columns={columns}
-          data={tableData}
-          pagination={{ defaultPageSize: 8, pageSizeOptions: [8, 16, 32] }}
-          totalItems={totalRecords}
-          onPageChange={(newPage) => setCurrentPage(newPage)}
-          onPageSizeChange={(newSize) => setPageSize(newSize)}
-          onSort={(colId, dir) => {
-            setSortFieldId(colId);
-            setSortDir(dir == "asc" ? "asc" : "desc");
-          }}
-          tdClassName="text-xs"
-          onRowDblClick={(row) => handleDetails(row)}
-          keyExtractor={function (item: ProductModel): string | number {
-            return item.id;
-          }}
-        />
+        /> */}
       </div>
       {showDetails && currentData && (
         <DetailsModal

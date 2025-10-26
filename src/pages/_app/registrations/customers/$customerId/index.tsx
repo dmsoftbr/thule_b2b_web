@@ -1,5 +1,4 @@
 import { AppPageHeader } from "@/components/layout/app-page-header";
-import { ServerTable } from "@/components/server-table/server-table";
 import { Button } from "@/components/ui/button";
 import { createFileRoute, useParams, useRouter } from "@tanstack/react-router";
 import { PlusIcon } from "lucide-react";
@@ -58,14 +57,14 @@ function CustomerIdPageComponent() {
             Novo Contato
           </Button>
         </h2>
-        <ServerTable
+        {/* <ServerTable
           data={[]}
           columns={[]}
           keyExtractor={(contact: any) => {
             return contact.id;
           }}
           totalItems={0}
-        ></ServerTable>
+        ></ServerTable> */}
       </div>
       <DetailsModal isOpen={showModal} onClose={() => setShowModal(false)} />
       <div className="mb-4 px-2">

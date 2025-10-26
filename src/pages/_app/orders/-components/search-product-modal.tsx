@@ -13,36 +13,35 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+//import { Input } from "@/components/ui/input";
 import type { ProductModel } from "@/models/product.model";
-import { MinusIcon, PlusIcon, RefreshCwIcon, SearchIcon } from "lucide-react";
-import { startTransition, useEffect, useState } from "react";
+import { MinusIcon, PlusIcon, SearchIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useOrder } from "../-hooks/use-order";
-import { api } from "@/lib/api";
 import { ProductImage } from "@/components/app/product-image";
 import { formatNumber } from "@/lib/number-utils";
 import { v7 as uuidv7 } from "uuid";
 
 export const SearchProductModal = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [data, setData] = useState<ProductModel[]>([]);
+  //const [data, setData] = useState<ProductModel[]>([]);
   const { currentOrder, setCurrentOrder } = useOrder();
   useEffect(() => {
-    if (isOpen) onSearch("");
+    //if (isOpen) onSearch("");
   }, [isOpen]);
 
-  async function onSearch(searchText: string) {
-    startTransition(async () => {
-      const { data } = await api.post("/registrations/products/search", {
-        customerId: currentOrder.customerId,
-        priceTableId: currentOrder.priceTableId,
-        search: searchText,
-        pageSize: 7,
-      });
+  // async function onSearch(searchText: string) {
+  //   startTransition(async () => {
+  //     const { data } = await api.post("/registrations/products/search", {
+  //       customerId: currentOrder.customerId,
+  //       priceTableId: currentOrder.priceTableId,
+  //       search: searchText,
+  //       pageSize: 7,
+  //     });
 
-      setData(data);
-    });
-  }
+  //     //setData(data);
+  //   });
+  // }
 
   function handleAddItemToOrder(product: ProductModel, quantity: number) {
     const newOrder = { ...currentOrder };
@@ -69,12 +68,12 @@ export const SearchProductModal = () => {
     setCurrentOrder(newOrder);
   }
 
-  const columns: ServerTableColumn<ProductModel>[] = [
+  const columns: ServerTableColumn[] = [
     {
-      id: "photo",
-      dataKey: "id",
-      header: "Produto",
-      render: (product) => (
+      key: "photo",
+      dataIndex: "id",
+      title: "Produto",
+      renderItem: (product) => (
         <div className="size-14">
           <ProductImage
             productId={product.id}
@@ -87,19 +86,19 @@ export const SearchProductModal = () => {
       sortable: true,
     },
     {
-      id: "id",
-      dataKey: "id",
-      header: "Código",
-      render: (product) => (
+      key: "id",
+      dataIndex: "id",
+      title: "Código",
+      renderItem: (product) => (
         <span className="font-semibold text-blue-600 ">{product.id}</span>
       ),
       sortable: true,
     },
     {
-      id: "referenceCode",
-      dataKey: "referenceCode",
-      header: "Código Curto",
-      render: (product) => (
+      key: "referenceCode",
+      dataIndex: "referenceCode",
+      title: "Código Curto",
+      renderItem: (product) => (
         <span className="font-semibold text-blue-600 text-sm">
           {product.referenceCode}
         </span>
@@ -107,28 +106,28 @@ export const SearchProductModal = () => {
       sortable: true,
     },
     {
-      id: "description",
-      dataKey: "description",
-      header: "Descrição",
-      render: (product) => (
+      key: "description",
+      dataIndex: "description",
+      title: "Descrição",
+      renderItem: (product) => (
         <span className="text-sm">{product.description}</span>
       ),
       sortable: true,
     },
     {
-      id: "familyName",
-      dataKey: "family.name",
-      header: "Família",
-      render: (product: ProductModel) => (
+      key: "familyName",
+      dataIndex: "family.name",
+      title: "Família",
+      renderItem: (product: ProductModel) => (
         <span className="text-sm">{product.productFamily?.name}</span>
       ),
       sortable: true,
     },
     {
-      id: "PreçoSug",
-      dataKey: "suggestUnitPrice",
-      header: "Preço Sugerido",
-      render: (item: ProductModel) => (
+      key: "PreçoSug",
+      dataIndex: "suggestUnitPrice",
+      title: "Preço Sugerido",
+      renderItem: (item: ProductModel) => (
         <div className="font-semibold text-blue-600 w-full text-right">
           {formatNumber(item.suggestUnitPrice, 2)}
         </div>
@@ -136,10 +135,10 @@ export const SearchProductModal = () => {
       sortable: true,
     },
     {
-      id: "PrecoTabela",
-      dataKey: "unitPriceInTable",
-      header: "Preço Tabela",
-      render: (item: ProductModel) => (
+      key: "PrecoTabela",
+      dataIndex: "unitPriceInTable",
+      title: "Preço Tabela",
+      renderItem: (item: ProductModel) => (
         <div className="font-semibold w-full text-right text-blue-600 ">
           {formatNumber(item.unitPriceInTable, 2)}
         </div>
@@ -147,10 +146,10 @@ export const SearchProductModal = () => {
       sortable: true,
     },
     {
-      id: "qty",
-      dataKey: "id",
-      header: "Quantidade",
-      render: (product) => (
+      key: "qty",
+      dataIndex: "id",
+      title: "Quantidade",
+      renderItem: (product) => (
         <FormInputQty
           min={0}
           max={999999}
@@ -163,10 +162,10 @@ export const SearchProductModal = () => {
       sortable: false,
     },
     {
-      id: "actions",
-      dataKey: "id",
-      header: "Ações",
-      render: (product) => (
+      key: "actions",
+      dataIndex: "id",
+      title: "Ações",
+      renderItem: (product) => (
         <div>
           <Button
             onClick={() => {
@@ -201,22 +200,25 @@ export const SearchProductModal = () => {
         </DialogHeader>
 
         <div className="flex flex-col w-full">
-          <div className="flex mb-2 items-center gap-x-2">
+          {/* <div className="flex mb-2 items-center gap-x-2">
             <Button>
               <RefreshCwIcon />
             </Button>
             <Input
-              onChange={(e) => onSearch(e.target.value)}
+              onChange={() => {}}
               placeholder="Digite parte do código longo, código curto ou descrição do produto"
             />
-          </div>
+          </div> */}
           <ServerTable<ProductModel>
             columns={columns}
-            data={data}
-            totalItems={Math.ceil(data.length / 7)}
-            keyExtractor={function (item: ProductModel): string | number {
-              return item.id;
-            }}
+            dataUrl="/registrations/products/search"
+            searchFields={[
+              { id: "id", label: "Código" },
+              { id: "description", label: "Descrição" },
+              { id: "referenceCode", label: "Código Curto" },
+            ]}
+            defaultPageSize={8}
+            defaultSearchField="id"
           />
         </div>
         <DialogFooter>

@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { ServerTable } from "@/components/server-table/server-table";
 import { PlusIcon, RefreshCcwIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
@@ -12,10 +11,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDebounceCallback } from "usehooks-ts";
-import { createSalesGroupTableColumns } from "./table-columns";
 import type { SalesGroupModel } from "@/models/registrations/sales-group.model";
 import { SalesGroupsService } from "@/services/registrations/sales-group.service";
-import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
+
 import { DetailsModal } from "./details-modal";
 
 export const SalesGroupTable = () => {
@@ -30,7 +28,7 @@ export const SalesGroupTable = () => {
   const [currentData, setCurrentData] = useState<SalesGroupModel | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
-  const { showAppDialog } = useAppDialog();
+  //const { showAppDialog } = useAppDialog();
 
   const debouncedSearchText = useDebounceCallback(setSearchText, 500);
   const navigate = useNavigate();
@@ -39,35 +37,35 @@ export const SalesGroupTable = () => {
     navigate({ to: "/registrations/sales-group/new-group" });
   };
 
-  const handleEdit = (data: SalesGroupModel) => {
-    if (!data) return;
-    navigate({ to: `/registrations/sales-group/${data.id}` });
-  };
+  // const handleEdit = (data: SalesGroupModel) => {
+  //   if (!data) return;
+  //   navigate({ to: `/registrations/sales-group/${data.id}` });
+  // };
 
-  const handleDelete = async (data: SalesGroupModel) => {
-    if (!data) return;
-    const continueDelete = await showAppDialog({
-      type: "confirm",
-      title: "Excluir este Grupo?",
-      message:
-        "Ao excluir o grupo, os dados dos produtos filtrados também serão excluídos.",
-      buttons: [
-        { text: "Excluir", variant: "danger", value: "ok", autoClose: true },
-        { text: "Cancelar", variant: "secondary", value: "", autoClose: true },
-      ],
-    });
+  // const handleDelete = async (data: SalesGroupModel) => {
+  //   if (!data) return;
+  //   const continueDelete = await showAppDialog({
+  //     type: "confirm",
+  //     title: "Excluir este Grupo?",
+  //     message:
+  //       "Ao excluir o grupo, os dados dos produtos filtrados também serão excluídos.",
+  //     buttons: [
+  //       { text: "Excluir", variant: "danger", value: "ok", autoClose: true },
+  //       { text: "Cancelar", variant: "secondary", value: "", autoClose: true },
+  //     ],
+  //   });
 
-    if (continueDelete == "ok") {
-      await SalesGroupsService.delete(data.id);
-      await getData();
-    }
-  };
+  //   if (continueDelete == "ok") {
+  //     await SalesGroupsService.delete(data.id);
+  //     await getData();
+  //   }
+  // };
 
-  const columns = createSalesGroupTableColumns({
-    fnEdit: handleEdit,
-    fnDelete: handleDelete,
-    fnDetails: handleDetails,
-  });
+  // const columns = createSalesGroupTableColumns({
+  //   fnEdit: handleEdit,
+  //   fnDelete: handleDelete,
+  //   fnDetails: handleDetails,
+  // });
 
   async function getData() {
     const response = await SalesGroupsService.listPaged({
@@ -82,12 +80,21 @@ export const SalesGroupTable = () => {
     setTotalRecords(response.totalRecords);
   }
 
-  function handleDetails(data: SalesGroupModel) {
-    setCurrentData(data);
-    setShowDetails(true);
-  }
+  // function handleDetails(data: SalesGroupModel) {
+  //   setCurrentData(data);
+  //   setShowDetails(true);
+  // }
 
   useEffect(() => {
+    setTotalRecords(0);
+    console.log(totalRecords);
+    setTableData([]);
+    setSortFieldId("id");
+    setSortDir("asc");
+    setCurrentPage(0);
+    setPageSize(8);
+    setCurrentData(null);
+    console.log(tableData);
     getData();
   }, [searchText, searchFieldId, sortDir, sortFieldId, pageSize, currentPage]);
 
@@ -131,7 +138,7 @@ export const SalesGroupTable = () => {
           </Button>
         </div>
 
-        <ServerTable
+        {/* <ServerTable
           columns={columns}
           data={tableData}
           pagination={{ defaultPageSize: 8, pageSizeOptions: [8, 16, 32] }}
@@ -147,7 +154,7 @@ export const SalesGroupTable = () => {
           keyExtractor={function (item: SalesGroupModel): string | number {
             return item.id;
           }}
-        />
+        /> */}
       </div>
       {showDetails && currentData && (
         <DetailsModal

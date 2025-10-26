@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDebounceCallback } from "usehooks-ts";
-import { RepresentativesService } from "@/services/representatives.service";
+import { RepresentativesService } from "@/services/registrations/representatives.service";
 import { useQuery } from "@tanstack/react-query";
 import { DatePicker } from "@/components/ui/date-picker";
 import { api } from "@/lib/api";
@@ -31,7 +31,7 @@ export const BudgetsTable = () => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [data, setData] = useState<PagedResponseModel<OrderModel>>();
-
+  console.log(data);
   const { data: representativesData } = useQuery({
     queryKey: ["representatives"],
     queryFn: () => new RepresentativesService().getAll(),
@@ -196,15 +196,8 @@ export const BudgetsTable = () => {
       </Collapsible>
       <ServerTable
         columns={columns}
-        sortField={{ dataKey: "id", direction: "DESC" }}
-        data={data?.result ?? []}
-        pagination={{ defaultPageSize: 8, pageSizeOptions: [8, 16, 32] }}
-        totalItems={data?.totalRecords ?? 0}
-        tdClassName="text-xs"
-        onRowDblClick={(row) => handleView(row)}
-        keyExtractor={function (item: OrderModel): string | number {
-          return item.id;
-        }}
+        dataUrl="/budgets/list-paged"
+        searchFields={[{ id: "id", label: "Pedido" }]}
       />
     </div>
   );

@@ -193,10 +193,12 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
 
   function handleSelectAll() {
     setSelectedItems(items);
+    onSelectOption?.(items);
   }
 
   function handleClearSelection() {
     setSelectedItems([]);
+    onSelectOption?.([]);
   }
 
   return (

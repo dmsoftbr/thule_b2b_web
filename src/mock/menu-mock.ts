@@ -95,12 +95,12 @@ export const MENU_MOCK: MenuModel[] = [
         url: "/registrations/representative-goals",
         icon: "UsersIcon",
       },
-      {
-        id: "72",
-        title: "Avisos",
-        url: "/avisos",
-        icon: "BellIcon",
-      },
+      // {
+      //   id: "72",
+      //   title: "Avisos",
+      //   url: "/avisos",
+      //   icon: "BellIcon",
+      // },
       {
         id: "73",
         title: "Alçadas de Aprovação",

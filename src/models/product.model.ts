@@ -1,5 +1,5 @@
 import type { ProductFamilyModel } from "./product-family.model";
-import type { ProductGroupModel } from "./product-group.model";
+import type { ProductGroupModel } from "./registrations/product-group.model";
 
 export type ProductModel = {
   id: string;

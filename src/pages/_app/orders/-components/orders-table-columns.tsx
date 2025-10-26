@@ -27,60 +27,60 @@ interface Props {
 
 export const createOrdersTableColumns = ({
   fnView,
-}: Props): ServerTableColumn<OrderModel>[] => [
+}: Props): ServerTableColumn[] => [
   {
-    id: "id",
-    dataKey: "id",
-    header: "Pedido",
-    render: (order) => (
+    key: "id",
+    dataIndex: "id",
+    title: "Pedido",
+    renderItem: (order) => (
       <span className="font-semibold text-blue-600 ">{order.id}</span>
     ),
     sortable: true,
   },
   {
-    id: "customerId",
-    dataKey: "customerId",
-    header: "Cliente",
-    render: (order) => <span>{order.customerId}</span>,
+    key: "customerId",
+    dataIndex: "customerId",
+    title: "Cliente",
+    renderItem: (order) => <span>{order.customerId}</span>,
     sortable: true,
   },
   {
-    id: "orderRepId",
-    dataKey: "orderRepId",
-    header: "Ped. Cliente",
-    render: (order) => <span>{order.orderRepId}</span>,
+    key: "orderRepId",
+    dataIndex: "orderRepId",
+    title: "Ped. Cliente",
+    renderItem: (order) => <span>{order.orderRepId}</span>,
     sortable: true,
   },
   {
-    id: "repName",
-    dataKey: "repName",
-    header: "Representante",
-    render: (order) => <span>{order.representativeId}</span>,
+    key: "repName",
+    dataIndex: "repName",
+    title: "Representante",
+    renderItem: (order) => <span>{order.representativeId}</span>,
     sortable: true,
   },
   {
-    id: "createdAt",
-    dataKey: "createdAt",
-    header: "Dt Implantação",
-    render: (order) => (
+    key: "createdAt",
+    dataIndex: "createdAt",
+    title: "Dt Implantação",
+    renderItem: (order) => (
       <div className="text-center">{formatDate(order.createdAt)}</div>
     ),
     sortable: true,
   },
   {
-    id: "totalOrderValue",
-    dataKey: "totalOrderValue",
-    header: "Total do Pedido",
-    render: (order) => (
+    key: "totalOrderValue",
+    dataIndex: "totalOrderValue",
+    title: "Total do Pedido",
+    renderItem: (order) => (
       <div className="text-right">{formatNumber(order.totalOrderValue, 2)}</div>
     ),
     sortable: true,
   },
   {
-    id: "statusId",
-    dataKey: "statusId",
-    header: "Situação",
-    render: (order) => (
+    key: "statusId",
+    dataIndex: "statusId",
+    title: "Situação",
+    renderItem: (order) => (
       <div className="flex items-center justify-center">
         <span
           className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -99,10 +99,10 @@ export const createOrdersTableColumns = ({
     sortable: true,
   },
   {
-    id: "id",
-    dataKey: "id",
-    header: "Ações",
-    render: (order) => (
+    key: "id",
+    dataIndex: "id",
+    title: "Ações",
+    renderItem: (order) => (
       <div className="flex justify-end">
         <Button onClick={() => fnView(order)} variant="secondary" size="sm">
           <SearchIcon className="size-4" />

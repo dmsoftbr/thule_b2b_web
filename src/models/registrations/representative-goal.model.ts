@@ -5,6 +5,8 @@ export type RepresentativeGoalModel = {
   month: number;
   customerGroupId: number;
   productCommercialFamilyId: string;
-  quantity: number;
-  value: number;
+  goalQuantity: number;
+  goalValue: number;
+  profitabilityQuantity: number;
+  profitabilityValue: number;
 };

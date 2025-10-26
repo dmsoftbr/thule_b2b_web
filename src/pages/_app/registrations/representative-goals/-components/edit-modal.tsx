@@ -6,41 +6,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Dropzone,
-  DropzoneContent,
-  DropzoneEmptyState,
-} from "@/components/ui/shadcn-io/dropzone";
 import { api, handleError } from "@/lib/api";
+import type { RepresentativeGoalModel } from "@/models/registrations/representative-goal.model";
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 interface Props {
+  initialData: RepresentativeGoalModel;
   isOpen: boolean;
   onClose: (refresh: boolean) => void;
 }
-export const UploadModal = ({ isOpen, onClose }: Props) => {
+export const EditModal = ({ initialData, isOpen, onClose }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [files, setFiles] = useState<File[] | undefined>();
-  const handleDrop = (files: File[]) => {
-    console.log(files);
-    setFiles(files);
-  };
 
-  const handleUpload = async () => {
-    if (!files?.[0]) {
-      return;
-    }
+  const handleSave = async () => {
     setIsLoading(true);
     try {
-      const formData = new FormData();
-      formData.append("file", files[0]);
-
-      await api.post(
-        "/registrations/representative-goals/import-profitability",
-        formData
-      );
+      await api.patch("/registrations/representative-goals", initialData);
       onClose(true);
     } catch (error) {
       console.error(error);
@@ -66,37 +49,19 @@ export const UploadModal = ({ isOpen, onClose }: Props) => {
         }}
       >
         <DialogHeader>
-          <DialogTitle>Upload de Metas</DialogTitle>
+          <DialogTitle>Alteração de Metas</DialogTitle>
           <DialogDescription>
-            Utilize o Relatório Profitability do TOTVS (em .csv) para realizar a
-            importação dos dados das metas.
+            Utilize esta tela para realizar ajustes pontuais nas metas dos
+            representantes.
           </DialogDescription>
         </DialogHeader>
-        <div>
-          <Dropzone
-            disabled={isLoading}
-            className=""
-            maxSize={1024 * 1024 * 100}
-            minSize={1024}
-            onDrop={handleDrop}
-            onError={console.error}
-            src={files}
-          >
-            <DropzoneEmptyState />
-            <DropzoneContent />
-          </Dropzone>
-        </div>
+        <div></div>
         <div className="flex justify-between w-full flex-1">
-          {/* <Button className="self-start" asChild disabled={isLoading}>
-            <a href="/modelo_metas_representante.xlsx" download>
-              Baixar Modelo
-            </a>
-          </Button> */}
           <div></div>
           <div className="flex gap-x-2">
             <Button
               variant="blue"
-              onClick={() => handleUpload()}
+              onClick={() => handleSave()}
               disabled={isLoading}
             >
               {isLoading && (
@@ -105,7 +70,7 @@ export const UploadModal = ({ isOpen, onClose }: Props) => {
                   Aguarde...
                 </div>
               )}
-              {!isLoading && <span>Upload</span>}
+              {!isLoading && <span>Gravar</span>}
             </Button>
             <Button
               variant="secondary"

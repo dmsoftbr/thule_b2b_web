@@ -20,17 +20,14 @@ import {
 } from "@/components/ui/select";
 import { useDebounceCallback } from "usehooks-ts";
 import { createOrdersTableColumns } from "./orders-table-columns";
-import { RepresentativesService } from "@/services/representatives.service";
+import { RepresentativesService } from "@/services/registrations/representatives.service";
 import { useQuery } from "@tanstack/react-query";
 import { DatePicker } from "@/components/ui/date-picker";
-import { api } from "@/lib/api";
-import { type PagedRequestModel } from "@/models/dto/requests/paged-request.model";
-import { type PagedResponseModel } from "@/models/dto/responses/paged-response.model";
 
 export const OrdersTable = () => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [data, setData] = useState<PagedResponseModel<OrderModel>>();
+  //const [data, setData] = useState<PagedResponseModel<OrderModel>>();
 
   const { data: representativesData } = useQuery({
     queryKey: ["representatives"],
@@ -62,16 +59,16 @@ export const OrdersTable = () => {
   const columns = createOrdersTableColumns({ fnView: handleView });
 
   const getData = async () => {
-    const params: PagedRequestModel = {
-      currentPage: 0,
-      pageSize: 10,
-      search: "",
-      searchField: "id",
-      sortDir: "asc",
-      sortField: "id",
-    };
-    const { data } = await api.post("/orders/list-paged", params);
-    setData(data);
+    // const params: PagedRequestModel = {
+    //   currentPage: 0,
+    //   pageSize: 10,
+    //   search: "",
+    //   searchField: "id",
+    //   sortDir: "asc",
+    //   sortField: "id",
+    // };
+    //const { data } = await api.post("/orders/list-paged", params);
+    //setData(data);
   };
 
   useEffect(() => {
@@ -197,15 +194,8 @@ export const OrdersTable = () => {
       </Collapsible>
       <ServerTable
         columns={columns}
-        sortField={{ dataKey: "id", direction: "DESC" }}
-        data={data?.result ?? []}
-        pagination={{ defaultPageSize: 8, pageSizeOptions: [8, 16, 32] }}
-        totalItems={data?.totalRecords ?? 0}
-        tdClassName="text-xs"
-        onRowDblClick={(row) => handleView(row)}
-        keyExtractor={function (item: OrderModel): string | number {
-          return item.id;
-        }}
+        dataUrl="/orders/list-paged"
+        searchFields={[{ id: "id", label: "Pedido" }]}
       />
     </div>
   );

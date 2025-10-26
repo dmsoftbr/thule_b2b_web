@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { ServerTable } from "@/components/server-table/server-table";
 import { RefreshCcwIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+
 import {
   Select,
   SelectContent,
@@ -14,7 +13,6 @@ import {
 import { useDebounceCallback } from "usehooks-ts";
 import type { CustomerModel } from "@/models/registrations/customer.model";
 import { DetailsModal } from "./details-modal";
-import { createCustomersTableColumns } from "./table-columns";
 import { CustomersService } from "@/services/registrations/customers.service";
 
 export const CustomersTable = () => {
@@ -28,13 +26,12 @@ export const CustomersTable = () => {
   const [pageSize, setPageSize] = useState(8);
   const [currentData, setCurrentData] = useState<CustomerModel | null>(null);
   const [showDetails, setShowDetails] = useState(false);
-
+  console.log(tableData, totalRecords);
   const debouncedSearchText = useDebounceCallback(setSearchText, 500);
-  const navigate = useNavigate();
 
-  const columns = createCustomersTableColumns({
-    fnDetails: handleDetails,
-  });
+  // const columns = createCustomersTableColumns({
+  //   fnDetails: handleDetails,
+  // });
 
   async function getData() {
     const response = await CustomersService.listPaged({
@@ -49,13 +46,19 @@ export const CustomersTable = () => {
     setTotalRecords(response.totalRecords);
   }
 
-  function handleDetails(data: CustomerModel) {
-    setCurrentData(data);
-    //setShowDetails(true);
-    navigate({ to: `/registrations/customers/${data.id}` });
-  }
+  // function handleDetails(data: CustomerModel) {
+  //   setCurrentData(data);
+  //   //setShowDetails(true);
+  //   navigate({ to: `/registrations/customers/${data.id}` });
+  // }
 
   useEffect(() => {
+    setCurrentData(null);
+    setCurrentPage(0);
+    setTotalRecords(0);
+    setPageSize(8);
+    setSortFieldId("id");
+    setSortDir("asc");
     getData();
   }, [searchText, searchFieldId, sortDir, sortFieldId, pageSize, currentPage]);
 
@@ -93,7 +96,7 @@ export const CustomersTable = () => {
           />
         </div>
 
-        <ServerTable
+        {/* <ServerTable
           columns={columns}
           data={tableData}
           pagination={{ defaultPageSize: 8, pageSizeOptions: [8, 16, 32] }}
@@ -109,7 +112,7 @@ export const CustomersTable = () => {
           keyExtractor={function (item: CustomerModel): string | number {
             return item.id;
           }}
-        />
+        /> */}
       </div>
       {showDetails && currentData && (
         <DetailsModal
