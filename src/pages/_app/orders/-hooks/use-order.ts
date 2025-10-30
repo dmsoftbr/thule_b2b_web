@@ -1,11 +1,12 @@
 // store/useOrder.ts
 import { create } from "zustand";
-import type { OrderModel } from "@/models/order-model";
 import type { RepresentativeModel } from "@/models/representative.model";
 import type { PriceTableModel } from "@/models/registrations/price-table.model";
 import { NEW_ORDER_EMPTY } from "../-utils/order-utils";
-import type { OrderItemModel } from "@/models/order-item-model";
+
 import type { CustomerModel } from "@/models/registrations/customer.model";
+import type { OrderModel } from "@/models/orders/order-model";
+import type { OrderItemModel } from "@/models/orders/order-item-model";
 
 type OrderState = {
   currentOrder: OrderModel;
@@ -60,7 +61,7 @@ const handleChangeDiscountPercent = (state: OrderState, percent: number) => {
   if (state.currentOrder) {
     const newOrder: OrderModel = {
       ...state.currentOrder,
-      discountPercent: percent,
+      discountPercentual: percent,
     };
     return { currentOrder: newOrder };
   } else return state;
@@ -94,16 +95,16 @@ const handleChangePriceTable = (
 
 const handleAddItem = (state: OrderState, item: OrderItemModel) => {
   const newItems = state.currentOrder.items;
-  newItems.push(item);
+  newItems?.push(item);
   return { currentOrder: { ...state.currentOrder, items: newItems } };
 };
 
 const handleUpdateItem = (state: OrderState, item: OrderItemModel) => {
   const newItems = state.currentOrder.items;
-  const itemIndex = state.currentOrder.items.findIndex(
-    (f) => f.portalId === item.portalId
-  );
-  if (itemIndex >= 0) {
+  const itemIndex =
+    state.currentOrder.items?.findIndex((f) => f.portalId === item.portalId) ??
+    -1;
+  if (itemIndex >= 0 && newItems) {
     newItems[itemIndex].quantity = item.quantity;
     newItems[itemIndex].deliveryDate = item.deliveryDate;
     newItems[itemIndex].availability = item.availability;
@@ -113,8 +114,7 @@ const handleUpdateItem = (state: OrderState, item: OrderItemModel) => {
 };
 
 const handleRemoveItem = (state: OrderState, item: OrderItemModel) => {
-  const newItems = state.currentOrder.items.filter(
-    (f) => f.portalId != item.portalId
-  );
+  const newItems =
+    state.currentOrder.items?.filter((f) => f.portalId != item.portalId) ?? [];
   return { currentOrder: { ...state.currentOrder, items: newItems } };
 };

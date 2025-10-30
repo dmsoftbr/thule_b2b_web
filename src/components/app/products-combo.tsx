@@ -96,7 +96,7 @@ export const ProductsCombo = ({
               </span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Classificação: {item.group?.name}
+              Classificação: {item.productGroup?.name}
             </p>
           </div>
         </div>

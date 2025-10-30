@@ -36,11 +36,10 @@ export class SalesGroupsService {
   }
 
   static async update(
-    id: string,
     data: Partial<SalesGroupModel>
   ): Promise<SalesGroupModel> {
     const response = await api.patch<SalesGroupModel>(
-      `/${this.basePath}/${id}`,
+      `/${this.basePath}`,
       data
     );
     return response.data;

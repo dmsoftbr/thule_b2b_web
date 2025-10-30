@@ -1,4 +1,5 @@
 import type { ProductFamilyModel } from "./product-family.model";
+import type { ProductCommercialFamilyModel } from "./registrations/product-commercial-family.model";
 import type { ProductGroupModel } from "./registrations/product-group.model";
 
 export type ProductModel = {
@@ -12,9 +13,10 @@ export type ProductModel = {
   isActive: boolean;
   referenceCode: string;
   // nav props
-  group?: ProductGroupModel;
+  productGroup?: ProductGroupModel;
   productFamily?: ProductFamilyModel;
-  imageUrl: string;
+  productCommercialFamily?: ProductCommercialFamilyModel;
+  imageUrl?: string;
 
   suggestUnitPrice: number;
   unitPriceInTable: number;

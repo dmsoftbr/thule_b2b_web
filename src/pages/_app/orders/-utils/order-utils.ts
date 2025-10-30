@@ -1,5 +1,4 @@
-import type { OrderModel } from "@/models/order-model";
-import { v7 as uuidv7 } from "uuid";
+import type { OrderModel } from "@/models/orders/order-model";
 
 export const NEW_ORDER_EMPTY: OrderModel = {
   id: "",
@@ -7,19 +6,21 @@ export const NEW_ORDER_EMPTY: OrderModel = {
   createdAt: new Date(),
   representativeId: 0,
   carrierId: 0,
-  orderRepId: "",
   deliveryLocationId: "",
-  discountPercent: 0,
-  integrationStatusId: "",
+  discountPercentual: 0,
+  integrationMessage: "",
   paymentConditionId: 0,
-  totalOrderValue: 0,
-  statusId: "OPEN",
-  whatsappNumber: "",
+  grossTotalValue: 0,
+  netTotalValue: 0,
+  statusId: 0,
+  whatAppPhoneNumber: "",
   priceTableId: "",
   branchId: "",
   items: [],
-  portalId: uuidv7(),
   isBudget: false,
+  fiscalClassificationId: "",
+  isCompleted: false,
+  comments: "",
 };
 
 export const NEW_BUDGET_EMPTY: OrderModel = {
@@ -28,17 +29,19 @@ export const NEW_BUDGET_EMPTY: OrderModel = {
   createdAt: new Date(),
   representativeId: 0,
   carrierId: 0,
-  orderRepId: "",
   deliveryLocationId: "",
-  discountPercent: 0,
-  integrationStatusId: "",
+  discountPercentual: 0,
+  integrationMessage: "",
   paymentConditionId: 0,
-  totalOrderValue: 0,
-  statusId: "OPEN",
-  whatsappNumber: "",
+  grossTotalValue: 0,
+  netTotalValue: 0,
+  statusId: 0,
+  whatAppPhoneNumber: "",
   priceTableId: "",
   branchId: "",
   items: [],
   isBudget: true,
-  portalId: uuidv7(),
+  fiscalClassificationId: "",
+  isCompleted: false,
+  comments: "",
 };

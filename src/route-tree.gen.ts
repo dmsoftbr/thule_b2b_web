@@ -26,6 +26,7 @@ import { Route as AppRegistrationsRepresentativeGoalsIndexRouteImport } from './
 import { Route as AppRegistrationsProductsIndexRouteImport } from './pages/_app/registrations/products/index'
 import { Route as AppRegistrationsCustomersIndexRouteImport } from './pages/_app/registrations/customers/index'
 import { Route as AppRegistrationsCustomerPriceTablesIndexRouteImport } from './pages/_app/registrations/customer-price-tables/index'
+import { Route as AppRegistrationsApprovalLevelsIndexRouteImport } from './pages/_app/registrations/approval-levels/index'
 import { Route as AppOrdersOrderIdIndexRouteImport } from './pages/_app/orders/$orderId/index'
 import { Route as AppMobileNotificationsIndexRouteImport } from './pages/_app/mobile/notifications/index'
 import { Route as AppMobileLinksIndexRouteImport } from './pages/_app/mobile/links/index'
@@ -34,13 +35,16 @@ import { Route as AppAdminUsersIndexRouteImport } from './pages/_app/admin/users
 import { Route as AppAdminUserGroupsIndexRouteImport } from './pages/_app/admin/user-groups/index'
 import { Route as AppAdminSettingsIndexRouteImport } from './pages/_app/admin/settings/index'
 import { Route as AppRegistrationsSalesGroupNewGroupRouteImport } from './pages/_app/registrations/sales-group/new-group'
+import { Route as AppRegistrationsApprovalLevelsNewLevelRouteImport } from './pages/_app/registrations/approval-levels/new-level'
 import { Route as AppMobileLinksNewLinkRouteImport } from './pages/_app/mobile/links/new-link'
 import { Route as AppMobileCommunicationsNewCommunicateRouteImport } from './pages/_app/mobile/communications/new-communicate'
 import { Route as AppAdminUsersNewUserRouteImport } from './pages/_app/admin/users/new-user'
 import { Route as AppAdminUserGroupsNewUserGroupRouteImport } from './pages/_app/admin/user-groups/new-user-group'
 import { Route as AppRegistrationsSalesGroupGroupIdIndexRouteImport } from './pages/_app/registrations/sales-group/$groupId/index'
 import { Route as AppRegistrationsProductsProductIdIndexRouteImport } from './pages/_app/registrations/products/$productId/index'
-import { Route as AppRegistrationsCustomersCustomerIdIndexRouteImport } from './pages/_app/registrations/customers/$customerId/index'
+import { Route as AppRegistrationsApprovalLevelsLevelIdIndexRouteImport } from './pages/_app/registrations/approval-levels/$levelId/index'
+import { Route as AppOrdersViewOrderIdIndexRouteImport } from './pages/_app/orders/view/$orderId/index'
+import { Route as AppOrdersEditOrderIdIndexRouteImport } from './pages/_app/orders/edit/$orderId/index'
 import { Route as AppMobileNotificationsNewNotificationIndexRouteImport } from './pages/_app/mobile/notifications/new-notification/index'
 import { Route as AppMobileNotificationsNotificationIdIndexRouteImport } from './pages/_app/mobile/notifications/$notificationId/index'
 import { Route as AppMobileLinksLinkIdIndexRouteImport } from './pages/_app/mobile/links/$linkId/index'
@@ -48,6 +52,7 @@ import { Route as AppMobileCommunicationsCommunicationIdIndexRouteImport } from 
 import { Route as AppAdminUsersUserIdIndexRouteImport } from './pages/_app/admin/users/$userId/index'
 import { Route as AppAdminUserGroupsGroupIdIndexRouteImport } from './pages/_app/admin/user-groups/$groupId/index'
 import { Route as AppAdminSettingsSettingIdIndexRouteImport } from './pages/_app/admin/settings/$settingId/index'
+import { Route as AppRegistrationsCustomersCustomerIdPriceTablesIndexRouteImport } from './pages/_app/registrations/customers/$customerId/price-tables/index'
 
 const AppLayoutRoute = AppLayoutRouteImport.update({
   id: '/_app',
@@ -140,6 +145,12 @@ const AppRegistrationsCustomerPriceTablesIndexRoute =
     path: '/registrations/customer-price-tables/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
+const AppRegistrationsApprovalLevelsIndexRoute =
+  AppRegistrationsApprovalLevelsIndexRouteImport.update({
+    id: '/registrations/approval-levels/',
+    path: '/registrations/approval-levels/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 const AppOrdersOrderIdIndexRoute = AppOrdersOrderIdIndexRouteImport.update({
   id: '/orders/$orderId/',
   path: '/orders/$orderId/',
@@ -183,6 +194,12 @@ const AppRegistrationsSalesGroupNewGroupRoute =
     path: '/registrations/sales-group/new-group',
     getParentRoute: () => AppLayoutRoute,
   } as any)
+const AppRegistrationsApprovalLevelsNewLevelRoute =
+  AppRegistrationsApprovalLevelsNewLevelRouteImport.update({
+    id: '/registrations/approval-levels/new-level',
+    path: '/registrations/approval-levels/new-level',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 const AppMobileLinksNewLinkRoute = AppMobileLinksNewLinkRouteImport.update({
   id: '/mobile/links/new-link',
   path: '/mobile/links/new-link',
@@ -217,10 +234,22 @@ const AppRegistrationsProductsProductIdIndexRoute =
     path: '/registrations/products/$productId/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
-const AppRegistrationsCustomersCustomerIdIndexRoute =
-  AppRegistrationsCustomersCustomerIdIndexRouteImport.update({
-    id: '/registrations/customers/$customerId/',
-    path: '/registrations/customers/$customerId/',
+const AppRegistrationsApprovalLevelsLevelIdIndexRoute =
+  AppRegistrationsApprovalLevelsLevelIdIndexRouteImport.update({
+    id: '/registrations/approval-levels/$levelId/',
+    path: '/registrations/approval-levels/$levelId/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppOrdersViewOrderIdIndexRoute =
+  AppOrdersViewOrderIdIndexRouteImport.update({
+    id: '/orders/view/$orderId/',
+    path: '/orders/view/$orderId/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppOrdersEditOrderIdIndexRoute =
+  AppOrdersEditOrderIdIndexRouteImport.update({
+    id: '/orders/edit/$orderId/',
+    path: '/orders/edit/$orderId/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
 const AppMobileNotificationsNewNotificationIndexRoute =
@@ -265,6 +294,12 @@ const AppAdminSettingsSettingIdIndexRoute =
     path: '/admin/settings/$settingId/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
+const AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute =
+  AppRegistrationsCustomersCustomerIdPriceTablesIndexRouteImport.update({
+    id: '/registrations/customers/$customerId/price-tables/',
+    path: '/registrations/customers/$customerId/price-tables/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
@@ -279,6 +314,7 @@ export interface FileRoutesByFullPath {
   '/admin/users/new-user': typeof AppAdminUsersNewUserRoute
   '/mobile/communications/new-communicate': typeof AppMobileCommunicationsNewCommunicateRoute
   '/mobile/links/new-link': typeof AppMobileLinksNewLinkRoute
+  '/registrations/approval-levels/new-level': typeof AppRegistrationsApprovalLevelsNewLevelRoute
   '/registrations/sales-group/new-group': typeof AppRegistrationsSalesGroupNewGroupRoute
   '/admin/settings': typeof AppAdminSettingsIndexRoute
   '/admin/user-groups': typeof AppAdminUserGroupsIndexRoute
@@ -287,6 +323,7 @@ export interface FileRoutesByFullPath {
   '/mobile/links': typeof AppMobileLinksIndexRoute
   '/mobile/notifications': typeof AppMobileNotificationsIndexRoute
   '/orders/$orderId': typeof AppOrdersOrderIdIndexRoute
+  '/registrations/approval-levels': typeof AppRegistrationsApprovalLevelsIndexRoute
   '/registrations/customer-price-tables': typeof AppRegistrationsCustomerPriceTablesIndexRoute
   '/registrations/customers': typeof AppRegistrationsCustomersIndexRoute
   '/registrations/products': typeof AppRegistrationsProductsIndexRoute
@@ -302,9 +339,12 @@ export interface FileRoutesByFullPath {
   '/mobile/links/$linkId': typeof AppMobileLinksLinkIdIndexRoute
   '/mobile/notifications/$notificationId': typeof AppMobileNotificationsNotificationIdIndexRoute
   '/mobile/notifications/new-notification': typeof AppMobileNotificationsNewNotificationIndexRoute
-  '/registrations/customers/$customerId': typeof AppRegistrationsCustomersCustomerIdIndexRoute
+  '/orders/edit/$orderId': typeof AppOrdersEditOrderIdIndexRoute
+  '/orders/view/$orderId': typeof AppOrdersViewOrderIdIndexRoute
+  '/registrations/approval-levels/$levelId': typeof AppRegistrationsApprovalLevelsLevelIdIndexRoute
   '/registrations/products/$productId': typeof AppRegistrationsProductsProductIdIndexRoute
   '/registrations/sales-group/$groupId': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
+  '/registrations/customers/$customerId/price-tables': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
 }
 export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
@@ -319,6 +359,7 @@ export interface FileRoutesByTo {
   '/admin/users/new-user': typeof AppAdminUsersNewUserRoute
   '/mobile/communications/new-communicate': typeof AppMobileCommunicationsNewCommunicateRoute
   '/mobile/links/new-link': typeof AppMobileLinksNewLinkRoute
+  '/registrations/approval-levels/new-level': typeof AppRegistrationsApprovalLevelsNewLevelRoute
   '/registrations/sales-group/new-group': typeof AppRegistrationsSalesGroupNewGroupRoute
   '/admin/settings': typeof AppAdminSettingsIndexRoute
   '/admin/user-groups': typeof AppAdminUserGroupsIndexRoute
@@ -327,6 +368,7 @@ export interface FileRoutesByTo {
   '/mobile/links': typeof AppMobileLinksIndexRoute
   '/mobile/notifications': typeof AppMobileNotificationsIndexRoute
   '/orders/$orderId': typeof AppOrdersOrderIdIndexRoute
+  '/registrations/approval-levels': typeof AppRegistrationsApprovalLevelsIndexRoute
   '/registrations/customer-price-tables': typeof AppRegistrationsCustomerPriceTablesIndexRoute
   '/registrations/customers': typeof AppRegistrationsCustomersIndexRoute
   '/registrations/products': typeof AppRegistrationsProductsIndexRoute
@@ -342,9 +384,12 @@ export interface FileRoutesByTo {
   '/mobile/links/$linkId': typeof AppMobileLinksLinkIdIndexRoute
   '/mobile/notifications/$notificationId': typeof AppMobileNotificationsNotificationIdIndexRoute
   '/mobile/notifications/new-notification': typeof AppMobileNotificationsNewNotificationIndexRoute
-  '/registrations/customers/$customerId': typeof AppRegistrationsCustomersCustomerIdIndexRoute
+  '/orders/edit/$orderId': typeof AppOrdersEditOrderIdIndexRoute
+  '/orders/view/$orderId': typeof AppOrdersViewOrderIdIndexRoute
+  '/registrations/approval-levels/$levelId': typeof AppRegistrationsApprovalLevelsLevelIdIndexRoute
   '/registrations/products/$productId': typeof AppRegistrationsProductsProductIdIndexRoute
   '/registrations/sales-group/$groupId': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
+  '/registrations/customers/$customerId/price-tables': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -361,6 +406,7 @@ export interface FileRoutesById {
   '/_app/admin/users/new-user': typeof AppAdminUsersNewUserRoute
   '/_app/mobile/communications/new-communicate': typeof AppMobileCommunicationsNewCommunicateRoute
   '/_app/mobile/links/new-link': typeof AppMobileLinksNewLinkRoute
+  '/_app/registrations/approval-levels/new-level': typeof AppRegistrationsApprovalLevelsNewLevelRoute
   '/_app/registrations/sales-group/new-group': typeof AppRegistrationsSalesGroupNewGroupRoute
   '/_app/admin/settings/': typeof AppAdminSettingsIndexRoute
   '/_app/admin/user-groups/': typeof AppAdminUserGroupsIndexRoute
@@ -369,6 +415,7 @@ export interface FileRoutesById {
   '/_app/mobile/links/': typeof AppMobileLinksIndexRoute
   '/_app/mobile/notifications/': typeof AppMobileNotificationsIndexRoute
   '/_app/orders/$orderId/': typeof AppOrdersOrderIdIndexRoute
+  '/_app/registrations/approval-levels/': typeof AppRegistrationsApprovalLevelsIndexRoute
   '/_app/registrations/customer-price-tables/': typeof AppRegistrationsCustomerPriceTablesIndexRoute
   '/_app/registrations/customers/': typeof AppRegistrationsCustomersIndexRoute
   '/_app/registrations/products/': typeof AppRegistrationsProductsIndexRoute
@@ -384,9 +431,12 @@ export interface FileRoutesById {
   '/_app/mobile/links/$linkId/': typeof AppMobileLinksLinkIdIndexRoute
   '/_app/mobile/notifications/$notificationId/': typeof AppMobileNotificationsNotificationIdIndexRoute
   '/_app/mobile/notifications/new-notification/': typeof AppMobileNotificationsNewNotificationIndexRoute
-  '/_app/registrations/customers/$customerId/': typeof AppRegistrationsCustomersCustomerIdIndexRoute
+  '/_app/orders/edit/$orderId/': typeof AppOrdersEditOrderIdIndexRoute
+  '/_app/orders/view/$orderId/': typeof AppOrdersViewOrderIdIndexRoute
+  '/_app/registrations/approval-levels/$levelId/': typeof AppRegistrationsApprovalLevelsLevelIdIndexRoute
   '/_app/registrations/products/$productId/': typeof AppRegistrationsProductsProductIdIndexRoute
   '/_app/registrations/sales-group/$groupId/': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
+  '/_app/registrations/customers/$customerId/price-tables/': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -403,6 +453,7 @@ export interface FileRouteTypes {
     | '/admin/users/new-user'
     | '/mobile/communications/new-communicate'
     | '/mobile/links/new-link'
+    | '/registrations/approval-levels/new-level'
     | '/registrations/sales-group/new-group'
     | '/admin/settings'
     | '/admin/user-groups'
@@ -411,6 +462,7 @@ export interface FileRouteTypes {
     | '/mobile/links'
     | '/mobile/notifications'
     | '/orders/$orderId'
+    | '/registrations/approval-levels'
     | '/registrations/customer-price-tables'
     | '/registrations/customers'
     | '/registrations/products'
@@ -426,9 +478,12 @@ export interface FileRouteTypes {
     | '/mobile/links/$linkId'
     | '/mobile/notifications/$notificationId'
     | '/mobile/notifications/new-notification'
-    | '/registrations/customers/$customerId'
+    | '/orders/edit/$orderId'
+    | '/orders/view/$orderId'
+    | '/registrations/approval-levels/$levelId'
     | '/registrations/products/$productId'
     | '/registrations/sales-group/$groupId'
+    | '/registrations/customers/$customerId/price-tables'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth/login'
@@ -443,6 +498,7 @@ export interface FileRouteTypes {
     | '/admin/users/new-user'
     | '/mobile/communications/new-communicate'
     | '/mobile/links/new-link'
+    | '/registrations/approval-levels/new-level'
     | '/registrations/sales-group/new-group'
     | '/admin/settings'
     | '/admin/user-groups'
@@ -451,6 +507,7 @@ export interface FileRouteTypes {
     | '/mobile/links'
     | '/mobile/notifications'
     | '/orders/$orderId'
+    | '/registrations/approval-levels'
     | '/registrations/customer-price-tables'
     | '/registrations/customers'
     | '/registrations/products'
@@ -466,9 +523,12 @@ export interface FileRouteTypes {
     | '/mobile/links/$linkId'
     | '/mobile/notifications/$notificationId'
     | '/mobile/notifications/new-notification'
-    | '/registrations/customers/$customerId'
+    | '/orders/edit/$orderId'
+    | '/orders/view/$orderId'
+    | '/registrations/approval-levels/$levelId'
     | '/registrations/products/$productId'
     | '/registrations/sales-group/$groupId'
+    | '/registrations/customers/$customerId/price-tables'
   id:
     | '__root__'
     | '/_app'
@@ -484,6 +544,7 @@ export interface FileRouteTypes {
     | '/_app/admin/users/new-user'
     | '/_app/mobile/communications/new-communicate'
     | '/_app/mobile/links/new-link'
+    | '/_app/registrations/approval-levels/new-level'
     | '/_app/registrations/sales-group/new-group'
     | '/_app/admin/settings/'
     | '/_app/admin/user-groups/'
@@ -492,6 +553,7 @@ export interface FileRouteTypes {
     | '/_app/mobile/links/'
     | '/_app/mobile/notifications/'
     | '/_app/orders/$orderId/'
+    | '/_app/registrations/approval-levels/'
     | '/_app/registrations/customer-price-tables/'
     | '/_app/registrations/customers/'
     | '/_app/registrations/products/'
@@ -507,9 +569,12 @@ export interface FileRouteTypes {
     | '/_app/mobile/links/$linkId/'
     | '/_app/mobile/notifications/$notificationId/'
     | '/_app/mobile/notifications/new-notification/'
-    | '/_app/registrations/customers/$customerId/'
+    | '/_app/orders/edit/$orderId/'
+    | '/_app/orders/view/$orderId/'
+    | '/_app/registrations/approval-levels/$levelId/'
     | '/_app/registrations/products/$productId/'
     | '/_app/registrations/sales-group/$groupId/'
+    | '/_app/registrations/customers/$customerId/price-tables/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -638,6 +703,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRegistrationsCustomerPriceTablesIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/registrations/approval-levels/': {
+      id: '/_app/registrations/approval-levels/'
+      path: '/registrations/approval-levels'
+      fullPath: '/registrations/approval-levels'
+      preLoaderRoute: typeof AppRegistrationsApprovalLevelsIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/orders/$orderId/': {
       id: '/_app/orders/$orderId/'
       path: '/orders/$orderId'
@@ -694,6 +766,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRegistrationsSalesGroupNewGroupRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/registrations/approval-levels/new-level': {
+      id: '/_app/registrations/approval-levels/new-level'
+      path: '/registrations/approval-levels/new-level'
+      fullPath: '/registrations/approval-levels/new-level'
+      preLoaderRoute: typeof AppRegistrationsApprovalLevelsNewLevelRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/mobile/links/new-link': {
       id: '/_app/mobile/links/new-link'
       path: '/mobile/links/new-link'
@@ -736,11 +815,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRegistrationsProductsProductIdIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
-    '/_app/registrations/customers/$customerId/': {
-      id: '/_app/registrations/customers/$customerId/'
-      path: '/registrations/customers/$customerId'
-      fullPath: '/registrations/customers/$customerId'
-      preLoaderRoute: typeof AppRegistrationsCustomersCustomerIdIndexRouteImport
+    '/_app/registrations/approval-levels/$levelId/': {
+      id: '/_app/registrations/approval-levels/$levelId/'
+      path: '/registrations/approval-levels/$levelId'
+      fullPath: '/registrations/approval-levels/$levelId'
+      preLoaderRoute: typeof AppRegistrationsApprovalLevelsLevelIdIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/orders/view/$orderId/': {
+      id: '/_app/orders/view/$orderId/'
+      path: '/orders/view/$orderId'
+      fullPath: '/orders/view/$orderId'
+      preLoaderRoute: typeof AppOrdersViewOrderIdIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/orders/edit/$orderId/': {
+      id: '/_app/orders/edit/$orderId/'
+      path: '/orders/edit/$orderId'
+      fullPath: '/orders/edit/$orderId'
+      preLoaderRoute: typeof AppOrdersEditOrderIdIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/mobile/notifications/new-notification/': {
@@ -792,6 +885,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminSettingsSettingIdIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/registrations/customers/$customerId/price-tables/': {
+      id: '/_app/registrations/customers/$customerId/price-tables/'
+      path: '/registrations/customers/$customerId/price-tables'
+      fullPath: '/registrations/customers/$customerId/price-tables'
+      preLoaderRoute: typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
   }
 }
 
@@ -807,6 +907,7 @@ interface AppLayoutRouteChildren {
   AppAdminUsersNewUserRoute: typeof AppAdminUsersNewUserRoute
   AppMobileCommunicationsNewCommunicateRoute: typeof AppMobileCommunicationsNewCommunicateRoute
   AppMobileLinksNewLinkRoute: typeof AppMobileLinksNewLinkRoute
+  AppRegistrationsApprovalLevelsNewLevelRoute: typeof AppRegistrationsApprovalLevelsNewLevelRoute
   AppRegistrationsSalesGroupNewGroupRoute: typeof AppRegistrationsSalesGroupNewGroupRoute
   AppAdminSettingsIndexRoute: typeof AppAdminSettingsIndexRoute
   AppAdminUserGroupsIndexRoute: typeof AppAdminUserGroupsIndexRoute
@@ -815,6 +916,7 @@ interface AppLayoutRouteChildren {
   AppMobileLinksIndexRoute: typeof AppMobileLinksIndexRoute
   AppMobileNotificationsIndexRoute: typeof AppMobileNotificationsIndexRoute
   AppOrdersOrderIdIndexRoute: typeof AppOrdersOrderIdIndexRoute
+  AppRegistrationsApprovalLevelsIndexRoute: typeof AppRegistrationsApprovalLevelsIndexRoute
   AppRegistrationsCustomerPriceTablesIndexRoute: typeof AppRegistrationsCustomerPriceTablesIndexRoute
   AppRegistrationsCustomersIndexRoute: typeof AppRegistrationsCustomersIndexRoute
   AppRegistrationsProductsIndexRoute: typeof AppRegistrationsProductsIndexRoute
@@ -830,9 +932,12 @@ interface AppLayoutRouteChildren {
   AppMobileLinksLinkIdIndexRoute: typeof AppMobileLinksLinkIdIndexRoute
   AppMobileNotificationsNotificationIdIndexRoute: typeof AppMobileNotificationsNotificationIdIndexRoute
   AppMobileNotificationsNewNotificationIndexRoute: typeof AppMobileNotificationsNewNotificationIndexRoute
-  AppRegistrationsCustomersCustomerIdIndexRoute: typeof AppRegistrationsCustomersCustomerIdIndexRoute
+  AppOrdersEditOrderIdIndexRoute: typeof AppOrdersEditOrderIdIndexRoute
+  AppOrdersViewOrderIdIndexRoute: typeof AppOrdersViewOrderIdIndexRoute
+  AppRegistrationsApprovalLevelsLevelIdIndexRoute: typeof AppRegistrationsApprovalLevelsLevelIdIndexRoute
   AppRegistrationsProductsProductIdIndexRoute: typeof AppRegistrationsProductsProductIdIndexRoute
   AppRegistrationsSalesGroupGroupIdIndexRoute: typeof AppRegistrationsSalesGroupGroupIdIndexRoute
+  AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute: typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
 }
 
 const AppLayoutRouteChildren: AppLayoutRouteChildren = {
@@ -848,6 +953,8 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppMobileCommunicationsNewCommunicateRoute:
     AppMobileCommunicationsNewCommunicateRoute,
   AppMobileLinksNewLinkRoute: AppMobileLinksNewLinkRoute,
+  AppRegistrationsApprovalLevelsNewLevelRoute:
+    AppRegistrationsApprovalLevelsNewLevelRoute,
   AppRegistrationsSalesGroupNewGroupRoute:
     AppRegistrationsSalesGroupNewGroupRoute,
   AppAdminSettingsIndexRoute: AppAdminSettingsIndexRoute,
@@ -857,6 +964,8 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppMobileLinksIndexRoute: AppMobileLinksIndexRoute,
   AppMobileNotificationsIndexRoute: AppMobileNotificationsIndexRoute,
   AppOrdersOrderIdIndexRoute: AppOrdersOrderIdIndexRoute,
+  AppRegistrationsApprovalLevelsIndexRoute:
+    AppRegistrationsApprovalLevelsIndexRoute,
   AppRegistrationsCustomerPriceTablesIndexRoute:
     AppRegistrationsCustomerPriceTablesIndexRoute,
   AppRegistrationsCustomersIndexRoute: AppRegistrationsCustomersIndexRoute,
@@ -877,12 +986,16 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
     AppMobileNotificationsNotificationIdIndexRoute,
   AppMobileNotificationsNewNotificationIndexRoute:
     AppMobileNotificationsNewNotificationIndexRoute,
-  AppRegistrationsCustomersCustomerIdIndexRoute:
-    AppRegistrationsCustomersCustomerIdIndexRoute,
+  AppOrdersEditOrderIdIndexRoute: AppOrdersEditOrderIdIndexRoute,
+  AppOrdersViewOrderIdIndexRoute: AppOrdersViewOrderIdIndexRoute,
+  AppRegistrationsApprovalLevelsLevelIdIndexRoute:
+    AppRegistrationsApprovalLevelsLevelIdIndexRoute,
   AppRegistrationsProductsProductIdIndexRoute:
     AppRegistrationsProductsProductIdIndexRoute,
   AppRegistrationsSalesGroupGroupIdIndexRoute:
     AppRegistrationsSalesGroupGroupIdIndexRoute,
+  AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute:
+    AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute,
 }
 
 const AppLayoutRouteWithChildren = AppLayoutRoute._addFileChildren(

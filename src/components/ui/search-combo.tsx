@@ -29,7 +29,7 @@ export interface SearchComboItem {
 
 // Props do componente
 interface SearchComboProps {
-  items?: SearchComboItem[];
+  staticItems?: SearchComboItem[];
   apiEndpoint?: string;
   queryStringName?: string;
   placeholder?: string;
@@ -45,10 +45,11 @@ interface SearchComboProps {
   showSelectButtons?: boolean;
   valueProp?: string;
   labelProp?: string;
+  deSelectOnClick?: boolean;
 }
 
 export const SearchCombo: React.FC<SearchComboProps> = ({
-  items: staticItems,
+  staticItems,
   apiEndpoint,
   disabled,
   queryStringName = "search",
@@ -64,6 +65,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
   onSelectOption,
   valueProp,
   labelProp,
+  deSelectOnClick,
 }) => {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<SearchComboItem[]>(staticItems || []);
@@ -115,6 +117,10 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
     }
   }, [apiEndpoint]);
 
+  useEffect(() => {
+    setItems(staticItems ?? []);
+  }, [staticItems]);
+
   // Efeito para atualizar o item selecionado quando o valor mudar externamente
   // useEffect(() => {
   //   // if (value) {
@@ -149,7 +155,13 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
       const hasSelected = isItemSelected(currentValue);
       let newItems = [];
       if (!multipleSelect) {
-        newItems = [itemSelected];
+        if (
+          deSelectOnClick &&
+          selectedItems.findIndex((f) => f.value == currentValue) > -1
+        ) {
+          newItems = selectedItems.filter((f) => f.value != currentValue);
+          currentValue = "";
+        } else newItems = [itemSelected];
       } else {
         if (hasSelected && multipleSelect) {
           //deselect
@@ -202,7 +214,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setOpen} modal>
       <PopoverTrigger asChild className="w-full">
         <Button
           useAnimation={false}
@@ -219,7 +231,10 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="!w-[var(--radix-popover-trigger-width)] p-0">
+      <PopoverContent
+        className="!w-[var(--radix-popover-trigger-width)] p-0"
+        portal={false}
+      >
         <Command>
           <CommandInput
             placeholder={searchPlaceholder}
@@ -240,7 +255,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
                       onSelect={handleSelect}
                       keywords={item.keyworks}
                       className={cn(
-                        "cursor-pointer hover:!bg-blue-600 hover:!text-white",
+                        "cursor-pointer hover:!bg-blue-600 hover:!text-white data-[selected=true]:bg-blue-600 data-[selected=true]:text-white",
                         isItemSelected(item.value) && "bg-accent1"
                       )}
                     >

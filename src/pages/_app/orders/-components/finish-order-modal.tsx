@@ -91,7 +91,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               <Label>Endereço de Entrega</Label>
               <SearchCombo
                 placeholder="Selecione o Endereço de Entrega"
-                items={convertArrayToSearchComboItem(
+                staticItems={convertArrayToSearchComboItem(
                   currentOrder.customer?.deliveryLocations ?? [],
                   "id",
                   "id"
@@ -114,7 +114,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               <Label>Condição de Pagamento</Label>
               <SearchCombo
                 placeholder="Selecione o Endereço de Entrega"
-                items={convertArrayToSearchComboItem(
+                staticItems={convertArrayToSearchComboItem(
                   currentOrder.customer?.deliveryLocations ?? [],
                   "id",
                   "id"

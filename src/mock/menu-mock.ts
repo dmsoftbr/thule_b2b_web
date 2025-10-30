@@ -104,7 +104,7 @@ export const MENU_MOCK: MenuModel[] = [
       {
         id: "73",
         title: "Alçadas de Aprovação",
-        url: "/alcadas",
+        url: "/registrations/approval-levels",
         icon: "CheckCircleIcon",
       },
       {

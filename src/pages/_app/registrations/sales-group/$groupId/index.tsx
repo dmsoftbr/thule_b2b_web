@@ -1,9 +1,8 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { SalesGroupForm } from "../-components/sales-group-form";
 import { SalesGroupsService } from "@/services/registrations/sales-group.service";
-import { useEffect, useState } from "react";
 import { AppPageHeader } from "@/components/layout/app-page-header";
-import type { SalesGroupModel } from "@/models/registrations/sales-group.model";
+import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute(
   "/_app/registrations/sales-group/$groupId/"
@@ -12,26 +11,20 @@ export const Route = createFileRoute(
 });
 
 function SalesGroupIdPageComponent() {
-  const [data, setData] = useState<SalesGroupModel>();
   const { groupId } = useParams({
     from: "/_app/registrations/sales-group/$groupId/",
   });
 
-  async function getData() {
-    if (groupId) {
-      const response = await SalesGroupsService.getById(groupId);
-      if (response) {
-        setData(response);
-      }
-    }
-  }
+  const { data } = useQuery({
+    queryKey: ["sales-group-id", groupId],
+    queryFn: async () => {
+      return await SalesGroupsService.getById(groupId);
+    },
+    enabled: !!groupId,
+  });
 
-  useEffect(() => {
-    getData();
-  }, []);
-  if (!data) {
-    return null;
-  }
+  if (!data) return null;
+
   return (
     <AppPageHeader titleSlot="Grupos de Venda">
       <div className="container ml-auto mr-auto max-w-lg my-4">

@@ -1,5 +1,9 @@
 import { AppPageHeader } from "@/components/layout/app-page-header";
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  useNavigate,
+  useParams,
+} from "@tanstack/react-router";
 import { TrashIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -9,6 +13,7 @@ import {
 } from "@/components/ui/shadcn-io/dropzone";
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 import { ProductImage } from "@/components/app/product-image";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute(
   "/_app/registrations/products/$productId/"
@@ -17,6 +22,7 @@ export const Route = createFileRoute(
 });
 
 function ProductIdPageComponent() {
+  const navigate = useNavigate();
   const { productId } = useParams({
     from: "/_app/registrations/products/$productId/",
   });
@@ -24,7 +30,6 @@ function ProductIdPageComponent() {
   const [existingFiles, setExistingFiles] = useState<string[]>([]);
   const [files, setFiles] = useState<File[] | undefined>();
   const handleDrop = (files: File[]) => {
-    console.log(files);
     setFiles(files);
   };
 
@@ -59,10 +64,14 @@ function ProductIdPageComponent() {
         <div className="grid grid-cols-8 w-full gap-4 border p-4">
           {existingFiles?.map((file) => (
             <div className="group">
-              <div className="border rounded-lg h-full relative">
-                <ProductImage productId={productId} alt="Imagem do Produto" />
+              <div className="border rounded-lg h-full relative flex items-center justify-center">
+                <ProductImage
+                  productId={productId}
+                  alt="Imagem do Produto"
+                  isThumb={false}
+                />
                 <div
-                  className="absolute right-4 top-4 hover:bg-neutral-200 cursor-pointer transition rounded-md p-2"
+                  className="absolute right-4 top-4 hover:bg-neutral-200 cursor-pointer transition rounded-md p-2 z-50"
                   role="button"
                   onClick={() => handleRemovePhoto(file)}
                 >
@@ -83,6 +92,11 @@ function ProductIdPageComponent() {
             <DropzoneContent />
           </Dropzone>
         </div>
+      </div>
+      <div className="my-2 px-2">
+        <Button onClick={() => navigate({ to: "/registrations/products" })}>
+          Voltar p/Lista de Produtos
+        </Button>
       </div>
     </AppPageHeader>
   );

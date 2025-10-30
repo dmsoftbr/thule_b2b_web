@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { OrderItemModel } from "@/models/order-item-model";
+import type { OrderItemModel } from "@/models/orders/order-item-model";
 import { TableCell, TableRow } from "@/components/ui/table";
 
 interface Props {

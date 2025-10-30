@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ServerTable } from "@/components/server-table/server-table";
-import type { OrderModel } from "@/models/order-model";
+import type { OrderModel } from "@/models/orders/order-model";
 import { FilterIcon, PlusIcon, RefreshCcwIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
@@ -131,7 +131,7 @@ export const BudgetsTable = () => {
             <SearchCombo
               multipleSelect
               showSelectButtons
-              items={[
+              staticItems={[
                 {
                   value: "OPEN",
                   label: "Aberto",
@@ -171,7 +171,7 @@ export const BudgetsTable = () => {
             <SearchCombo
               multipleSelect
               showSelectButtons
-              items={representativesData}
+              staticItems={representativesData}
               showValueInSelectedItem
               onChange={() => {}}
               placeholder="Todos"

@@ -63,7 +63,7 @@ export function FormSearchCombo<
               disabled={disabled}
               onChange={(value) => field.onChange(value)}
               defaultValue={field.value}
-              items={items}
+              staticItems={items}
               placeholder={placeholder}
               valueProp={valueProp}
               labelProp={labelProp}

@@ -402,7 +402,7 @@ export function GoalsTable() {
           <SearchCombo
             multipleSelect
             showSelectButtons
-            items={representativesData}
+            staticItems={representativesData}
             showValueInSelectedItem
             onChange={() => {}}
             onSelectOption={(value) => {
@@ -420,7 +420,7 @@ export function GoalsTable() {
           <SearchCombo
             multipleSelect
             showSelectButtons
-            items={productCommercialFamiliesData}
+            staticItems={productCommercialFamiliesData}
             showValueInSelectedItem
             onChange={() => {}}
             onSelectOption={(value) => {

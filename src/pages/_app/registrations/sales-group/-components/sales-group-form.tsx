@@ -31,7 +31,9 @@ export const SalesGroupForm = ({ initialData, formAction }: Props) => {
       toast.success("Grupo criado com sucesso");
       navigate({ to: "/registrations/sales-group" });
     } else if (formAction == "EDIT") {
-      await SalesGroupsService.update(values.id, values);
+      await SalesGroupsService.update(values);
+      toast.success("Grupo atualizado com sucesso");
+      navigate({ to: "/registrations/sales-group" });
     }
   };
 

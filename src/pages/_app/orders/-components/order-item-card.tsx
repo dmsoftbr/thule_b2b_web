@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDate } from "@/lib/datetime-utils";
 import { cn } from "@/lib/utils";
-import type { OrderItemModel } from "@/models/order-item-model";
+import type { OrderItemModel } from "@/models/orders/order-item-model";
 import { CalendarIcon, MinusIcon, PlusIcon } from "lucide-react";
 import { useOrder } from "../-hooks/use-order";
 import { formatNumber } from "@/lib/number-utils";
+import { api } from "@/lib/api";
 
 interface Props {
   data: OrderItemModel;
@@ -16,13 +17,33 @@ interface Props {
 }
 
 export const OrderItemCard = ({ data, className }: Props) => {
-  const { onUpdateItem, onRemoveItem } = useOrder();
+  const { onUpdateItem, onRemoveItem, currentOrder } = useOrder();
 
-  const handleUpdateQuantity = (newQuantity: number | undefined) => {
+  const handleUpdateQuantity = async (newQuantity: number | undefined) => {
     if (!newQuantity) {
       onRemoveItem(data);
+      return;
     }
-    const updatedItem = { ...data, quantity: Number(newQuantity) };
+
+    // chama a api que calcula data de entrega
+    var params = {
+      orderId: currentOrder.id,
+      customerAbbreviation: currentOrder.customerAbbreviation,
+      productId: data.productId,
+      quantity: newQuantity,
+    };
+    const { data: response } = await api.post(
+      `/stock/caculate-delivery-date`,
+      params
+    );
+    console.log(response);
+
+    const updatedItem = {
+      ...data,
+      quantity: Number(newQuantity),
+      deliveryDate: response.estimatedDate,
+      availability: response.availability,
+    };
     onUpdateItem(updatedItem);
   };
 

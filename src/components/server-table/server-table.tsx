@@ -7,6 +7,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronUpIcon,
+  FilterIcon,
   RefreshCwIcon,
   SearchIcon,
   SortAscIcon,
@@ -66,6 +67,7 @@ interface ServerTableProps<T> {
   showAddButton?: boolean;
   addButtonContent?: React.ReactNode;
   defaultSortFieldDataIndex?: string;
+  defaultSortDesc?: boolean;
   defaultSearchField?: string;
   defaultPageSize?: number;
   searchFields: ServerTableSearchField[];
@@ -73,6 +75,8 @@ interface ServerTableProps<T> {
   additionalInfo?: {};
   tableClassNames?: string;
   groupedBy?: string;
+  showAdvancedFilter?: boolean;
+  advancedFilterSlot?: React.ReactNode;
   groupConfig?: ServerTableGroupConfig;
   refreshDataToken?: string | number | Date | undefined;
   additionalButtons?: React.ReactNode | React.ReactNode[];
@@ -97,10 +101,12 @@ export const ServerTable = <T,>({
   addButtonContent = "Adicionar",
   defaultSortFieldDataIndex,
   defaultSearchField,
+  defaultSortDesc = false,
   defaultPageSize = 10,
   searchFields,
   isPending = false,
-
+  showAdvancedFilter = false,
+  advancedFilterSlot,
   additionalInfo = {},
   tableClassNames = "",
   refreshDataToken = "",
@@ -115,13 +121,14 @@ export const ServerTable = <T,>({
   const [searchField, setSearchField] = useState(defaultSearchField);
   const [customWhere, setCustomWhere] = useState("");
   const [sortField, setSortField] = useState(defaultSortFieldDataIndex);
-  const [sortAsc, setSortAsc] = useState(true);
+  const [sortAsc, setSortAsc] = useState(!defaultSortDesc);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<PagedResponseModel<T>>();
   const [selectedItem, setSelectedItem] = useState<T | undefined>(undefined);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [showAdvancedFilterSlot, setShowAdvancedFilterSlot] = useState(false);
 
   // Função para acessar propriedades aninhadas usando notação de ponto
   const getNestedProperty = (obj: any, path: string) => {
@@ -376,7 +383,8 @@ export const ServerTable = <T,>({
   };
 
   const handleFilter = () => {
-    setTimeout(() => {}, 300);
+    setCurrentPage(0);
+    setTimeout(() => {}, 250);
     handleGetData();
   };
 
@@ -610,95 +618,110 @@ export const ServerTable = <T,>({
 
   return (
     <div className="w-full relative min-h-full">
-      <div className="flex flex-wrap md:flex-nowrap gap-y-1.5 items-center justify-between gap-x-2">
-        <AppTooltip message="Atualizar Lista">
-          <Button
-            size="sm"
-            className="h-9"
-            type="button"
-            onClick={handleGetData}
-          >
-            <RefreshCwIcon className="size-4" />
-          </Button>
-        </AppTooltip>
-
-        {/* Botões de controle de agrupamento */}
-        {groupConfig?.field &&
-          ((data?.result && data.result.length > 0) ||
-            groupConfig.allPossibleGroups) && (
-            <div className="flex gap-1">
-              <AppTooltip message="Expandir Todos">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-9 px-2"
-                  type="button"
-                  onClick={() => toggleAllGroups(true)}
-                >
-                  <ChevronDownIcon className="size-4" />
-                </Button>
-              </AppTooltip>
-              <AppTooltip message="Recolher Todos">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-9 px-2"
-                  type="button"
-                  onClick={() => toggleAllGroups(false)}
-                >
-                  <ChevronUpIcon className="size-4" />
-                </Button>
-              </AppTooltip>
-            </div>
-          )}
-
-        <Select
-          onValueChange={(e) => {
-            setSearchField(e);
-            const _searchField = searchFields.find((f) => f.id == e);
-            setCustomWhere(_searchField?.customWhere ?? "");
-          }}
-          value={searchField}
-        >
-          <SelectTrigger className="flex-1">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {searchFields &&
-              searchFields.length > 0 &&
-              searchFields.map((item, index) => (
-                <SelectItem key={index} value={item.id}>
-                  {item.label}
-                </SelectItem>
-              ))}
-          </SelectContent>
-        </Select>
-        <div className="relative flex items-center justify-center w-full">
-          <div className="absolute left-3 select-none text-neutral-600">
-            <SearchIcon className="size-3" />
-          </div>
-          <Input
-            placeholder="Pesquisar..."
-            defaultValue={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            className={cn(searchText && "bg-yellow-50", "pl-8")}
-            type="search"
-          />
-        </div>
-        <div className="flex gap-x-2">
-          {additionalButtons}
-          {showAddButton && (
+      <div className="flex flex-col w-full">
+        <div className="flex flex-wrap md:flex-nowrap gap-y-1.5 items-center justify-between gap-x-2">
+          <AppTooltip message="Atualizar Lista">
             <Button
+              size="sm"
+              className="h-9"
               type="button"
-              onClick={() => {
-                onAdd?.();
-              }}
-              className="w-full md:w-fit"
+              onClick={handleGetData}
             >
-              {addButtonContent}
+              <RefreshCwIcon className="size-4" />
             </Button>
-          )}
+          </AppTooltip>
+
+          {/* Botões de controle de agrupamento */}
+          {groupConfig?.field &&
+            ((data?.result && data.result.length > 0) ||
+              groupConfig.allPossibleGroups) && (
+              <div className="flex gap-1">
+                <AppTooltip message="Expandir Todos">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-9 px-2"
+                    type="button"
+                    onClick={() => toggleAllGroups(true)}
+                  >
+                    <ChevronDownIcon className="size-4" />
+                  </Button>
+                </AppTooltip>
+                <AppTooltip message="Recolher Todos">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-9 px-2"
+                    type="button"
+                    onClick={() => toggleAllGroups(false)}
+                  >
+                    <ChevronUpIcon className="size-4" />
+                  </Button>
+                </AppTooltip>
+              </div>
+            )}
+
+          <Select
+            onValueChange={(e) => {
+              setSearchField(e);
+              const _searchField = searchFields.find((f) => f.id == e);
+              setCustomWhere(_searchField?.customWhere ?? "");
+            }}
+            value={searchField}
+          >
+            <SelectTrigger className="flex-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {searchFields &&
+                searchFields.length > 0 &&
+                searchFields.map((item, index) => (
+                  <SelectItem key={index} value={item.id}>
+                    {item.label}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+          <div className="relative flex items-center justify-center w-full">
+            <div className="absolute left-3 select-none text-neutral-600">
+              <SearchIcon className="size-3" />
+            </div>
+            <Input
+              placeholder="Pesquisar..."
+              defaultValue={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className={cn(searchText && "bg-yellow-50", "pl-8")}
+              type="search"
+            />
+          </div>
+          <div className="flex gap-x-2">
+            {additionalButtons}
+            {showAddButton && (
+              <Button
+                type="button"
+                onClick={() => {
+                  onAdd?.();
+                }}
+                className="w-full md:w-fit"
+              >
+                {addButtonContent}
+              </Button>
+            )}
+
+            {showAdvancedFilter && (
+              <Button
+                type="button"
+                onClick={() => {
+                  setShowAdvancedFilterSlot(!showAdvancedFilterSlot);
+                }}
+                className="w-full md:w-fit"
+              >
+                <FilterIcon className="size-4" />
+              </Button>
+            )}
+          </div>
         </div>
+        {showAdvancedFilterSlot && <>{advancedFilterSlot}</>}
       </div>
 
       {isLoading && (

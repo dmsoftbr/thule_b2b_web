@@ -68,7 +68,7 @@ export const OrderFormHeader = () => {
             <SearchCombo
               key={priceTablesData.length > 0 ? 1 : 0}
               placeholder="Selecione a Tabela de Preço"
-              items={priceTablesData}
+              staticItems={priceTablesData}
               defaultValue={[
                 currentOrder.priceTable
                   ? {

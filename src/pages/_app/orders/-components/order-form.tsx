@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { OrderFormItems } from "./order-form-items";
 import { OrderFormHeader } from "./order-form-header";
-import { AvailabilityModal } from "./availability-modal";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useOrder } from "../-hooks/use-order";
@@ -41,7 +40,6 @@ export const OrderForm = ({ orderType, orderId, action }: Props) => {
         <OrderFormItems />
         <div className="absolute bottom-0 right-0 left-0 bg-neutral-100 border-t px-2 py-2 flex items-center justify-between">
           <div className="flex gap-x-2">
-            <AvailabilityModal />
             <DiscountMatrizModal />
             <SalesChannelModal />
           </div>

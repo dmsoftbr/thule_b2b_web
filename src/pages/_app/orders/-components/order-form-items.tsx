@@ -7,7 +7,6 @@ import { SearchProductModal } from "./search-product-modal";
 import { useOrder } from "../-hooks/use-order";
 import type { ProductModel } from "@/models/product.model";
 import { toast } from "sonner";
-import type { OrderItemModel } from "@/models/order-item-model";
 import { EmptyOrder } from "./empty-order";
 import { formatNumber } from "@/lib/number-utils";
 import { cn } from "@/lib/utils";
@@ -26,6 +25,7 @@ import { PencilIcon, TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProductImage } from "@/components/app/product-image";
+import type { OrderItemModel } from "@/models/orders/order-item-model";
 
 interface Props {}
 
@@ -78,7 +78,7 @@ export const OrderFormItems = ({}: Props) => {
   //   console.log(currentOrder.items);
   // }, [currentOrder]);
 
-  const orderTotal = currentOrder.items?.reduce(
+  const orderTotal = currentOrder.items.reduce(
     (acc, b) => acc + b.unitPriceBase * b.quantity,
     0
   );
@@ -210,7 +210,7 @@ export const OrderFormItems = ({}: Props) => {
                 Total
               </TableCell>
               <TableCell className=" border-[0.5px] w-[90px] text-right">
-                {currentOrder.items.length}
+                {currentOrder.items?.length}
               </TableCell>
               <TableCell
                 colSpan={2}
@@ -218,7 +218,7 @@ export const OrderFormItems = ({}: Props) => {
               ></TableCell>
               <TableCell className="w-[130px] border-[0.5px] text-right ">
                 {formatNumber(
-                  currentOrder.items.reduce(
+                  currentOrder.items?.reduce(
                     (acc, b) => (acc += b.quantity * b.unitPriceBase),
                     0
                   ),
@@ -243,7 +243,7 @@ export const OrderFormItems = ({}: Props) => {
             type="always"
           >
             {!currentOrder.items?.length && <EmptyOrder />}
-            {currentOrder.items?.map((item) => (
+            {currentOrder.items?.map((item: OrderItemModel) => (
               <OrderItemCard
                 key={item.productId}
                 data={item}
@@ -262,14 +262,14 @@ export const OrderFormItems = ({}: Props) => {
               <div className="text-green-600 font-semibold">
                 % Desconto: R${" "}
                 {formatNumber(
-                  orderTotal * (currentOrder.discountPercent / 100),
+                  orderTotal * (currentOrder.discountPercentual / 100),
                   2
                 )}
               </div>
               <div className="text-xl font-bold">
                 Total com Desconto: R${" "}
                 {formatNumber(
-                  orderTotal * (1 - currentOrder.discountPercent / 100),
+                  orderTotal * (1 - currentOrder.discountPercentual / 100),
                   2
                 )}
               </div>

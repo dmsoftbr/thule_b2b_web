@@ -6,13 +6,21 @@ interface Props {
   alt: string;
   className?: string;
   onClick?: (url: string) => void;
+  isThumb?: boolean;
 }
 
 const DEFAULT_URL = `https://remote.thule.com/imgrepo/`;
-export const ProductImage = ({ productId, alt, className, onClick }: Props) => {
+export const ProductImage = ({
+  productId,
+  alt,
+  className,
+  onClick,
+  isThumb = true,
+}: Props) => {
   const [loaded, setLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const productUrl = `${DEFAULT_URL}${productId}.jpg`;
+  const thumbUrl = `products/thumbs/${productId}.jpeg`;
   return (
     <div
       className={cn(
@@ -27,14 +35,14 @@ export const ProductImage = ({ productId, alt, className, onClick }: Props) => {
     >
       {!loaded && <div className="w-full h-full animate-pulse bg-gray-300" />}
       <img
-        src={productUrl}
+        src={isThumb ? thumbUrl : productUrl}
         alt={alt}
         onLoad={() => setLoaded(true)}
         className={`w-full h-full object-contain transition-opacity duration-300 ${
           loaded ? "opacity-100" : "opacity-0"
         }`}
         onError={(e) => {
-          e.currentTarget.src = `/products/sem_imagem.jpg`;
+          e.currentTarget.src = `products/sem_imagem.jpg`;
           setHasError(true);
         }}
       />

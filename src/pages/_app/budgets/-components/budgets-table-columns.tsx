@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatDate } from "@/lib/datetime-utils";
 import { formatNumber } from "@/lib/number-utils";
-import type { OrderModel } from "@/models/order-model";
+import type { OrderModel } from "@/models/orders/order-model";
 import {
   CopyIcon,
   DollarSignIcon,
