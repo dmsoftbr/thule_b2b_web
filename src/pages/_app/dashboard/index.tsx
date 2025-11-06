@@ -1,20 +1,36 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { RevenueChart } from "./-components/revenue-chart";
-import { OrdersList } from "./-components/orders-list";
-import { SimulationsList } from "./-components/simulations-list";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/use-auth";
+import { DashboardAdministrative } from "./-components/dashboard-administrative";
+import { DashboardRepresentative } from "./-components/dashboard-representative";
+import { DashboardCustomer } from "./-components/dashboard-customer";
 
 export const Route = createFileRoute("/_app/dashboard/")({
-  component: RouteComponent,
+  component: DashboardPageComponent,
 });
 
-function RouteComponent() {
+function DashboardPageComponent() {
+  const { session } = useAuth();
+
+  if (!session) {
+    redirect({ to: "/auth/login", replace: true });
+    return null;
+  }
+
+  if (session.user.role < 2) {
+    return <DashboardAdministrative />;
+  }
+
+  if (session.user.role == 2) {
+    return <DashboardRepresentative />;
+  }
+
+  if (session.user.role == 3) {
+    return <DashboardCustomer />;
+  }
+
   return (
-    <div className="flex flex-col space-y-4 p-4 w-full">
-      <RevenueChart />
-      <div className="grid grid-cols-2 gap-x-2">
-        <OrdersList />
-        <SimulationsList />
-      </div>
+    <div className="flex flex-col space-y-4 p-4 w-full h-full bg-white">
+      Aguarde...
     </div>
   );
 }

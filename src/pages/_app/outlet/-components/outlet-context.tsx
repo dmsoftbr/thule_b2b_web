@@ -1,3 +1,4 @@
+import type { OutletCartItem } from "@/models/outlet/outlet-cart-item.model";
 import {
   createContext,
   useContext,
@@ -7,19 +8,11 @@ import {
   type ReactNode,
 } from "react";
 
-type CartItem = {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  metadata?: Record<string, unknown>;
-};
-
 type OutletCartContextType = {
-  items: CartItem[];
+  items: OutletCartItem[];
   totalItems: number;
   totalPrice: number;
-  addItem: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
+  addItem: (item: Omit<OutletCartItem, "quantity">, quantity?: number) => void;
   removeItem: (id: string) => void;
   updateItemQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -32,11 +25,11 @@ const OutletCartContext = createContext<OutletCartContextType | undefined>(
 );
 
 export const OutletCartProvider = ({ children }: { children: ReactNode }) => {
-  const [items, setItems] = useState<CartItem[]>(() => {
+  const [items, setItems] = useState<OutletCartItem[]>(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
-      return JSON.parse(raw) as CartItem[];
+      return JSON.parse(raw) as OutletCartItem[];
     } catch {
       return [];
     }
@@ -50,9 +43,11 @@ export const OutletCartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [items]);
 
-  const addItem = (item: Omit<CartItem, "quantity">, quantity = 1) => {
+  const addItem = (item: Omit<OutletCartItem, "quantity">, quantity = 1) => {
     setItems((prev) => {
-      const idx = prev.findIndex((p) => p.id === item.id);
+      const idx = prev.findIndex(
+        (p) => p.id === item.id && p.priceTableId == item.priceTableId
+      );
       if (idx >= 0) {
         const next = [...prev];
         next[idx] = { ...next[idx], quantity: next[idx].quantity + quantity };

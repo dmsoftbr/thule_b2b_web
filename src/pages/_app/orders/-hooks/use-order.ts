@@ -102,8 +102,10 @@ const handleAddItem = (state: OrderState, item: OrderItemModel) => {
 const handleUpdateItem = (state: OrderState, item: OrderItemModel) => {
   const newItems = state.currentOrder.items;
   const itemIndex =
-    state.currentOrder.items?.findIndex((f) => f.portalId === item.portalId) ??
-    -1;
+    state.currentOrder.items?.findIndex(
+      (f) => f.productId === item.productId && f.sequence == item.sequence
+    ) ?? -1;
+
   if (itemIndex >= 0 && newItems) {
     newItems[itemIndex].quantity = item.quantity;
     newItems[itemIndex].deliveryDate = item.deliveryDate;
@@ -115,6 +117,6 @@ const handleUpdateItem = (state: OrderState, item: OrderItemModel) => {
 
 const handleRemoveItem = (state: OrderState, item: OrderItemModel) => {
   const newItems =
-    state.currentOrder.items?.filter((f) => f.portalId != item.portalId) ?? [];
+    state.currentOrder.items?.filter((f) => f.sequence != item.sequence) ?? [];
   return { currentOrder: { ...state.currentOrder, items: newItems } };
 };

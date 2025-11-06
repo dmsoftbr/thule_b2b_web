@@ -41,7 +41,14 @@ export function FormCheckBox<
         <FormItem className={className}>
           <FormLabel required={required}>{label}</FormLabel>
           <FormControl>
-            <Checkbox {...field} disabled={disabled} autoFocus={autoFocus} />
+            <Checkbox
+              checked={field.value}
+              onCheckedChange={(checked) =>
+                field.onChange(checked ? true : false)
+              }
+              disabled={disabled}
+              autoFocus={autoFocus}
+            />
           </FormControl>
           <FormMessage />
         </FormItem>

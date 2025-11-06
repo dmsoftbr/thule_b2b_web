@@ -16,6 +16,7 @@ import { USER_ROLES } from "@/constants";
 import { FormCheckBox } from "@/components/form/form-checkbox";
 import { cn } from "@/lib/utils";
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
+import { useAuth } from "@/hooks/use-auth";
 
 interface Props {
   initialData: UserModel | null;
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export const UserForm = ({ initialData, mode, onClose }: Props) => {
+  const { session } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const { showAppDialog } = useAppDialog();
 
@@ -39,13 +41,7 @@ export const UserForm = ({ initialData, mode, onClose }: Props) => {
 
   const onSubmit = async (values: z.infer<typeof UserSchema>) => {
     try {
-      let newRole = 3;
-      if (values.role == "ADMINISTRATOR") newRole = 0;
-      if (values.role == "ADMINISTRATIVE") newRole = 1;
-      if (values.role == "REPRESENTATIVE") newRole = 2;
-      if (values.role == "CUSTOMER") newRole = 3;
-
-      let data = { ...values, role: newRole };
+      let data = { ...values };
 
       setIsLoading(true);
       if (mode == "ADD") {
@@ -127,12 +123,9 @@ export const UserForm = ({ initialData, mode, onClose }: Props) => {
             searchPlaceholder="Buscar Grupo de Usuário"
           />
           <FormSearchCombo
-            className={cn(
-              "hidden space-y-2",
-              roleWatch == "CUSTOMER" && "block"
-            )}
+            className={cn("hidden space-y-2", roleWatch == "3" && "block")}
             control={form.control}
-            apiEndpoint="/registrations/customers/all"
+            apiEndpoint={`/registrations/customers/all/${session?.user.id}`}
             queryStringName=""
             labelProp="abbreviation"
             valueProp="id"
@@ -142,10 +135,7 @@ export const UserForm = ({ initialData, mode, onClose }: Props) => {
             searchPlaceholder="Buscar Cliente"
           />
           <FormSearchCombo
-            className={cn(
-              "hidden space-y-2",
-              roleWatch == "REPRESENTATIVE" && "block"
-            )}
+            className={cn("hidden space-y-2", roleWatch == "2" && "block")}
             control={form.control}
             apiEndpoint="/registrations/representatives/all"
             queryStringName=""

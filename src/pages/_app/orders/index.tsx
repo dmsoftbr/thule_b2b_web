@@ -15,6 +15,7 @@ import { api } from "@/lib/api";
 import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
+import { useOrder } from "./-hooks/use-order";
 
 const searchFieldsList: ServerTableSearchField[] = [
   {
@@ -38,15 +39,19 @@ function ListOrdersPage() {
   const [selectedReps, setSelectedReps] = useState<number[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<number[]>([]);
   const [customWhere, setCustomWhere] = useState("");
+  const { setCurrentOrder } = useOrder();
+
   const handleAdd = () => {
     navigate({ to: "/orders/new-order" });
   };
 
   const handleEdit = (data: OrderModel) => {
+    setCurrentOrder(data);
     navigate({ to: `/orders/edit/${data.id}` });
   };
 
   const handleView = (data: OrderModel) => {
+    setCurrentOrder(data);
     navigate({ to: `/orders/view/${data.id}` });
   };
 

@@ -10,7 +10,7 @@ export type ProductModel = {
   familyId: string;
   commercialFamilyId: string;
   productTypeId: string;
-  isActive: boolean;
+  isActive: number;
   referenceCode: string;
   // nav props
   productGroup?: ProductGroupModel;

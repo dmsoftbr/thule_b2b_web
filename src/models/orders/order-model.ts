@@ -17,7 +17,7 @@ export type OrderModel = {
   discountPercentual: number;
   currencyId?: number;
   representativeId: number;
-  orderClassificationId?: number;
+  orderClassificationId: number;
   createdBy?: string;
   isParcialBilling?: boolean;
   useCustomerCarrier?: boolean;

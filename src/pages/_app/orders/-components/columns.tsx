@@ -21,7 +21,6 @@ import {
   DollarSignIcon,
   EditIcon,
   ExternalLinkIcon,
-  FileIcon,
   MenuIcon,
   SearchIcon,
   SettingsIcon,
@@ -52,6 +51,7 @@ export const columns = ({
     key: "customerId",
     dataIndex: "customerId",
     title: "Cliente",
+    cellClassName: "text-xs",
     renderItem: (order: OrderModel) => (
       <span>
         {order.customerId} - {order.customer?.abbreviation}
@@ -63,6 +63,7 @@ export const columns = ({
     key: "orderRepId",
     dataIndex: "orderRepId",
     title: "Ped. Distribuidor",
+    cellClassName: "text-xs",
     renderItem: (order: OrderModel) => <span>{order.erpOrderId}</span>,
     sortable: true,
   },
@@ -70,6 +71,7 @@ export const columns = ({
     key: "repName",
     dataIndex: "repName",
     title: "Representante",
+    cellClassName: "text-xs",
     renderItem: (order: OrderModel) => (
       <span>
         {order.representativeId} - {order.representative?.abbreviation}
@@ -81,6 +83,7 @@ export const columns = ({
     key: "createdAt",
     dataIndex: "createdAt",
     title: "Dt Implantação",
+    cellClassName: "text-xs",
     renderItem: (order: OrderModel) => (
       <div className="text-center">{formatDate(order.createdAt)}</div>
     ),
@@ -90,6 +93,7 @@ export const columns = ({
     key: "totalOrderValue",
     dataIndex: "totalOrderValue",
     title: "Total do Pedido",
+    cellClassName: "text-xs",
     renderItem: (order: OrderModel) => (
       <div className="text-right">{formatNumber(order.grossTotalValue, 2)}</div>
     ),
@@ -108,13 +112,7 @@ export const columns = ({
           )}
         >
           {getOrderStatusName(order.statusId, order.creditStatusId ?? 0)}
-          {order.statusId} {order.creditStatusId}
         </span>
-        {order.statusId == 4 && (
-          <button>
-            <FileIcon className="size-4" />
-          </button>
-        )}
       </div>
     ),
     sortable: true,

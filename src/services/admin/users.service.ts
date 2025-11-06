@@ -11,8 +11,10 @@ export class UsersService {
     return response.data;
   }
 
-  async getById(id: string): Promise<UserModel> {
-    const response = await api.get<UserModel>(`/${this.basePath}/${id}`);
+  async getById(id: string, onlyActive: boolean = true): Promise<UserModel> {
+    const response = await api.get<UserModel>(
+      `/${this.basePath}/${id}?onlyActives=${onlyActive}`
+    );
     return response.data;
   }
 

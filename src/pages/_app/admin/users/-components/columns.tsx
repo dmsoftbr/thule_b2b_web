@@ -1,8 +1,21 @@
-import { AppTooltip } from "@/components/layout/app-tooltip";
 import type { ServerTableColumn } from "@/components/server-table/server-table";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import type { UserModel } from "@/models/user.model";
-import { EditIcon, LockIcon, Settings2Icon, TrashIcon } from "lucide-react";
+import {
+  EditIcon,
+  LockKeyholeIcon,
+  MoreHorizontalIcon,
+  Settings2Icon,
+  TrashIcon,
+} from "lucide-react";
 
 interface Props {
   fnEdit: (data: UserModel) => void;
@@ -45,6 +58,22 @@ export const columns = ({
     sortable: true,
   },
   {
+    title: "Ativo",
+    dataIndex: "isActive",
+    key: "isActive",
+    sortable: false,
+    renderItem: (row: UserModel) => (
+      <span
+        className={cn(
+          row.isActive ? "bg-blue-600" : "bg-red-400",
+          "text-white text-xs rounded-md p-1"
+        )}
+      >
+        {row.isActive ? "Sim" : "Não"}
+      </span>
+    ),
+  },
+  {
     title: "Ações",
     dataIndex: "id",
     key: "actions",
@@ -69,31 +98,33 @@ export const columns = ({
         >
           <TrashIcon className="size-4" />
         </Button>
-        <AppTooltip message="Permissões do Usuário">
-          <Button
-            size="sm"
-            type="button"
-            variant="secondary"
-            onClick={() => {
-              fnPermissions(row);
-            }}
-          >
-            <Settings2Icon className="size-4" />
-          </Button>
-        </AppTooltip>
-
-        <AppTooltip message="Alterar a senha do Usuário">
-          <Button
-            size="sm"
-            type="button"
-            variant="secondary"
-            onClick={() => {
-              fnChangePassword(row);
-            }}
-          >
-            <LockIcon className="size-4" />
-          </Button>
-        </AppTooltip>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="secondary" size="sm">
+              <MoreHorizontalIcon className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="bottom" align="end">
+            <DropdownMenuItem
+              disabled={row.role == "0"}
+              onClick={() => {
+                fnPermissions(row);
+              }}
+            >
+              <Settings2Icon className="size-4" />
+              Permissões do Usuário
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                fnChangePassword(row);
+              }}
+            >
+              <LockKeyholeIcon className="size-4" />
+              Alterar a Senha
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     ),
   },

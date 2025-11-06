@@ -20,9 +20,8 @@ import { useEffect, useState } from "react";
 import { useOrder } from "../-hooks/use-order";
 import { ProductImage } from "@/components/app/product-image";
 import { formatNumber } from "@/lib/number-utils";
-import { v7 as uuidv7 } from "uuid";
 
-export const SearchProductModal = () => {
+export const OrderSearchProductModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   //const [data, setData] = useState<ProductModel[]>([]);
   const { currentOrder, setCurrentOrder } = useOrder();
@@ -54,15 +53,15 @@ export const SearchProductModal = () => {
       newOrder.items.push({
         availability: "C",
         deliveryDate: new Date(),
-        id: 0,
-        orderId: Number(currentOrder.id),
-        portalId: uuidv7(),
+        sequence: 0,
+        orderId: currentOrder.id,
         product: product,
         productId: product.id,
         quantity,
         totalValue: quantity * product.unitPriceInTable,
         unitPriceBase: product.unitPriceInTable,
         unitPriceSuggest: product.suggestUnitPrice,
+        priceTableId: currentOrder.priceTableId,
       });
     }
     setCurrentOrder(newOrder);

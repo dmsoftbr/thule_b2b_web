@@ -19,6 +19,7 @@ import { api } from "@/lib/api";
 import { formatCpfCnpj } from "@/lib/string-utils";
 import { useDebounceCallback } from "usehooks-ts";
 import type { CustomerModel } from "@/models/registrations/customer.model";
+import { useAuth } from "@/hooks/use-auth";
 
 interface Props {
   onSelect?: (customer: CustomerModel | undefined) => void;
@@ -31,6 +32,7 @@ export const CustomersCombo = ({ disabled, onSelect, defaultValue }: Props) => {
   const [data, setData] = useState<CustomerModel[]>([]);
   const [value, setValue] = useState(defaultValue);
   const [searchText, setSearchText] = useState("");
+  const { session } = useAuth();
 
   const debouncedValue = useDebounceCallback(setSearchText, 200);
 
@@ -48,19 +50,27 @@ export const CustomersCombo = ({ disabled, onSelect, defaultValue }: Props) => {
       );
     }
 
-    return "";
+    return value;
   }
 
   async function onSearch(searchText: string) {
-    const { data } = await api.post("/registrations/customers/search", {
-      search: searchText,
-    });
+    const { data } = await api.post(
+      `/registrations/customers/search/${session?.user.id}`,
+      {
+        search: searchText,
+      }
+    );
     setData(data);
   }
 
   useEffect(() => {
     onSearch(searchText);
   }, [searchText]);
+
+  useEffect(() => {
+    setValue(defaultValue);
+    setSearchText(defaultValue?.toString() ?? "");
+  }, [defaultValue]);
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>

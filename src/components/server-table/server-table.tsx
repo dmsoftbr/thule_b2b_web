@@ -60,6 +60,7 @@ export type ServerTableGroupConfig = {
 
 interface ServerTableProps<T> {
   items?: T[];
+  searchAutoFocus?: boolean;
   tableId?: string;
   columns: ServerTableColumn[];
   dataUrl: string;
@@ -80,9 +81,11 @@ interface ServerTableProps<T> {
   groupConfig?: ServerTableGroupConfig;
   refreshDataToken?: string | number | Date | undefined;
   additionalButtons?: React.ReactNode | React.ReactNode[];
+  searchPlaceHolder?: string;
   onAdd?: () => void;
   onAfterGetData?: (data: any) => void;
   rowCss?: (row: T) => string;
+  onSelectRow?: (row: T) => void;
 }
 
 type GroupedData<T> = {
@@ -95,6 +98,7 @@ export const ServerTable = <T,>({
   items,
   tableId,
   columns,
+  searchAutoFocus,
   dataUrl,
   dataMethod = "POST",
   showAddButton = true,
@@ -111,10 +115,12 @@ export const ServerTable = <T,>({
   tableClassNames = "",
   refreshDataToken = "",
   additionalButtons,
+  searchPlaceHolder = "Pesquisar",
   rowCss = (_) => "",
   groupConfig,
   onAdd,
   onAfterGetData,
+  onSelectRow,
 }: ServerTableProps<T>) => {
   const [searchText, setSearchText] = useDebounceValue("", 300);
   const [pageSize, setPageSize] = useState(defaultPageSize);
@@ -495,6 +501,7 @@ export const ServerTable = <T,>({
           )}
           onClick={(e) => {
             setSelectedItem(row);
+            onSelectRow?.(row);
             e.preventDefault();
           }}
         >
@@ -687,11 +694,12 @@ export const ServerTable = <T,>({
               <SearchIcon className="size-3" />
             </div>
             <Input
-              placeholder="Pesquisar..."
+              placeholder={searchPlaceHolder}
               defaultValue={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               className={cn(searchText && "bg-yellow-50", "pl-8")}
               type="search"
+              autoFocus={searchAutoFocus}
             />
           </div>
           <div className="flex gap-x-2">
@@ -802,6 +810,12 @@ export const ServerTable = <T,>({
             <SelectContent>
               <SelectItem className="text-xs" value="0">
                 Todos
+              </SelectItem>
+              <SelectItem className="text-xs" value="6">
+                6
+              </SelectItem>
+              <SelectItem className="text-xs" value="8">
+                8
               </SelectItem>
               <SelectItem className="text-xs" value="10">
                 10

@@ -121,6 +121,22 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
     setItems(staticItems ?? []);
   }, [staticItems]);
 
+  useEffect(() => {
+    if (!defaultValue) {
+      setSelectedItems([]);
+    } else {
+      if (Array.isArray(defaultValue)) {
+        setSelectedItems(defaultValue);
+      } else {
+        if (items) {
+          const item = items.find((f) => f.value == defaultValue);
+          console.log("SELITEM", item);
+          if (item) setSelectedItems([item]);
+        }
+      }
+    }
+  }, [defaultValue, items]);
+
   // Efeito para atualizar o item selecionado quando o valor mudar externamente
   // useEffect(() => {
   //   // if (value) {
@@ -179,8 +195,15 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
   };
 
   function isItemSelected(currentValue: string) {
-    if (!selectedItems) return false;
-    return selectedItems.findIndex((f) => f.value == currentValue) > -1;
+    try {
+      if (!selectedItems) return false;
+      if (Array.isArray(selectedItems)) {
+        return selectedItems.findIndex((f) => f.value == currentValue) > -1;
+      }
+      return selectedItems == currentValue;
+    } catch (error) {
+      console.log(error, selectedItems);
+    }
   }
 
   const renderSelectedItem = React.useMemo(() => {
@@ -223,7 +246,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "w-full justify-between disabled:bg-neutral-200 disabled:cursor-not-allowed",
+            "w-full justify-between disabled:bg-neutral-200 disabled:cursor-not-allowed disabled:border-neutral-300",
             className
           )}
         >

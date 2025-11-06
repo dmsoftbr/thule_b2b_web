@@ -65,9 +65,9 @@ export const BudgetsTable = () => {
     const params: PagedRequestModel = {
       currentPage: 0,
       pageSize: 10,
-      search: "",
+      searchText: "",
       searchField: "id",
-      sortDir: "asc",
+      sortAsc: true,
       sortField: "id",
     };
     const { data } = await api.post("/orders/list-paged", params);

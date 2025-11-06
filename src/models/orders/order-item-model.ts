@@ -1,8 +1,8 @@
 import type { ProductModel } from "../product.model";
 
 export type OrderItemModel = {
-  id: number;
-  orderId: number;
+  sequence: number;
+  orderId: string;
   productId: string;
   quantity: number;
   unitPriceSuggest: number;
@@ -10,6 +10,6 @@ export type OrderItemModel = {
   totalValue: number;
   deliveryDate: Date;
   availability: string;
-  product: ProductModel;
-  portalId: string;
+  priceTableId: string;
+  product?: ProductModel;
 };

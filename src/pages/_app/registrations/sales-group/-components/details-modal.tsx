@@ -97,7 +97,7 @@ export const DetailsModal = ({ groupData, isOpen, onClose }: Props) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="min-w-7/12">
         <DialogHeader>
           <DialogTitle>Detalhamento do Grupo de Vendas</DialogTitle>
           <DialogDescription></DialogDescription>

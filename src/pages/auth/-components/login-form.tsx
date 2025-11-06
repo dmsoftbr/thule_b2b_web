@@ -22,7 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { api } from "@/lib/api";
+import { api, handleError } from "@/lib/api";
 import { useNavigate } from "@tanstack/react-router";
 import { LoginSchema } from "./schemas";
 import { useAuth } from "@/hooks/use-auth";
@@ -58,15 +58,9 @@ export const LoginForm = ({ onGotoForgotPassword }: Props) => {
       login(data);
 
       navigate({ to: "/dashboard", replace: true });
-    } catch (error: any) {
-      if (error.name === "HTTPError") {
-        const body = await error.response.json();
-
-        setError(body.message);
-      } else {
-        console.log(error);
-        setError(error.message);
-      }
+    } catch (error) {
+      console.log(error);
+      setError(handleError(error));
     }
   };
 

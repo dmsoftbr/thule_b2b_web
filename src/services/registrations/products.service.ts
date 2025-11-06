@@ -11,8 +11,8 @@ export class ProductsService {
     return response.data;
   }
 
-  static async getById(id: number): Promise<ProductModel> {
-    const response = await api.get<ProductModel>(`/${this.basePath}/${id}`);
+  static async getById(id: string): Promise<ProductModel> {
+    const response = await api.get<ProductModel>(`/${this.basePath}/id/${id}`);
     return response.data;
   }
 

@@ -1,16 +1,15 @@
 import { ProductsCombo } from "@/components/app/products-combo";
 import { Label } from "@/components/ui/label";
 import { OrderItemCard } from "./order-item-card";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { SearchProductModal } from "./search-product-modal";
+import { OrderSearchProductModal } from "./order-search-product-modal";
 import { useOrder } from "../-hooks/use-order";
 import type { ProductModel } from "@/models/product.model";
 import { toast } from "sonner";
 import { EmptyOrder } from "./empty-order";
 import { formatNumber } from "@/lib/number-utils";
 import { cn } from "@/lib/utils";
-import { v7 as uuiv7 } from "uuid";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
@@ -26,15 +25,21 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProductImage } from "@/components/app/product-image";
 import type { OrderItemModel } from "@/models/orders/order-item-model";
+import { FormInputQty } from "@/components/form/form-qty-input";
+import { NEW_ORDER_ITEM_EMPTY } from "../-utils/order-utils";
+import { api } from "@/lib/api";
+import { OrderItemTableRow } from "./order-item-table-row";
 
-interface Props {}
+interface Props {
+  isEditing: boolean;
+}
 
-export const OrderFormItems = ({}: Props) => {
+export const OrderFormItems = ({ isEditing }: Props) => {
   const { currentOrder, onAddItem: addItem } = useOrder();
   const [showCard, setShowCard] = useState(true);
 
   const hasCustomerAndPriceTable =
-    currentOrder.customer && currentOrder.priceTable;
+    currentOrder.customer && currentOrder.priceTableId;
 
   if (!hasCustomerAndPriceTable) {
     return (
@@ -47,7 +52,7 @@ export const OrderFormItems = ({}: Props) => {
     );
   }
 
-  const handleAddItem = (product: ProductModel | undefined) => {
+  const handleAddItem = async (product: ProductModel | undefined) => {
     if (!product) return;
     if (
       currentOrder.items &&
@@ -58,25 +63,36 @@ export const OrderFormItems = ({}: Props) => {
       toast.warning("Produto já consta no pedido!");
       return;
     }
-    const newOrderItem: OrderItemModel = {
-      id: 0,
-      orderId: 0,
+
+    // chama a
+    // api que calcula data de entrega
+
+    var params = {
+      orderId: currentOrder.id,
+      customerAbbreviation: currentOrder.customerAbbreviation,
       productId: product.id,
       quantity: 1,
-      deliveryDate: new Date(),
-      availability: "C",
-      totalValue: 0,
+    };
+    const { data: deliveryData } = await api.post(
+      `/stock/caculate-delivery-date`,
+      params
+    );
+
+    const newOrderItem: OrderItemModel = {
+      ...NEW_ORDER_ITEM_EMPTY,
+      ...product,
+      productId: product.id,
+      deliveryDate: deliveryData.estimatedDate,
+      availability: deliveryData.availbility,
       unitPriceBase: product.unitPriceInTable,
       unitPriceSuggest: product.suggestUnitPrice,
-      product,
-      portalId: uuiv7(),
+      totalValue: product.unitPriceInTable * 1,
+      quantity: 1,
+      sequence: currentOrder.items.length + 10,
     };
+
     addItem(newOrderItem);
   };
-
-  // useEffect(() => {
-  //   console.log(currentOrder.items);
-  // }, [currentOrder]);
 
   const orderTotal = currentOrder.items.reduce(
     (acc, b) => acc + b.unitPriceBase * b.quantity,
@@ -88,15 +104,21 @@ export const OrderFormItems = ({}: Props) => {
       <div className="flex gap-x-4 mb-2 container w-full">
         <div className="flex flex-1 items-center justify-center">
           <div className="flex gap-x-2 w-full items-end">
-            <div className="flex-1 form-group">
-              <Label>Pesquisar Produto para Adicionar</Label>
-              <ProductsCombo
-                onSelect={handleAddItem}
-                priceTableId={currentOrder.priceTableId}
-                customerId={currentOrder.customerId}
-              />
-            </div>
-            <SearchProductModal />
+            {currentOrder.orderClassificationId < 6 ? (
+              <>
+                <div className="flex-1 form-group">
+                  <Label>Pesquisar Produto para Adicionar</Label>
+                  <ProductsCombo
+                    onSelect={handleAddItem}
+                    priceTableId={currentOrder.priceTableId}
+                    customerId={currentOrder.customerId}
+                  />
+                </div>
+                <OrderSearchProductModal />
+              </>
+            ) : (
+              <div></div>
+            )}
             <Label>
               <Checkbox
                 checked={showCard}
@@ -109,43 +131,38 @@ export const OrderFormItems = ({}: Props) => {
       </div>
 
       {!showCard && (
-        <Table className="w-full table-fixed border-separate">
-          <TableHeader>
+        <Table className="w-full table-fixed text-xs flex flex-col">
+          <TableHeader className="flex">
             <TableRow className="flex w-full hover:bg-neutral-300 bg-neutral-300">
-              <TableHead className="w-[136px] border flex items-center text-xs text-black">
+              <TableHead className="w-[72px] border flex items-center text-xs text-black">
                 Imagem
               </TableHead>
-              <TableHead className="w-[100px] border flex items-center text-xs text-black">
-                Código
-              </TableHead>
               <TableHead className="flex-1 border flex items-center text-xs text-black">
-                Descrição
+                Produto
               </TableHead>
-              <TableHead className="w-[90px] border flex items-center text-xs text-black">
+              <TableHead className="w-[160px] border flex items-center text-xs text-black">
                 Qtde
               </TableHead>
-              <TableHead className="w-[115px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
+              <TableHead className="w-[120px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
                 <span>Preço</span>
                 <span>Sugerido</span>
               </TableHead>
-              <TableHead className="w-[100px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
+              <TableHead className="w-[120px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
                 <span>Valor</span>
                 <span>c/Desconto</span>
               </TableHead>
-              <TableHead className="w-[130px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
+              <TableHead className="w-[120px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
                 <span>Total</span>
                 <span>c/Desconto</span>
               </TableHead>
               <TableHead className="w-[120px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
                 Prev. Entrega
               </TableHead>
-              <TableHead className="w-[120px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
-                Margem/Markup
-              </TableHead>
+
               <TableHead className="w-[100px] border flex items-center text-xs text-black">
                 Ações
               </TableHead>
-              <TableHead className="w-[17px]"></TableHead>
+              <TableHead className="w-[17px] max-w-[17px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody
@@ -153,70 +170,29 @@ export const OrderFormItems = ({}: Props) => {
             style={{ maxHeight: "230px" }}
           >
             {currentOrder.items?.map((item: OrderItemModel, index: number) => (
-              <TableRow key={index} className="flex w-full even:bg-muted">
-                <TableCell className="w-[136px] border-r border-l p-1">
-                  <ProductImage
-                    productId={item.productId}
-                    alt={item.productId}
-                  />
-                </TableCell>
-                <TableCell className="w-[100px]  border-r">
-                  {item.productId}
-                </TableCell>
-                <TableCell className="flex-1  border-r">
-                  {item.product.description}
-                </TableCell>
-                <TableCell className="w-[90px]  border-r text-right">
-                  {item.quantity}
-                </TableCell>
-                <TableCell className="w-[115px]  border-r text-right">
-                  {formatNumber(item.unitPriceSuggest, 2)}
-                </TableCell>
-                <TableCell className="w-[100px]  border-r text-right">
-                  {formatNumber(item.unitPriceBase, 2)}
-                </TableCell>
-                <TableCell className="w-[130px]  border-r text-right">
-                  {formatNumber(item.totalValue, 2)}
-                </TableCell>
-                <TableCell className="w-[120px]  border-r flex-wrap ">
-                  {item.deliveryDate?.toLocaleDateString()}{" "}
-                  <Badge
-                    title={
-                      item.availability == "C" ? "Em Estoque" : "BackOrder"
-                    }
-                    variant={
-                      item.availability == "C" ? "default" : "destructive"
-                    }
-                  >
-                    {item.availability}
-                  </Badge>
-                </TableCell>
-                <TableCell className="w-[120px] border-r">0</TableCell>
-                <TableCell className="w-[100px] border-r">
-                  <Button size="icon" variant="blue">
-                    <PencilIcon />
-                  </Button>
-                  <Button size="icon" variant="destructive">
-                    <TrashIcon />
-                  </Button>
-                </TableCell>
-                <TableCell className="w-[7px] p-0"></TableCell>
-              </TableRow>
+              <OrderItemTableRow
+                key={index}
+                item={item}
+                isEditing={isEditing}
+              />
             ))}
           </TableBody>
           <TableFooter className="flex w-full">
-            <TableRow className="flex w-full bg-neutral-300">
-              <TableCell colSpan={3} className="flex-1 border-[0.5px]">
-                Total
-              </TableCell>
-              <TableCell className=" border-[0.5px] w-[90px] text-right">
-                {currentOrder.items?.length}
-              </TableCell>
-              <TableCell
+            <TableRow className="flex w-full bg-neutral-300 align-middle text-sm hover:bg-neutral-300">
+              <TableHead
                 colSpan={2}
-                className="w-[215px] border-[0.5px]"
-              ></TableCell>
-              <TableCell className="w-[130px] border-[0.5px] text-right ">
+                className="flex-1 border-[0.5px] flex items-center"
+              >
+                Total
+              </TableHead>
+              <TableHead className=" border-[0.5px] w-[160px]   flex items-center justify-end">
+                {currentOrder.items?.length}
+              </TableHead>
+              <TableHead
+                colSpan={2}
+                className="w-[240px] border-[0.5px]"
+              ></TableHead>
+              <TableHead className="w-[120px] border-[0.5px] text-right  flex items-center justify-end">
                 {formatNumber(
                   currentOrder.items?.reduce(
                     (acc, b) => (acc += b.quantity * b.unitPriceBase),
@@ -224,8 +200,9 @@ export const OrderFormItems = ({}: Props) => {
                   ),
                   2
                 )}
-              </TableCell>
-              <TableCell colSpan={3}></TableCell>
+              </TableHead>
+              <TableHead className="w-[220px] border-r"></TableHead>
+              <TableHead className="w-[17px]"></TableHead>
             </TableRow>
           </TableFooter>
         </Table>
@@ -243,9 +220,9 @@ export const OrderFormItems = ({}: Props) => {
             type="always"
           >
             {!currentOrder.items?.length && <EmptyOrder />}
-            {currentOrder.items?.map((item: OrderItemModel) => (
+            {currentOrder.items?.map((item: OrderItemModel, index) => (
               <OrderItemCard
-                key={item.productId}
+                key={`${item.productId}_${index}`}
                 data={item}
                 className="even:bg-neutral-300"
               />
@@ -260,7 +237,7 @@ export const OrderFormItems = ({}: Props) => {
                 </div>
               </div>
               <div className="text-green-600 font-semibold">
-                % Desconto: R${" "}
+                Desconto: R${" "}
                 {formatNumber(
                   orderTotal * (currentOrder.discountPercentual / 100),
                   2

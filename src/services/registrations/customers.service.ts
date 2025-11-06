@@ -6,13 +6,15 @@ import type { CustomerModel } from "@/models/registrations/customer.model";
 export class CustomersService {
   private static basePath: string = "registrations/customers";
 
-  static async getAll(): Promise<CustomerModel[]> {
-    const response = await api.get<CustomerModel[]>(`/${this.basePath}/all`);
+  static async getAll(userId: string): Promise<CustomerModel[]> {
+    const response = await api.get<CustomerModel[]>(
+      `/${this.basePath}/all/${userId}`
+    );
     return response.data;
   }
 
   static async getById(id: number): Promise<CustomerModel> {
-    const response = await api.get<CustomerModel>(`/${this.basePath}/${id}`);
+    const response = await api.get<CustomerModel>(`/${this.basePath}/id/${id}`);
     return response.data;
   }
 

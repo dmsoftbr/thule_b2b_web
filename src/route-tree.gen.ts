@@ -25,7 +25,6 @@ import { Route as AppRegistrationsSalesGroupIndexRouteImport } from './pages/_ap
 import { Route as AppRegistrationsRepresentativeGoalsIndexRouteImport } from './pages/_app/registrations/representative-goals/index'
 import { Route as AppRegistrationsProductsIndexRouteImport } from './pages/_app/registrations/products/index'
 import { Route as AppRegistrationsCustomersIndexRouteImport } from './pages/_app/registrations/customers/index'
-import { Route as AppRegistrationsCustomerPriceTablesIndexRouteImport } from './pages/_app/registrations/customer-price-tables/index'
 import { Route as AppRegistrationsApprovalLevelsIndexRouteImport } from './pages/_app/registrations/approval-levels/index'
 import { Route as AppOrdersOrderIdIndexRouteImport } from './pages/_app/orders/$orderId/index'
 import { Route as AppMobileNotificationsIndexRouteImport } from './pages/_app/mobile/notifications/index'
@@ -137,12 +136,6 @@ const AppRegistrationsCustomersIndexRoute =
   AppRegistrationsCustomersIndexRouteImport.update({
     id: '/registrations/customers/',
     path: '/registrations/customers/',
-    getParentRoute: () => AppLayoutRoute,
-  } as any)
-const AppRegistrationsCustomerPriceTablesIndexRoute =
-  AppRegistrationsCustomerPriceTablesIndexRouteImport.update({
-    id: '/registrations/customer-price-tables/',
-    path: '/registrations/customer-price-tables/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
 const AppRegistrationsApprovalLevelsIndexRoute =
@@ -324,7 +317,6 @@ export interface FileRoutesByFullPath {
   '/mobile/notifications': typeof AppMobileNotificationsIndexRoute
   '/orders/$orderId': typeof AppOrdersOrderIdIndexRoute
   '/registrations/approval-levels': typeof AppRegistrationsApprovalLevelsIndexRoute
-  '/registrations/customer-price-tables': typeof AppRegistrationsCustomerPriceTablesIndexRoute
   '/registrations/customers': typeof AppRegistrationsCustomersIndexRoute
   '/registrations/products': typeof AppRegistrationsProductsIndexRoute
   '/registrations/representative-goals': typeof AppRegistrationsRepresentativeGoalsIndexRoute
@@ -369,7 +361,6 @@ export interface FileRoutesByTo {
   '/mobile/notifications': typeof AppMobileNotificationsIndexRoute
   '/orders/$orderId': typeof AppOrdersOrderIdIndexRoute
   '/registrations/approval-levels': typeof AppRegistrationsApprovalLevelsIndexRoute
-  '/registrations/customer-price-tables': typeof AppRegistrationsCustomerPriceTablesIndexRoute
   '/registrations/customers': typeof AppRegistrationsCustomersIndexRoute
   '/registrations/products': typeof AppRegistrationsProductsIndexRoute
   '/registrations/representative-goals': typeof AppRegistrationsRepresentativeGoalsIndexRoute
@@ -416,7 +407,6 @@ export interface FileRoutesById {
   '/_app/mobile/notifications/': typeof AppMobileNotificationsIndexRoute
   '/_app/orders/$orderId/': typeof AppOrdersOrderIdIndexRoute
   '/_app/registrations/approval-levels/': typeof AppRegistrationsApprovalLevelsIndexRoute
-  '/_app/registrations/customer-price-tables/': typeof AppRegistrationsCustomerPriceTablesIndexRoute
   '/_app/registrations/customers/': typeof AppRegistrationsCustomersIndexRoute
   '/_app/registrations/products/': typeof AppRegistrationsProductsIndexRoute
   '/_app/registrations/representative-goals/': typeof AppRegistrationsRepresentativeGoalsIndexRoute
@@ -463,7 +453,6 @@ export interface FileRouteTypes {
     | '/mobile/notifications'
     | '/orders/$orderId'
     | '/registrations/approval-levels'
-    | '/registrations/customer-price-tables'
     | '/registrations/customers'
     | '/registrations/products'
     | '/registrations/representative-goals'
@@ -508,7 +497,6 @@ export interface FileRouteTypes {
     | '/mobile/notifications'
     | '/orders/$orderId'
     | '/registrations/approval-levels'
-    | '/registrations/customer-price-tables'
     | '/registrations/customers'
     | '/registrations/products'
     | '/registrations/representative-goals'
@@ -554,7 +542,6 @@ export interface FileRouteTypes {
     | '/_app/mobile/notifications/'
     | '/_app/orders/$orderId/'
     | '/_app/registrations/approval-levels/'
-    | '/_app/registrations/customer-price-tables/'
     | '/_app/registrations/customers/'
     | '/_app/registrations/products/'
     | '/_app/registrations/representative-goals/'
@@ -694,13 +681,6 @@ declare module '@tanstack/react-router' {
       path: '/registrations/customers'
       fullPath: '/registrations/customers'
       preLoaderRoute: typeof AppRegistrationsCustomersIndexRouteImport
-      parentRoute: typeof AppLayoutRoute
-    }
-    '/_app/registrations/customer-price-tables/': {
-      id: '/_app/registrations/customer-price-tables/'
-      path: '/registrations/customer-price-tables'
-      fullPath: '/registrations/customer-price-tables'
-      preLoaderRoute: typeof AppRegistrationsCustomerPriceTablesIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/registrations/approval-levels/': {
@@ -917,7 +897,6 @@ interface AppLayoutRouteChildren {
   AppMobileNotificationsIndexRoute: typeof AppMobileNotificationsIndexRoute
   AppOrdersOrderIdIndexRoute: typeof AppOrdersOrderIdIndexRoute
   AppRegistrationsApprovalLevelsIndexRoute: typeof AppRegistrationsApprovalLevelsIndexRoute
-  AppRegistrationsCustomerPriceTablesIndexRoute: typeof AppRegistrationsCustomerPriceTablesIndexRoute
   AppRegistrationsCustomersIndexRoute: typeof AppRegistrationsCustomersIndexRoute
   AppRegistrationsProductsIndexRoute: typeof AppRegistrationsProductsIndexRoute
   AppRegistrationsRepresentativeGoalsIndexRoute: typeof AppRegistrationsRepresentativeGoalsIndexRoute
@@ -966,8 +945,6 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppOrdersOrderIdIndexRoute: AppOrdersOrderIdIndexRoute,
   AppRegistrationsApprovalLevelsIndexRoute:
     AppRegistrationsApprovalLevelsIndexRoute,
-  AppRegistrationsCustomerPriceTablesIndexRoute:
-    AppRegistrationsCustomerPriceTablesIndexRoute,
   AppRegistrationsCustomersIndexRoute: AppRegistrationsCustomersIndexRoute,
   AppRegistrationsProductsIndexRoute: AppRegistrationsProductsIndexRoute,
   AppRegistrationsRepresentativeGoalsIndexRoute:

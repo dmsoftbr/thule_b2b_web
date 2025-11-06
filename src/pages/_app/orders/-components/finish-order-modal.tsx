@@ -8,9 +8,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { SearchCombo } from "@/components/ui/search-combo";
+import {
+  SearchCombo,
+  type SearchComboItem,
+} from "@/components/ui/search-combo";
 import { useOrder } from "../-hooks/use-order";
-import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { FreightTable } from "./freight-table";
@@ -26,6 +28,14 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 import { useNavigate } from "@tanstack/react-router";
+import { formatNumber } from "@/lib/number-utils";
+import { api } from "@/lib/api";
+import { useEffect, useState } from "react";
+import { type DeliveryLocationModel } from "@/models/delivery-location.model";
+import type { PaymentConditionModel } from "@/models/payment-condition.model";
+import { type UserPermissionModel } from "@/models/admin/user-permission.model";
+import { getUserPermissions } from "../-utils/order-utils";
+import { useAuth } from "@/hooks/use-auth";
 
 interface Props {
   isOpen: boolean;
@@ -34,8 +44,18 @@ interface Props {
 
 export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   const navigate = useNavigate();
-  const { currentOrder } = useOrder();
+  const { session } = useAuth();
+  const { currentOrder, setCurrentOrder } = useOrder();
   const { showAppDialog } = useAppDialog();
+  const [deliveryLocationsData, setDeliveryLocationsData] = useState<
+    SearchComboItem[]
+  >([]);
+  const [paymentConditionsData, setPaymentConditionsData] = useState<
+    SearchComboItem[]
+  >([]);
+  const [userPermissions, setUserPermissions] = useState<UserPermissionModel[]>(
+    []
+  );
 
   async function handleSendOrder() {
     onClose();
@@ -54,9 +74,104 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
     navigate({ to: "/orders" });
   }
 
+  const getSubTotal = () => {
+    return currentOrder.items.reduce(
+      (accum, b) => (accum += b.quantity * b.unitPriceBase),
+      0
+    );
+  };
+
+  const getTotal = () => {
+    const grossValue = currentOrder.items.reduce(
+      (accum, b) => (accum += b.quantity * b.unitPriceBase),
+      0
+    );
+
+    return (
+      grossValue -
+      (currentOrder?.freightValue ?? 0) -
+      (grossValue * (currentOrder?.discountPercentual ?? 0)) / 100
+    );
+  };
+
+  const getDeliveryLocations = async () => {
+    const { data } = await api.get<DeliveryLocationModel[]>(
+      `/registrations/delivery-locations/${currentOrder.customerId}`
+    );
+    const newData = data.map((item) => {
+      return {
+        value: item.id,
+        label: `${item.id} - ${item.address} - ${item.city} - ${item.state}`,
+        extraData: item,
+      };
+    });
+
+    setDeliveryLocationsData(newData);
+  };
+
+  const getOrderDeliveryLocation = () => {
+    if (!deliveryLocationsData || deliveryLocationsData.length == 0)
+      return undefined;
+
+    const orderDeliveryLocation = deliveryLocationsData.find(
+      (f) => f.value == currentOrder.deliveryLocationId
+    );
+
+    if (!orderDeliveryLocation) return undefined;
+    return [orderDeliveryLocation];
+  };
+
+  const getPaymentConditions = async () => {
+    const { data } = await api.get<PaymentConditionModel[]>(
+      `/registrations/payment-conditions/all`
+    );
+
+    const newData = data.map((item) => {
+      return {
+        value: item.id.toString(),
+        label: `${item.id} - ${item.name}`,
+        extraData: item,
+      };
+    });
+
+    setPaymentConditionsData(newData);
+  };
+
+  const getOrderPaymentCondition = () => {
+    if (!paymentConditionsData || paymentConditionsData.length == 0)
+      return undefined;
+
+    const orderPaymentCondition = paymentConditionsData.find(
+      (f) => f.value == currentOrder.paymentConditionId.toString()
+    );
+
+    if (!orderPaymentCondition) return undefined;
+    return [orderPaymentCondition];
+  };
+
+  const getPermissions = async () => {
+    const data = await getUserPermissions(session?.user.id ?? "");
+    setUserPermissions(data ?? []);
+  };
+
+  const isItemPermissionDisabled = (permissionId: string) => {
+    const item = userPermissions.find((f) => f.permissionId == permissionId);
+
+    if (!item) return true;
+    return !item.isPermitted;
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      getDeliveryLocations();
+      getPaymentConditions();
+      getPermissions();
+    }
+  }, [isOpen]);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="min-w-[50%]">
+      <DialogContent className="min-w-[70%]">
         <DialogHeader>
           <DialogTitle>
             {currentOrder.isBudget ? "Finalizar Simulação" : "Finalizar Pedido"}
@@ -69,7 +184,10 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               <Label>
                 {currentOrder.isBudget ? "Tipo da Simulação" : "Tipo do Pedido"}
               </Label>
-              <Select defaultValue="1">
+              <Select
+                defaultValue="1"
+                disabled={isItemPermissionDisabled("317")}
+              >
                 <SelectTrigger className="w-full bg-white">
                   <SelectValue placeholder="Selecione uma opção" />
                 </SelectTrigger>
@@ -90,53 +208,34 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
             <div className="form-group">
               <Label>Endereço de Entrega</Label>
               <SearchCombo
+                disabled={isItemPermissionDisabled("308")}
                 placeholder="Selecione o Endereço de Entrega"
-                staticItems={convertArrayToSearchComboItem(
-                  currentOrder.customer?.deliveryLocations ?? [],
-                  "id",
-                  "id"
-                )}
-                defaultValue={[
-                  currentOrder.priceTable
-                    ? {
-                        value: currentOrder.priceTable.id ?? "",
-                        label: currentOrder.priceTable.id ?? "",
-                      }
-                    : { value: "", label: "" },
-                ]}
+                staticItems={deliveryLocationsData}
+                defaultValue={getOrderDeliveryLocation()}
                 onChange={function (value: string): void {
                   console.log(value);
-                  throw new Error("Function not implemented.");
                 }}
               />
             </div>
             <div className="form-group">
               <Label>Condição de Pagamento</Label>
               <SearchCombo
-                placeholder="Selecione o Endereço de Entrega"
-                staticItems={convertArrayToSearchComboItem(
-                  currentOrder.customer?.deliveryLocations ?? [],
-                  "id",
-                  "id"
-                )}
-                defaultValue={[
-                  currentOrder.priceTable
-                    ? {
-                        value: currentOrder.priceTable.id ?? "",
-                        label: currentOrder.priceTable.id ?? "",
-                      }
-                    : { value: "", label: "" },
-                ]}
+                disabled={isItemPermissionDisabled("307")}
+                placeholder="Selecione a Condição de Pagamento"
+                staticItems={paymentConditionsData}
+                defaultValue={getOrderPaymentCondition()}
                 onChange={function (value: string): void {
                   console.log(value);
-                  throw new Error("Function not implemented.");
                 }}
               />
             </div>
             <div className="form-group">
               <Label>Estabelecimento</Label>
               <div className="flex items-center gap-x-2">
-                <Select defaultValue="1">
+                <Select
+                  defaultValue={currentOrder.branchId}
+                  disabled={isItemPermissionDisabled("309")}
+                >
                   <SelectTrigger className="w-full bg-white">
                     <SelectValue placeholder="Selecione uma opção" />
                   </SelectTrigger>
@@ -152,34 +251,67 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                 </Label>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-x-4">
-              <div className="form-group">
-                <Label>Data Mínima de Faturamento</Label>
-                <DatePicker />
+            {!isItemPermissionDisabled("312") && (
+              <div className="grid grid-cols-2 gap-x-4 ">
+                <div className="form-group">
+                  <Label>Data Mínima de Faturamento</Label>
+                  <DatePicker />
+                </div>
+                <div className="form-group">
+                  <Label>Data Máxima de Faturamento</Label>
+                  <DatePicker />
+                </div>
               </div>
-              <div className="form-group">
-                <Label>Data Máxima de Faturamento</Label>
-                <DatePicker />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-x-4 space-y-1">
+            )}
+            <div className="grid grid-cols-2 gap-x-4 space-y-2">
               <div className="form-group">
                 <Label>
-                  <Checkbox />
+                  <Checkbox
+                    checked={currentOrder.isParcialBilling}
+                    onCheckedChange={(checked) => {
+                      const newOrder = {
+                        ...currentOrder,
+                        isParcialBilling: checked ? true : false,
+                      };
+                      setCurrentOrder(newOrder);
+                    }}
+                  />
                   Fatura Parcial
                 </Label>
               </div>
               <div className="form-group">
-                <Label>
-                  <Checkbox />
-                  Frete Pago
-                </Label>
+                {!isItemPermissionDisabled("314") && (
+                  <Label>
+                    <Checkbox
+                      checked={currentOrder.freightPaymentId == 3}
+                      onCheckedChange={(checked) => {
+                        const newOrder = {
+                          ...currentOrder,
+                          freightPaymentId: checked ? 3 : 1,
+                        };
+                        setCurrentOrder(newOrder);
+                      }}
+                    />
+                    Frete Pago
+                  </Label>
+                )}
               </div>
               <div className="form-group">
-                <Label>
-                  <Checkbox />
-                  Usa Transportadora do Cliente
-                </Label>
+                {!isItemPermissionDisabled("315") && (
+                  <Label>
+                    <Checkbox
+                      checked={currentOrder.useCustomerCarrier}
+                      onCheckedChange={(checked) => {
+                        const newOrder = {
+                          ...currentOrder,
+                          useCustomerCarrier: checked ? true : false,
+                        };
+                        setCurrentOrder(newOrder);
+                      }}
+                    />
+                    Usa Transportadora do Cliente
+                  </Label>
+                )}
               </div>
 
               <div className="form-group">
@@ -209,7 +341,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                   Sub-Total{" "}
                   {currentOrder.isBudget ? "da Simulação" : "do Pedido"}:
                 </span>
-                <span>R$ 0,00</span>
+                <span>R$ {formatNumber(getSubTotal(), 2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <Label>% Desconto:</Label>
@@ -235,13 +367,13 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                 <span>R$ 0,00</span>
               </div>
 
-              <div className="flex justify-between font-medium pr-2 bg-neutral-500 rounded-md py-2 px-2 text-white">
+              <div className="flex justify-between font-medium pr-2 bg-emerald-600 rounded-md py-2 px-2 text-white">
                 <span>
                   {currentOrder.isBudget
                     ? "Total da Simulação"
                     : "Total do Pedido"}{" "}
                 </span>
-                <span>R$ 0,00</span>
+                <span>R$ {formatNumber(getTotal(), 2)}</span>
               </div>
             </div>
           </div>

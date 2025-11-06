@@ -1,3 +1,7 @@
+import {
+  TreeView,
+  type TreeNode,
+} from "@/components/tree-checkbox/tree-checkbox";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,11 +12,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { api } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import { BoxIcon } from "lucide-react";
 import { useState } from "react";
 
 export const SalesChannelModal = () => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const { data: treeData } = useQuery({
+    queryKey: ["sales-group-tree-data", "teste"],
+    queryFn: async () => {
+      const { data } = await api.get<TreeNode[]>(
+        `/registrations/sales-groups/grid/teste`
+      );
+
+      return data;
+    },
+  });
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -28,58 +46,20 @@ export const SalesChannelModal = () => {
       </DialogTrigger>
       <DialogContent className="min-w-[30%]">
         <DialogHeader>
-          <DialogTitle>Matriz de Desconto</DialogTitle>
+          <DialogTitle>Produtos do seu Canal de Venda</DialogTitle>
           <DialogDescription>
-            Descontos Progressivos conforme o Valor do Pedido
+            Produtos relacionados ao seu Canal de Venda
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col space-y-6 mt-2">
-          <div>
-            <span className="mr-2 bg-emerald-500 text-white px-2 py-1.5 rounded text-xs">
-              C
-            </span>
-            <span>
-              <strong>Confirmado: </strong>
-              Produto disponível no estoque
-            </span>
-          </div>
-          <div>
-            <span className="mr-2 bg-red-300 text-white px-2 py-1.5 rounded text-xs">
-              B
-            </span>
-            <span>
-              <strong>BackOrder: </strong>
-              Produto Indisponível no estoque
-            </span>
-          </div>
-          <div>
-            <span className="mr-2 ml-4 bg-red-500 text-white px-2 py-1.5 rounded text-xs">
-              B2
-            </span>
-            <strong>BackOrder B2: </strong>
-            Produto em Tropicalização
-          </div>
-          <div>
-            <span className="mr-2 ml-4 bg-pink-500 text-white px-2 py-1.5 rounded text-xs">
-              B3
-            </span>
-            <strong>BackOrder B3: </strong>
-            Produto Indisponível no estoque com previsão de chegada
-          </div>
-          <div>
-            <span className="mr-2 ml-4 bg-purple-500 text-white px-2 py-1.5 rounded text-xs">
-              B4
-            </span>
-            <strong>BackOrder B4: </strong>
-            Produto Indisponível no estoque e sem previsão de chegada
-          </div>
-
-          <div>
-            <span className="mr-2 bg-blue-300 text-white px-2 py-1.5 rounded text-xs">
-              P
-            </span>
-            <span>Parcial</span>
-          </div>
+          <TreeView
+            data={treeData ?? []}
+            className="shadow-sm"
+            searchable={true}
+            searchPlaceholder="Buscar..."
+            showSelectAllButtons={false}
+            isReadOnly
+          />
         </div>
         <DialogFooter>
           <Button onClick={() => setIsOpen(false)}>Fechar</Button>

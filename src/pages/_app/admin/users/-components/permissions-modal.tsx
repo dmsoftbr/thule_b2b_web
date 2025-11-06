@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,6 +18,9 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { api, handleError } from "@/lib/api";
+import type { UserPermissionModel } from "@/models/admin/user-permission.model";
+import { check } from "zod";
 
 interface Props {
   isOpen: boolean;
@@ -61,27 +65,123 @@ const REPORTS = [
 const SALES = [
   { id: "301", label: "Alterar Pedido Aprovado" },
   { id: "302", label: "Reprovar Pedido Aprovado" },
-  { id: "302", label: "Reintegrar pedido com Erro" },
-  { id: "302", label: "Confirmação de Pedidos" },
-  { id: "302", label: "Alterar Preço" },
-  { id: "302", label: "Alterar Data de Entrega" },
-  { id: "302", label: "Alterar Condição de Pagamento" },
-  { id: "302", label: "Alterar Local de Entrega" },
-  { id: "302", label: "Alterar Estabelecimento" },
-  { id: "302", label: "Alterar Moeda" },
-  { id: "302", label: "Alterar Transportadora" },
-  { id: "302", label: "Alterar Datas Mínima/Máxima de Faturamento" },
-  { id: "302", label: "Alterar Pedido Faturado Parcial" },
-  { id: "302", label: "Alterar Frete Pago" },
-  { id: "302", label: "Alterar Usa Transportadora do Cliente" },
-  { id: "302", label: "Alterar Tabela de Preço" },
+  { id: "303", label: "Reintegrar Pedido com Erro" },
+  { id: "304", label: "Confirmação de Pedidos" },
+  { id: "305", label: "Alterar Preço" },
+  // { id: "306", label: "Alterar Data de Entrega" },
+  { id: "307", label: "Alterar Condição de Pagamento" },
+  { id: "308", label: "Alterar Local de Entrega" },
+  { id: "309", label: "Alterar Estabelecimento" },
+  { id: "310", label: "Alterar Moeda" },
+  { id: "311", label: "Alterar Transportadora" },
+  { id: "312", label: "Alterar Datas Mínima/Máxima de Faturamento" },
+  { id: "313", label: "Alterar Pedido Faturado Parcial" },
+  { id: "314", label: "Alterar Frete Pago" },
+  { id: "315", label: "Alterar Usa Transportadora do Cliente" },
+  { id: "316", label: "Alterar Tabela de Preço" },
+  { id: "317", label: "Alterar Classificação do Pedido" },
 ];
 
 export const PermissionsModal = ({ user, isOpen, onClose }: Props) => {
-  const handleSave = async () => {
-    toast.success("Permissões Gravadas!");
-    onClose();
+  // state que mapeia cada checkbox por uma chave única (ex: "PAGE_1", "SALES_301", "REPORTS_201")
+  const [permissionsMap, setPermissionsMap] = useState<UserPermissionModel[]>(
+    []
+  );
+
+  useEffect(() => {
+    if (!isOpen) return;
+    getPermissions();
+  }, [isOpen, user.id]);
+
+  const getPermissions = async () => {
+    const { data } = await api.get<UserPermissionModel[]>(
+      `/admin/users/permissions/${user.id}`
+    );
+    const allPermissions: UserPermissionModel[] = [];
+
+    PAGES.map((item) => {
+      const dbItem = data.find((f) => f.permissionId == item.id);
+
+      allPermissions.push({
+        permissionId: item.id,
+        userId: user.id,
+        isPermitted: dbItem ? dbItem.isPermitted : false,
+      });
+    });
+
+    PAGES_APP.map((item) => {
+      const dbItem = data.find((f) => f.permissionId == item.id);
+
+      allPermissions.push({
+        permissionId: item.id,
+        userId: user.id,
+        isPermitted: dbItem ? dbItem.isPermitted : false,
+      });
+    });
+
+    SALES.map((item) => {
+      const dbItem = data.find((f) => f.permissionId == item.id);
+
+      allPermissions.push({
+        permissionId: item.id,
+        userId: user.id,
+        isPermitted: dbItem ? dbItem.isPermitted : false,
+      });
+    });
+
+    REPORTS.map((item) => {
+      const dbItem = data.find((f) => f.permissionId == item.id);
+
+      allPermissions.push({
+        permissionId: item.id,
+        userId: user.id,
+        isPermitted: dbItem ? dbItem.isPermitted : false,
+      });
+    });
+
+    setPermissionsMap([...allPermissions]);
   };
+
+  const toggle = (key: string, checked: boolean | "indeterminate") => {
+    const sanitizedKey = key
+      .replace("PAGE_", "")
+      .replace("APP_", "")
+      .replace("SALES_", "")
+      .replace("REPORTS", "");
+    const itemIndex = permissionsMap.findIndex(
+      (f) => f.permissionId == sanitizedKey
+    );
+
+    if (itemIndex > -1) {
+      permissionsMap[itemIndex].isPermitted = checked ? true : false;
+      setPermissionsMap([...permissionsMap]);
+      console.log(permissionsMap[itemIndex].isPermitted);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      // send the array directly (backend expects an array in the request body)
+      await api.post(`/admin/users/permissions/${user.id}`, permissionsMap);
+      toast.success("Permissões Gravadas!");
+      onClose();
+    } catch (error) {
+      console.error(error);
+      toast.error(handleError(error));
+    }
+  };
+
+  const getItemChecked = (permissionId: string) => {
+    const sanitizedKey = permissionId
+      .replace("PAGE_", "")
+      .replace("APP_", "")
+      .replace("SALES_", "")
+      .replace("REPORTS", "");
+    const item = permissionsMap.find((f) => f.permissionId == sanitizedKey);
+    if (!item) return false;
+    return item.isPermitted;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
@@ -92,60 +192,116 @@ export const PermissionsModal = ({ user, isOpen, onClose }: Props) => {
           </DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
+
         <div>
           <Accordion type="single" collapsible>
             <AccordionItem value="pages">
               <AccordionTrigger>Páginas</AccordionTrigger>
-              <AccordionContent className="space-y-2">
-                {PAGES.map((page, index) => (
-                  <Label className="cursor-pointer" key={index}>
-                    <Checkbox />
-                    {page.label}
-                  </Label>
-                ))}
+              <AccordionContent>
+                <div className="flex flex-col gap-1 p-2">
+                  {PAGES.map((page) => {
+                    const key = `PAGE_${page.id}`;
+                    return (
+                      <Label
+                        key={key}
+                        className="flex items-center gap-2 cursor-pointer"
+                        htmlFor={key}
+                      >
+                        <Checkbox
+                          id={key}
+                          checked={getItemChecked(key)}
+                          onCheckedChange={(v) => toggle(key, v)}
+                        />
+                        {page.label}
+                      </Label>
+                    );
+                  })}
+                </div>
               </AccordionContent>
             </AccordionItem>
+
             <AccordionItem value="app">
               <AccordionTrigger>App</AccordionTrigger>
-              <AccordionContent className="space-y-2">
-                {PAGES_APP.map((page, index) => (
-                  <Label className="cursor-pointer" key={index}>
-                    <Checkbox />
-                    {page.label}
-                  </Label>
-                ))}
+              <AccordionContent>
+                <div className="flex flex-col gap-1 p-2">
+                  {PAGES_APP.map((page) => {
+                    const key = `APP_${page.id}`;
+                    return (
+                      <Label
+                        key={key}
+                        className="flex items-center gap-2 cursor-pointer"
+                        htmlFor={key}
+                      >
+                        <Checkbox
+                          id={key}
+                          checked={getItemChecked(key)}
+                          onCheckedChange={(v) => toggle(key, v)}
+                        />
+                        {page.label}
+                      </Label>
+                    );
+                  })}
+                </div>
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="sales">
               <AccordionTrigger>Vendas</AccordionTrigger>
-              <AccordionContent className="space-y-2">
-                {SALES.map((page, index) => (
-                  <Label className="cursor-pointer" key={index}>
-                    <Checkbox />
-                    {page.label}
-                  </Label>
-                ))}
+              <AccordionContent>
+                <div className="flex flex-col gap-1 p-2">
+                  {SALES.map((page) => {
+                    const key = `SALES_${page.id}`;
+                    return (
+                      <Label
+                        key={key}
+                        className="flex items-center gap-2 cursor-pointer"
+                        htmlFor={key}
+                      >
+                        <Checkbox
+                          id={key}
+                          checked={getItemChecked(key)}
+                          onCheckedChange={(v) => toggle(key, v)}
+                        />
+                        {page.label}
+                      </Label>
+                    );
+                  })}
+                </div>
               </AccordionContent>
             </AccordionItem>
+
             <AccordionItem value="reports">
               <AccordionTrigger>Relatórios</AccordionTrigger>
-              <AccordionContent className="space-y-2">
-                {REPORTS.map((page, index) => (
-                  <Label className="cursor-pointer" key={index}>
-                    <Checkbox />
-                    {page.label}
-                  </Label>
-                ))}
+              <AccordionContent>
+                <div className="flex flex-col gap-1 p-2">
+                  {REPORTS.map((page) => {
+                    const key = `REPORTS_${page.id}`;
+                    return (
+                      <Label
+                        key={key}
+                        className="flex items-center gap-2 cursor-pointer"
+                        htmlFor={key}
+                      >
+                        <Checkbox
+                          id={key}
+                          checked={getItemChecked(key)}
+                          onCheckedChange={(v) => toggle(key, v)}
+                        />
+                        {page.label}
+                      </Label>
+                    );
+                  })}
+                </div>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
         </div>
+
         <DialogFooter>
-          <Button type="button" onClick={() => handleSave()} variant="green">
+          <Button type="button" onClick={handleSave} variant="green">
             Gravar
           </Button>
-          <Button type="button" onClick={() => onClose()} variant="secondary">
+          <Button type="button" onClick={onClose} variant="secondary">
             Fechar
           </Button>
         </DialogFooter>

@@ -2,7 +2,8 @@ export type PagedRequestModel = {
   currentPage?: number;
   pageSize?: number;
   sortField?: string;
-  sortDir?: string;
-  search?: string;
+  sortAsc?: boolean;
+  searchText?: string;
   searchField?: string;
+  customWhere?: string;
 };

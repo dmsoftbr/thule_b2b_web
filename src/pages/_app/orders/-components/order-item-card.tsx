@@ -10,6 +10,9 @@ import { CalendarIcon, MinusIcon, PlusIcon } from "lucide-react";
 import { useOrder } from "../-hooks/use-order";
 import { formatNumber } from "@/lib/number-utils";
 import { api } from "@/lib/api";
+import { AppTooltip } from "@/components/layout/app-tooltip";
+import { AvailabilityInfo } from "./availability-info";
+import { getAvailabilityColor } from "../-utils/order-utils";
 
 interface Props {
   data: OrderItemModel;
@@ -32,36 +35,24 @@ export const OrderItemCard = ({ data, className }: Props) => {
       productId: data.productId,
       quantity: newQuantity,
     };
+
     const { data: response } = await api.post(
       `/stock/caculate-delivery-date`,
       params
     );
-    console.log(response);
 
     const updatedItem = {
       ...data,
       quantity: Number(newQuantity),
       deliveryDate: response.estimatedDate,
-      availability: response.availability,
+      availability: response.availbility,
     };
+    console.log("UPdated", updatedItem);
     onUpdateItem(updatedItem);
   };
 
   const handleRemoveItem = () => {
     onRemoveItem(data);
-  };
-
-  const getAvailabilityColor = (availability: string) => {
-    switch (availability) {
-      case "C":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "B":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "B2":
-        return "bg-red-100 text-red-800 border-red-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
   };
 
   return (
@@ -74,7 +65,7 @@ export const OrderItemCard = ({ data, className }: Props) => {
       {/* Order Items */}
       <div className="">
         <Card
-          key={data.id}
+          key={`${data.sequence}_${data.productId}`}
           className="overflow-hidden rounded-none border-none"
         >
           <CardContent className="px-6 w-full">
@@ -88,7 +79,7 @@ export const OrderItemCard = ({ data, className }: Props) => {
               <div className="flex-1 min-w-0 flex flex-col">
                 <div className="flex justify-between items-start">
                   <h3 className="text-lg font-bold text-gray-900 truncate pr-4">
-                    {data.product.id}
+                    {data.product?.id}
                   </h3>
                   <Button
                     variant="link"
@@ -101,7 +92,7 @@ export const OrderItemCard = ({ data, className }: Props) => {
                 </div>
 
                 <p className="text-gray-600 text-sm line-clamp-2">
-                  {data.product.description}
+                  {data.product?.description}
                 </p>
                 <div className="text-lg font-bold text-gray-900">
                   Preço Sugerido: R$ {formatNumber(data.unitPriceSuggest, 2)}
@@ -132,15 +123,21 @@ export const OrderItemCard = ({ data, className }: Props) => {
                 </div>
 
                 <div className="flex items-center mt-2">
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "select-none mr-4",
-                      getAvailabilityColor(data.availability)
-                    )}
+                  <AppTooltip
+                    message={<AvailabilityInfo />}
+                    className="bg-neutral-100 text-black shadow-lg border"
+                    indicatorClassName="fill-neutral-100 bg-neutral-100 shadow"
                   >
-                    {data.availability}
-                  </Badge>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "select-none mr-4",
+                        getAvailabilityColor(data.availability)
+                      )}
+                    >
+                      {data.availability}
+                    </Badge>
+                  </AppTooltip>
                   <div className="flex flex-wrap gap-3 items-center justify-center">
                     <div className="flex items-center text-sm text-gray-600">
                       <CalendarIcon className="h-4 w-4 mr-1" />

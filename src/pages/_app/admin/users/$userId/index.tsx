@@ -21,7 +21,7 @@ function UserIdPageComponent() {
   const { data } = useQuery({
     queryKey: ["user-id", userId],
     queryFn: async () => {
-      const data = await new UsersService().getById(userId);
+      const data = await new UsersService().getById(userId, false);
       return data;
     },
     enabled: !!userId,

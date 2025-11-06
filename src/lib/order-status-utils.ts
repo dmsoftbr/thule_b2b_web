@@ -10,7 +10,7 @@ export function getOrderStatusName(statusId: number, creditStatusId: number) {
   }
   if (statusId == 1) {
     if (creditStatusId == 1 || creditStatusId == 4) {
-      return "Em Aprov. Financeira";
+      return "Aprov. Financeira";
     }
 
     return "Aprovado";

@@ -39,10 +39,12 @@ export const AppUserDropDown = () => {
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="h-12">
             <Avatar>
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback>{getInitials("Administrador")}</AvatarFallback>
+              <AvatarImage src="https://github.com/shadcn1.png" />
+              <AvatarFallback className="bg-black text-white">
+                {getInitials(session?.user.name ?? "")}
+              </AvatarFallback>
             </Avatar>
-            Administrador
+            {session?.user.name}
             <ChevronDownIcon />
           </Button>
         </DropdownMenuTrigger>
