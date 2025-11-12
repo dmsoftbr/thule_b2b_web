@@ -16,6 +16,7 @@ import { Route as AppOutletIndexRouteImport } from './pages/_app/outlet/index'
 import { Route as AppOrdersIndexRouteImport } from './pages/_app/orders/index'
 import { Route as AppDashboardIndexRouteImport } from './pages/_app/dashboard/index'
 import { Route as AppBudgetsIndexRouteImport } from './pages/_app/budgets/index'
+import { Route as AppApprovalsIndexRouteImport } from './pages/_app/approvals/index'
 import { Route as AppOrdersNewOrderRouteImport } from './pages/_app/orders/new-order'
 import { Route as AppBudgetsNewBudgetRouteImport } from './pages/_app/budgets/new-budget'
 import { Route as AppSystemSyncStatusIndexRouteImport } from './pages/_app/system/sync-status/index'
@@ -24,6 +25,7 @@ import { Route as AppStockEsli011IndexRouteImport } from './pages/_app/stock/esl
 import { Route as AppRegistrationsSalesGroupIndexRouteImport } from './pages/_app/registrations/sales-group/index'
 import { Route as AppRegistrationsRepresentativeGoalsIndexRouteImport } from './pages/_app/registrations/representative-goals/index'
 import { Route as AppRegistrationsProductsIndexRouteImport } from './pages/_app/registrations/products/index'
+import { Route as AppRegistrationsPaymentConditionsIndexRouteImport } from './pages/_app/registrations/payment-conditions/index'
 import { Route as AppRegistrationsCustomersIndexRouteImport } from './pages/_app/registrations/customers/index'
 import { Route as AppRegistrationsApprovalLevelsIndexRouteImport } from './pages/_app/registrations/approval-levels/index'
 import { Route as AppOrdersOrderIdIndexRouteImport } from './pages/_app/orders/$orderId/index'
@@ -41,6 +43,7 @@ import { Route as AppAdminUsersNewUserRouteImport } from './pages/_app/admin/use
 import { Route as AppAdminUserGroupsNewUserGroupRouteImport } from './pages/_app/admin/user-groups/new-user-group'
 import { Route as AppRegistrationsSalesGroupGroupIdIndexRouteImport } from './pages/_app/registrations/sales-group/$groupId/index'
 import { Route as AppRegistrationsProductsProductIdIndexRouteImport } from './pages/_app/registrations/products/$productId/index'
+import { Route as AppRegistrationsPaymentConditionsConditionIdIndexRouteImport } from './pages/_app/registrations/payment-conditions/$conditionId/index'
 import { Route as AppRegistrationsApprovalLevelsLevelIdIndexRouteImport } from './pages/_app/registrations/approval-levels/$levelId/index'
 import { Route as AppOrdersViewOrderIdIndexRouteImport } from './pages/_app/orders/view/$orderId/index'
 import { Route as AppOrdersEditOrderIdIndexRouteImport } from './pages/_app/orders/edit/$orderId/index'
@@ -87,6 +90,11 @@ const AppBudgetsIndexRoute = AppBudgetsIndexRouteImport.update({
   path: '/budgets/',
   getParentRoute: () => AppLayoutRoute,
 } as any)
+const AppApprovalsIndexRoute = AppApprovalsIndexRouteImport.update({
+  id: '/approvals/',
+  path: '/approvals/',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
 const AppOrdersNewOrderRoute = AppOrdersNewOrderRouteImport.update({
   id: '/orders/new-order',
   path: '/orders/new-order',
@@ -130,6 +138,12 @@ const AppRegistrationsProductsIndexRoute =
   AppRegistrationsProductsIndexRouteImport.update({
     id: '/registrations/products/',
     path: '/registrations/products/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppRegistrationsPaymentConditionsIndexRoute =
+  AppRegistrationsPaymentConditionsIndexRouteImport.update({
+    id: '/registrations/payment-conditions/',
+    path: '/registrations/payment-conditions/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
 const AppRegistrationsCustomersIndexRoute =
@@ -227,6 +241,12 @@ const AppRegistrationsProductsProductIdIndexRoute =
     path: '/registrations/products/$productId/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
+const AppRegistrationsPaymentConditionsConditionIdIndexRoute =
+  AppRegistrationsPaymentConditionsConditionIdIndexRouteImport.update({
+    id: '/registrations/payment-conditions/$conditionId/',
+    path: '/registrations/payment-conditions/$conditionId/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 const AppRegistrationsApprovalLevelsLevelIdIndexRoute =
   AppRegistrationsApprovalLevelsLevelIdIndexRouteImport.update({
     id: '/registrations/approval-levels/$levelId/',
@@ -299,6 +319,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
   '/orders/new-order': typeof AppOrdersNewOrderRoute
+  '/approvals': typeof AppApprovalsIndexRoute
   '/budgets': typeof AppBudgetsIndexRoute
   '/dashboard': typeof AppDashboardIndexRoute
   '/orders': typeof AppOrdersIndexRoute
@@ -318,6 +339,7 @@ export interface FileRoutesByFullPath {
   '/orders/$orderId': typeof AppOrdersOrderIdIndexRoute
   '/registrations/approval-levels': typeof AppRegistrationsApprovalLevelsIndexRoute
   '/registrations/customers': typeof AppRegistrationsCustomersIndexRoute
+  '/registrations/payment-conditions': typeof AppRegistrationsPaymentConditionsIndexRoute
   '/registrations/products': typeof AppRegistrationsProductsIndexRoute
   '/registrations/representative-goals': typeof AppRegistrationsRepresentativeGoalsIndexRoute
   '/registrations/sales-group': typeof AppRegistrationsSalesGroupIndexRoute
@@ -334,6 +356,7 @@ export interface FileRoutesByFullPath {
   '/orders/edit/$orderId': typeof AppOrdersEditOrderIdIndexRoute
   '/orders/view/$orderId': typeof AppOrdersViewOrderIdIndexRoute
   '/registrations/approval-levels/$levelId': typeof AppRegistrationsApprovalLevelsLevelIdIndexRoute
+  '/registrations/payment-conditions/$conditionId': typeof AppRegistrationsPaymentConditionsConditionIdIndexRoute
   '/registrations/products/$productId': typeof AppRegistrationsProductsProductIdIndexRoute
   '/registrations/sales-group/$groupId': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   '/registrations/customers/$customerId/price-tables': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
@@ -343,6 +366,7 @@ export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
   '/orders/new-order': typeof AppOrdersNewOrderRoute
+  '/approvals': typeof AppApprovalsIndexRoute
   '/budgets': typeof AppBudgetsIndexRoute
   '/dashboard': typeof AppDashboardIndexRoute
   '/orders': typeof AppOrdersIndexRoute
@@ -362,6 +386,7 @@ export interface FileRoutesByTo {
   '/orders/$orderId': typeof AppOrdersOrderIdIndexRoute
   '/registrations/approval-levels': typeof AppRegistrationsApprovalLevelsIndexRoute
   '/registrations/customers': typeof AppRegistrationsCustomersIndexRoute
+  '/registrations/payment-conditions': typeof AppRegistrationsPaymentConditionsIndexRoute
   '/registrations/products': typeof AppRegistrationsProductsIndexRoute
   '/registrations/representative-goals': typeof AppRegistrationsRepresentativeGoalsIndexRoute
   '/registrations/sales-group': typeof AppRegistrationsSalesGroupIndexRoute
@@ -378,6 +403,7 @@ export interface FileRoutesByTo {
   '/orders/edit/$orderId': typeof AppOrdersEditOrderIdIndexRoute
   '/orders/view/$orderId': typeof AppOrdersViewOrderIdIndexRoute
   '/registrations/approval-levels/$levelId': typeof AppRegistrationsApprovalLevelsLevelIdIndexRoute
+  '/registrations/payment-conditions/$conditionId': typeof AppRegistrationsPaymentConditionsConditionIdIndexRoute
   '/registrations/products/$productId': typeof AppRegistrationsProductsProductIdIndexRoute
   '/registrations/sales-group/$groupId': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   '/registrations/customers/$customerId/price-tables': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
@@ -389,6 +415,7 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
   '/_app/orders/new-order': typeof AppOrdersNewOrderRoute
+  '/_app/approvals/': typeof AppApprovalsIndexRoute
   '/_app/budgets/': typeof AppBudgetsIndexRoute
   '/_app/dashboard/': typeof AppDashboardIndexRoute
   '/_app/orders/': typeof AppOrdersIndexRoute
@@ -408,6 +435,7 @@ export interface FileRoutesById {
   '/_app/orders/$orderId/': typeof AppOrdersOrderIdIndexRoute
   '/_app/registrations/approval-levels/': typeof AppRegistrationsApprovalLevelsIndexRoute
   '/_app/registrations/customers/': typeof AppRegistrationsCustomersIndexRoute
+  '/_app/registrations/payment-conditions/': typeof AppRegistrationsPaymentConditionsIndexRoute
   '/_app/registrations/products/': typeof AppRegistrationsProductsIndexRoute
   '/_app/registrations/representative-goals/': typeof AppRegistrationsRepresentativeGoalsIndexRoute
   '/_app/registrations/sales-group/': typeof AppRegistrationsSalesGroupIndexRoute
@@ -424,6 +452,7 @@ export interface FileRoutesById {
   '/_app/orders/edit/$orderId/': typeof AppOrdersEditOrderIdIndexRoute
   '/_app/orders/view/$orderId/': typeof AppOrdersViewOrderIdIndexRoute
   '/_app/registrations/approval-levels/$levelId/': typeof AppRegistrationsApprovalLevelsLevelIdIndexRoute
+  '/_app/registrations/payment-conditions/$conditionId/': typeof AppRegistrationsPaymentConditionsConditionIdIndexRoute
   '/_app/registrations/products/$productId/': typeof AppRegistrationsProductsProductIdIndexRoute
   '/_app/registrations/sales-group/$groupId/': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   '/_app/registrations/customers/$customerId/price-tables/': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
@@ -435,6 +464,7 @@ export interface FileRouteTypes {
     | '/'
     | '/budgets/new-budget'
     | '/orders/new-order'
+    | '/approvals'
     | '/budgets'
     | '/dashboard'
     | '/orders'
@@ -454,6 +484,7 @@ export interface FileRouteTypes {
     | '/orders/$orderId'
     | '/registrations/approval-levels'
     | '/registrations/customers'
+    | '/registrations/payment-conditions'
     | '/registrations/products'
     | '/registrations/representative-goals'
     | '/registrations/sales-group'
@@ -470,6 +501,7 @@ export interface FileRouteTypes {
     | '/orders/edit/$orderId'
     | '/orders/view/$orderId'
     | '/registrations/approval-levels/$levelId'
+    | '/registrations/payment-conditions/$conditionId'
     | '/registrations/products/$productId'
     | '/registrations/sales-group/$groupId'
     | '/registrations/customers/$customerId/price-tables'
@@ -479,6 +511,7 @@ export interface FileRouteTypes {
     | '/'
     | '/budgets/new-budget'
     | '/orders/new-order'
+    | '/approvals'
     | '/budgets'
     | '/dashboard'
     | '/orders'
@@ -498,6 +531,7 @@ export interface FileRouteTypes {
     | '/orders/$orderId'
     | '/registrations/approval-levels'
     | '/registrations/customers'
+    | '/registrations/payment-conditions'
     | '/registrations/products'
     | '/registrations/representative-goals'
     | '/registrations/sales-group'
@@ -514,6 +548,7 @@ export interface FileRouteTypes {
     | '/orders/edit/$orderId'
     | '/orders/view/$orderId'
     | '/registrations/approval-levels/$levelId'
+    | '/registrations/payment-conditions/$conditionId'
     | '/registrations/products/$productId'
     | '/registrations/sales-group/$groupId'
     | '/registrations/customers/$customerId/price-tables'
@@ -524,6 +559,7 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/budgets/new-budget'
     | '/_app/orders/new-order'
+    | '/_app/approvals/'
     | '/_app/budgets/'
     | '/_app/dashboard/'
     | '/_app/orders/'
@@ -543,6 +579,7 @@ export interface FileRouteTypes {
     | '/_app/orders/$orderId/'
     | '/_app/registrations/approval-levels/'
     | '/_app/registrations/customers/'
+    | '/_app/registrations/payment-conditions/'
     | '/_app/registrations/products/'
     | '/_app/registrations/representative-goals/'
     | '/_app/registrations/sales-group/'
@@ -559,6 +596,7 @@ export interface FileRouteTypes {
     | '/_app/orders/edit/$orderId/'
     | '/_app/orders/view/$orderId/'
     | '/_app/registrations/approval-levels/$levelId/'
+    | '/_app/registrations/payment-conditions/$conditionId/'
     | '/_app/registrations/products/$productId/'
     | '/_app/registrations/sales-group/$groupId/'
     | '/_app/registrations/customers/$customerId/price-tables/'
@@ -620,6 +658,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBudgetsIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/approvals/': {
+      id: '/_app/approvals/'
+      path: '/approvals'
+      fullPath: '/approvals'
+      preLoaderRoute: typeof AppApprovalsIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/orders/new-order': {
       id: '/_app/orders/new-order'
       path: '/orders/new-order'
@@ -674,6 +719,13 @@ declare module '@tanstack/react-router' {
       path: '/registrations/products'
       fullPath: '/registrations/products'
       preLoaderRoute: typeof AppRegistrationsProductsIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/registrations/payment-conditions/': {
+      id: '/_app/registrations/payment-conditions/'
+      path: '/registrations/payment-conditions'
+      fullPath: '/registrations/payment-conditions'
+      preLoaderRoute: typeof AppRegistrationsPaymentConditionsIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/registrations/customers/': {
@@ -795,6 +847,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRegistrationsProductsProductIdIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/registrations/payment-conditions/$conditionId/': {
+      id: '/_app/registrations/payment-conditions/$conditionId/'
+      path: '/registrations/payment-conditions/$conditionId'
+      fullPath: '/registrations/payment-conditions/$conditionId'
+      preLoaderRoute: typeof AppRegistrationsPaymentConditionsConditionIdIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/registrations/approval-levels/$levelId/': {
       id: '/_app/registrations/approval-levels/$levelId/'
       path: '/registrations/approval-levels/$levelId'
@@ -879,6 +938,7 @@ interface AppLayoutRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppBudgetsNewBudgetRoute: typeof AppBudgetsNewBudgetRoute
   AppOrdersNewOrderRoute: typeof AppOrdersNewOrderRoute
+  AppApprovalsIndexRoute: typeof AppApprovalsIndexRoute
   AppBudgetsIndexRoute: typeof AppBudgetsIndexRoute
   AppDashboardIndexRoute: typeof AppDashboardIndexRoute
   AppOrdersIndexRoute: typeof AppOrdersIndexRoute
@@ -898,6 +958,7 @@ interface AppLayoutRouteChildren {
   AppOrdersOrderIdIndexRoute: typeof AppOrdersOrderIdIndexRoute
   AppRegistrationsApprovalLevelsIndexRoute: typeof AppRegistrationsApprovalLevelsIndexRoute
   AppRegistrationsCustomersIndexRoute: typeof AppRegistrationsCustomersIndexRoute
+  AppRegistrationsPaymentConditionsIndexRoute: typeof AppRegistrationsPaymentConditionsIndexRoute
   AppRegistrationsProductsIndexRoute: typeof AppRegistrationsProductsIndexRoute
   AppRegistrationsRepresentativeGoalsIndexRoute: typeof AppRegistrationsRepresentativeGoalsIndexRoute
   AppRegistrationsSalesGroupIndexRoute: typeof AppRegistrationsSalesGroupIndexRoute
@@ -914,6 +975,7 @@ interface AppLayoutRouteChildren {
   AppOrdersEditOrderIdIndexRoute: typeof AppOrdersEditOrderIdIndexRoute
   AppOrdersViewOrderIdIndexRoute: typeof AppOrdersViewOrderIdIndexRoute
   AppRegistrationsApprovalLevelsLevelIdIndexRoute: typeof AppRegistrationsApprovalLevelsLevelIdIndexRoute
+  AppRegistrationsPaymentConditionsConditionIdIndexRoute: typeof AppRegistrationsPaymentConditionsConditionIdIndexRoute
   AppRegistrationsProductsProductIdIndexRoute: typeof AppRegistrationsProductsProductIdIndexRoute
   AppRegistrationsSalesGroupGroupIdIndexRoute: typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute: typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
@@ -923,6 +985,7 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppBudgetsNewBudgetRoute: AppBudgetsNewBudgetRoute,
   AppOrdersNewOrderRoute: AppOrdersNewOrderRoute,
+  AppApprovalsIndexRoute: AppApprovalsIndexRoute,
   AppBudgetsIndexRoute: AppBudgetsIndexRoute,
   AppDashboardIndexRoute: AppDashboardIndexRoute,
   AppOrdersIndexRoute: AppOrdersIndexRoute,
@@ -946,6 +1009,8 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppRegistrationsApprovalLevelsIndexRoute:
     AppRegistrationsApprovalLevelsIndexRoute,
   AppRegistrationsCustomersIndexRoute: AppRegistrationsCustomersIndexRoute,
+  AppRegistrationsPaymentConditionsIndexRoute:
+    AppRegistrationsPaymentConditionsIndexRoute,
   AppRegistrationsProductsIndexRoute: AppRegistrationsProductsIndexRoute,
   AppRegistrationsRepresentativeGoalsIndexRoute:
     AppRegistrationsRepresentativeGoalsIndexRoute,
@@ -967,6 +1032,8 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppOrdersViewOrderIdIndexRoute: AppOrdersViewOrderIdIndexRoute,
   AppRegistrationsApprovalLevelsLevelIdIndexRoute:
     AppRegistrationsApprovalLevelsLevelIdIndexRoute,
+  AppRegistrationsPaymentConditionsConditionIdIndexRoute:
+    AppRegistrationsPaymentConditionsConditionIdIndexRoute,
   AppRegistrationsProductsProductIdIndexRoute:
     AppRegistrationsProductsProductIdIndexRoute,
   AppRegistrationsSalesGroupGroupIdIndexRoute:

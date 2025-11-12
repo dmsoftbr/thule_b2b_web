@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Table,
@@ -7,10 +8,36 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatNumber } from "@/lib/number-utils";
+import type { CalcFreightsResposeDto } from "@/models/dto/responses/calculated-freights-response.model";
 import { useState } from "react";
 
-export const FreightTable = () => {
-  const [selectedCarrier, setSelectedCarrier] = useState("1");
+interface Props {
+  data: CalcFreightsResposeDto[];
+  onRefreshCalc: () => void;
+}
+
+export const FreightTable = ({ data, onRefreshCalc }: Props) => {
+  const [selectedCarrier, setSelectedCarrier] = useState(
+    data.length > 0 ? data[0].carrierId.toString() : ""
+  );
+
+  if (!data || data.length == 0)
+    return (
+      <div className="bg-red-200 rounded-md flex items-center justify-center flex-col space-y-2 p-2 mb-2">
+        <p className="text-sm font-semibold">
+          Algo deu errado ao conectar ao TOTVS para calculo dos Fretes.
+        </p>
+        <Button
+          onClick={() => {
+            onRefreshCalc();
+          }}
+        >
+          Clique aqui para tentar novamente
+        </Button>
+      </div>
+    );
+
   return (
     <RadioGroup
       defaultValue={selectedCarrier}
@@ -26,57 +53,29 @@ export const FreightTable = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow className={selectedCarrier == "1" ? "bg-blue-100" : ""}>
-            <TableCell>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="1" id="1" />
-              </div>
-            </TableCell>
-            <TableCell className="font-medium">JAMEF</TableCell>
-            <TableCell>2</TableCell>
-            <TableCell className="text-right">0,00</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="2" id="2" />
-              </div>
-            </TableCell>
-            <TableCell className="font-medium">SEDEX</TableCell>
-            <TableCell>1</TableCell>
-            <TableCell className="text-right">0,00</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="3" id="3" />
-              </div>
-            </TableCell>
-            <TableCell className="font-medium">PAC</TableCell>
-            <TableCell>3</TableCell>
-            <TableCell className="text-right">0,00</TableCell>
-          </TableRow>
-
-          <TableRow>
-            <TableCell>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="4" id="4" />
-              </div>
-            </TableCell>
-            <TableCell className="font-medium">TNT</TableCell>
-            <TableCell>2</TableCell>
-            <TableCell className="text-right">0,00</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="5" id="5" />
-              </div>
-            </TableCell>
-            <TableCell className="font-medium">RETIRA</TableCell>
-            <TableCell>1</TableCell>
-            <TableCell className="text-right">0,00</TableCell>
-          </TableRow>
+          {data.map((item: CalcFreightsResposeDto) => (
+            <TableRow
+              className={
+                selectedCarrier == item.carrierId.toString()
+                  ? "bg-blue-100"
+                  : ""
+              }
+            >
+              <TableCell>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem
+                    value={item.carrierId.toString()}
+                    id={item.carrierId.toString()}
+                  />
+                </div>
+              </TableCell>
+              <TableCell className="font-medium">{item.name}</TableCell>
+              <TableCell>{formatNumber(item.deliveryDays, 0)}</TableCell>
+              <TableCell className="text-right">
+                {formatNumber(item.freightValue, 2)}
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </RadioGroup>

@@ -30,3 +30,13 @@ export const formatNumber = (
     console.log(e);
   }
 };
+
+export const roundNumber = (value: number, decimalPlaces: number): number => {
+  const factor = Math.pow(10, decimalPlaces);
+  return Math.round(value * factor) / factor;
+};
+
+export const roundUp = (value: number, decimalPlaces: number): number => {
+  const factor = Math.pow(10, decimalPlaces);
+  return Math.ceil(value * factor) / factor;
+};

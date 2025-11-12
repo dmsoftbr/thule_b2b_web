@@ -1,6 +1,6 @@
 import type { CarrierModel } from "../carrier.model";
 import type { DeliveryLocationModel } from "../delivery-location.model";
-import type { PaymentConditionModel } from "../payment-condition.model";
+import type { PaymentConditionModel } from "./payment-condition.model";
 import type { PriceTableModel } from "./price-table.model";
 import type { RepresentativeModel } from "../representative.model";
 

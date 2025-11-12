@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
-import type { PaymentConditionModel } from "@/models/payment-condition.model";
+import type { PaymentConditionModel } from "@/models/registrations/payment-condition.model";
 
 interface Props {}
 

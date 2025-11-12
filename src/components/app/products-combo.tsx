@@ -76,6 +76,7 @@ export const ProductsCombo = ({
           if (searchInputRef.current) {
             searchInputRef.current.select();
             searchInputRef.current.focus();
+            //setData([]);
           }
         }}
         keywords={[item.id, item.referenceCode, item.description]}

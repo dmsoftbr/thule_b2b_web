@@ -66,7 +66,7 @@ function ApprovalLevelsPageComponent() {
   };
 
   return (
-    <AppPageHeader titleSlot="Manutenção de Comunicados no App Mobile">
+    <AppPageHeader titleSlot="Manutenção de Alçadas de Aprovação">
       <div className="p-2">
         <ServerTable<ApprovalLevelModel>
           key={tableToken}

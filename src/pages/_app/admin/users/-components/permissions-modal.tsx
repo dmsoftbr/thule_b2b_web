@@ -67,19 +67,19 @@ const SALES = [
   { id: "302", label: "Reprovar Pedido Aprovado" },
   { id: "303", label: "Reintegrar Pedido com Erro" },
   { id: "304", label: "Confirmação de Pedidos" },
-  { id: "305", label: "Alterar Preço" },
+  { id: "305", label: "Alterar Preço" }, // nao tem
   // { id: "306", label: "Alterar Data de Entrega" },
-  { id: "307", label: "Alterar Condição de Pagamento" },
-  { id: "308", label: "Alterar Local de Entrega" },
-  { id: "309", label: "Alterar Estabelecimento" },
-  { id: "310", label: "Alterar Moeda" },
-  { id: "311", label: "Alterar Transportadora" },
-  { id: "312", label: "Alterar Datas Mínima/Máxima de Faturamento" },
-  { id: "313", label: "Alterar Pedido Faturado Parcial" },
-  { id: "314", label: "Alterar Frete Pago" },
-  { id: "315", label: "Alterar Usa Transportadora do Cliente" },
-  { id: "316", label: "Alterar Tabela de Preço" },
-  { id: "317", label: "Alterar Classificação do Pedido" },
+  { id: "307", label: "Alterar Condição de Pagamento" }, // ok
+  { id: "308", label: "Alterar Local de Entrega" }, // ok
+  { id: "309", label: "Alterar Estabelecimento" }, // ok
+  { id: "310", label: "Alterar Moeda" }, // nao tem
+  { id: "311", label: "Alterar Transportadora" }, // nao tem
+  { id: "312", label: "Alterar Datas Mínima/Máxima de Faturamento" }, // ok
+  { id: "313", label: "Alterar Pedido Faturado Parcial" }, // ok
+  { id: "314", label: "Alterar Frete Pago" }, // ok
+  { id: "315", label: "Alterar Usa Transportadora do Cliente" }, // ok
+  { id: "316", label: "Alterar Tabela de Preço" }, // ok
+  { id: "317", label: "Alterar Classificação do Pedido" }, // ok
 ];
 
 export const PermissionsModal = ({ user, isOpen, onClose }: Props) => {

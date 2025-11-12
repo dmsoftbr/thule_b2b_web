@@ -30,6 +30,7 @@ export const OrderFormHeader = ({ isEditing }: Props) => {
     setPriceTable,
     setRepresentative,
     setDiscountPercent,
+    setDeliveryLocation,
   } = useOrder();
   const { session } = useAuth();
   const [priceTablesData, setPriceTablesData] = useState<SearchComboItem[]>([]);
@@ -58,6 +59,10 @@ export const OrderFormHeader = ({ isEditing }: Props) => {
     if (customer.priceTables && customer.priceTables.length > 0) {
       setPriceTable(customer.priceTables[0]);
       convertPriceTablesToSearchComboItems(customer.priceTables ?? []);
+    }
+
+    if (customer.deliveryLocations && customer.deliveryLocations.length > 0) {
+      setDeliveryLocation(customer.deliveryLocations[0]);
     }
   }
 

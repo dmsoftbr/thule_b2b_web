@@ -69,6 +69,9 @@ function ListOrdersPage() {
     if (continueDelete) {
       console.log(data);
       console.log(selectedReps, selectedStatus, customWhere);
+
+      await api.delete(`/orders/${data.id}`);
+
       //await OrdersService
       setTableToken(new Date().valueOf());
     }

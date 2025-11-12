@@ -120,6 +120,12 @@ export const MENU_MOCK: MenuModel[] = [
         icon: "UsersIcon",
       },
       {
+        id: "77",
+        title: "Cond. de Pagamento",
+        url: "/registrations/payment-conditions",
+        icon: "DollarSignIcon",
+      },
+      {
         id: "75",
         title: "Grupos de Venda",
         url: "/registrations/sales-group",

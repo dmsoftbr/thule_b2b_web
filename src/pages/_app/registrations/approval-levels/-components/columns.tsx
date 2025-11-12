@@ -15,15 +15,15 @@ export const columns = ({
   fnEdit,
   fnDelete,
 }: Props): ServerTableColumn[] => [
-  {
-    title: "Código",
-    dataIndex: "id",
-    key: "id",
-    sortable: true,
-    renderItem: (item: ApprovalLevelModel) => {
-      return <span className="text-blue-600 font-semibold">{item.id}</span>;
-    },
-  },
+  // {
+  //   title: "Código",
+  //   dataIndex: "id",
+  //   key: "id",
+  //   sortable: true,
+  //   renderItem: (item: ApprovalLevelModel) => {
+  //     return <span className="text-blue-600 font-semibold">{item.id}</span>;
+  //   },
+  // },
   {
     title: "Descrição",
     dataIndex: "description",

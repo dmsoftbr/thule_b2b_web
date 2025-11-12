@@ -211,7 +211,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
       if (selectedItems.length === 0) return placeholder;
       if (selectedItems.length > 1)
         return (
-          <div>
+          <div className="">
             Vários{" "}
             <Badge className="size-4 text-tiny text-white">
               {selectedItems.length}
@@ -246,7 +246,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "w-full justify-between disabled:bg-neutral-200 disabled:cursor-not-allowed disabled:border-neutral-300",
+            "w-full justify-between disabled:bg-neutral-200 disabled:cursor-not-allowed disabled:border-neutral-300 overflow-hidden",
             className
           )}
         >

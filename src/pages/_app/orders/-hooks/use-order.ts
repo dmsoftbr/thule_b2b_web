@@ -7,6 +7,7 @@ import { NEW_ORDER_EMPTY } from "../-utils/order-utils";
 import type { CustomerModel } from "@/models/registrations/customer.model";
 import type { OrderModel } from "@/models/orders/order-model";
 import type { OrderItemModel } from "@/models/orders/order-item-model";
+import type { DeliveryLocationModel } from "@/models/delivery-location.model";
 
 type OrderState = {
   currentOrder: OrderModel;
@@ -16,6 +17,7 @@ type OrderState = {
   setPriceTable: (priceTable: PriceTableModel) => void;
   setRepresentative: (representative: RepresentativeModel | undefined) => void;
   setDiscountPercent: (percent: number) => void;
+  setDeliveryLocation: (deliveryLocation: DeliveryLocationModel) => void;
   onAddItem: (item: OrderItemModel) => void;
   onRemoveItem: (item: OrderItemModel) => void;
   onUpdateItem: (item: OrderItemModel) => void;
@@ -36,6 +38,8 @@ export const useOrder = create<OrderState>((set) => ({
     set((state) => handleChangePriceTable(state, priceTable)),
   setRepresentative: (representative) =>
     set((state) => handleChangeRepresentative(state, representative)),
+  setDeliveryLocation: (deliveryLocaiton) =>
+    set((state) => handleChangeDeliveryLocation(state, deliveryLocaiton)),
   setDiscountPercent: (percent) =>
     set((state) => handleChangeDiscountPercent(state, percent)),
   onAddItem: (item) => set((state) => handleAddItem(state, item)),
@@ -52,6 +56,20 @@ const handleChangeRepresentative = (
       ...state.currentOrder,
       representative: representative,
       representativeId: representative?.id ?? 0,
+    };
+    return { currentOrder: newOrder };
+  } else return state;
+};
+
+const handleChangeDeliveryLocation = (
+  state: OrderState,
+  deliveryLocation: DeliveryLocationModel | undefined
+) => {
+  if (state.currentOrder) {
+    const newOrder: OrderModel = {
+      ...state.currentOrder,
+      deliveryLocation: deliveryLocation,
+      deliveryLocationId: deliveryLocation?.id ?? "",
     };
     return { currentOrder: newOrder };
   } else return state;
