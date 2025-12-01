@@ -5,7 +5,6 @@ import { OrdersList } from "./orders-list";
 import { SimulationsList } from "./simulations-list";
 import { TopCommercialFamilies } from "./top-commercial-families";
 import { TopCustomers } from "./top-customers";
-import { TopProducts } from "./top-products";
 
 type Props = {};
 export const DashboardRepresentative = ({}: Props) => {
@@ -72,7 +71,7 @@ export const DashboardRepresentative = ({}: Props) => {
             <p className="text-muted-foreground font-semibold">
               Top Famílias Comerciais
             </p>
-            <TopCommercialFamilies />
+            <TopCommercialFamilies data={[]} />
           </div>
         </div>
       </div>

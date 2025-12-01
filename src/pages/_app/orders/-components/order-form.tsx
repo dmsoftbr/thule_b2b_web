@@ -11,6 +11,7 @@ import { FinishOrderModal } from "./finish-order-modal";
 import { toast } from "sonner";
 import { api, handleError } from "@/lib/api";
 import { ExportOrder } from "./export-order";
+
 interface Props {
   orderId: string;
   action: "NEW" | "VIEW" | "APPROVAL" | "CANCEL" | "EDIT";
@@ -47,6 +48,7 @@ export const OrderForm = ({ orderId, orderType, action }: Props) => {
         setCurrentOrder(orderGenerated);
       }
     } catch (error) {
+      console.log(orderId);
       console.log(error);
       toast.error(handleError(error));
     }
@@ -63,6 +65,7 @@ export const OrderForm = ({ orderId, orderType, action }: Props) => {
   useEffect(() => {
     handleSetOrderFromOutlet();
     handleLoadOrder();
+    console.log(orderId);
   }, []);
 
   return (

@@ -86,10 +86,10 @@ export const columns = ({ fnView }: Props): ServerTableColumn[] => [
         <span
           className={cn(
             "px-2 py-1 text-xs font-medium rounded-full",
-            getOrderStatusColor(order.statusId, order.creditStatusId ?? 0)
+            getOrderStatusColor(order)
           )}
         >
-          {getOrderStatusName(order.statusId, order.creditStatusId ?? 0)}
+          {getOrderStatusName(order)}
         </span>
       </div>
     ),

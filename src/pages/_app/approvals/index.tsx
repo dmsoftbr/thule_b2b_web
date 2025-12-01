@@ -24,6 +24,8 @@ function ApprovalsPageComponent() {
 
   const handleView = (order: OrderModel) => {
     //
+    console.log(order);
+    setTableToken(new Date().valueOf());
   };
 
   return (

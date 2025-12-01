@@ -20,7 +20,6 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { api, handleError } from "@/lib/api";
 import type { UserPermissionModel } from "@/models/admin/user-permission.model";
-import { check } from "zod";
 
 interface Props {
   isOpen: boolean;

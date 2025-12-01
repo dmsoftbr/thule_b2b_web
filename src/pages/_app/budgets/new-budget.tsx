@@ -11,7 +11,7 @@ function NewBudgetPage() {
       <h1 className="font-semibold text-lg px-2 bg-neutral-200">
         Nova Simulação
       </h1>
-      <OrderForm action="NEW" orderType="BUDGET" />
+      <OrderForm orderId={""} action="NEW" orderType="BUDGET" />
     </div>
   );
 }

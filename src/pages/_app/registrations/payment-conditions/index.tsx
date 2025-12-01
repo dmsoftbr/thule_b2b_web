@@ -28,10 +28,8 @@ const searchFieldsList: ServerTableSearchField[] = [
 ];
 function PaymentConditionsComponent() {
   const [tableToken, setTableToken] = useState(new Date().valueOf());
-  const [showModal, setShowModal] = useState(false);
-  const [currentData, setCurrentData] = useState<PaymentConditionModel | null>(
-    null
-  );
+  const [, setShowModal] = useState(false);
+  const [, setCurrentData] = useState<PaymentConditionModel | null>(null);
   const { showAppDialog } = useAppDialog();
   const navigate = useNavigate();
 

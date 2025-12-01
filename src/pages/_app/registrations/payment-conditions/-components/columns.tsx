@@ -1,9 +1,8 @@
-import { AppTooltip } from "@/components/layout/app-tooltip";
 import type { ServerTableColumn } from "@/components/server-table/server-table";
 import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/number-utils";
 import type { PaymentConditionModel } from "@/models/registrations/payment-condition.model";
-import { EditIcon, TrashIcon, UsersIcon } from "lucide-react";
+import { EditIcon } from "lucide-react";
 
 interface Props {
   fnEdit: (data: PaymentConditionModel) => void;
@@ -11,11 +10,7 @@ interface Props {
   fnConfig: (data: PaymentConditionModel) => void;
 }
 
-export const columns = ({
-  fnConfig,
-  fnEdit,
-  fnDelete,
-}: Props): ServerTableColumn[] => [
+export const columns = ({ fnEdit }: Props): ServerTableColumn[] => [
   {
     title: "Código",
     dataIndex: "id",
