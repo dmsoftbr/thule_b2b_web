@@ -92,6 +92,7 @@ const handleChangeCustomer = (state: OrderState, customer: CustomerModel) => {
       customer,
       customerId: customer.id,
       branchId: customer.branchId,
+      paymentConditionId: customer.paymentConditionId,
     };
     return { currentOrder: newOrder };
   } else return state;
@@ -125,7 +126,7 @@ const handleUpdateItem = (state: OrderState, item: OrderItemModel) => {
     ) ?? -1;
 
   if (itemIndex >= 0 && newItems) {
-    newItems[itemIndex].quantity = item.quantity;
+    newItems[itemIndex].orderQuantity = item.orderQuantity;
     newItems[itemIndex].deliveryDate = item.deliveryDate;
     newItems[itemIndex].availability = item.availability;
   }

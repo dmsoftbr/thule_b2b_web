@@ -1,7 +1,7 @@
 import { ProductsCombo } from "@/components/app/products-combo";
 import { Label } from "@/components/ui/label";
 import { OrderItemCard } from "./order-item-card";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { OrderSearchProductModal } from "./order-search-product-modal";
 import { useOrder } from "../-hooks/use-order";
@@ -14,18 +14,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
-  TableCell,
   TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PencilIcon, TrashIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ProductImage } from "@/components/app/product-image";
 import type { OrderItemModel } from "@/models/orders/order-item-model";
-import { FormInputQty } from "@/components/form/form-qty-input";
 import { NEW_ORDER_ITEM_EMPTY } from "../-utils/order-utils";
 import { api } from "@/lib/api";
 import { OrderItemTableRow } from "./order-item-table-row";
@@ -84,10 +78,10 @@ export const OrderFormItems = ({ isEditing }: Props) => {
       productId: product.id,
       deliveryDate: deliveryData.estimatedDate,
       availability: deliveryData.availbility,
-      unitPriceBase: product.unitPriceInTable,
-      unitPriceSuggest: product.suggestUnitPrice,
-      totalValue: product.unitPriceInTable * 1,
-      quantity: 1,
+      inputPrice: product.unitPriceInTable,
+      priceTablePrice: product.suggestUnitPrice,
+      grossItemValue: product.unitPriceInTable * 1,
+      orderQuantity: 1,
       sequence: currentOrder.items.length + 10,
     };
 
@@ -95,7 +89,7 @@ export const OrderFormItems = ({ isEditing }: Props) => {
   };
 
   const orderTotal = currentOrder.items.reduce(
-    (acc, b) => acc + b.unitPriceBase * b.quantity,
+    (acc, b) => acc + b.inputPrice * b.orderQuantity,
     0
   );
 
@@ -104,7 +98,7 @@ export const OrderFormItems = ({ isEditing }: Props) => {
       <div className="flex gap-x-4 mb-2 container w-full">
         <div className="flex flex-1 items-center justify-center">
           <div className="flex gap-x-2 w-full items-end">
-            {currentOrder.orderClassificationId < 6 ? (
+            {currentOrder.orderClassificationId < 6 && isEditing ? (
               <>
                 <div className="flex-1 form-group">
                   <Label>Pesquisar Produto para Adicionar</Label>
@@ -169,6 +163,16 @@ export const OrderFormItems = ({ isEditing }: Props) => {
             className="flex flex-col overflow-y-visible w-full"
             style={{ maxHeight: "230px" }}
           >
+            {currentOrder.items.length == 0 && (
+              <tr className="h-10">
+                <td
+                  className="flex items-center justify-center h-10 border"
+                  colSpan={9}
+                >
+                  Sem Itens no Pedido
+                </td>
+              </tr>
+            )}
             {currentOrder.items?.map((item: OrderItemModel, index: number) => (
               <OrderItemTableRow
                 key={index}
@@ -195,7 +199,7 @@ export const OrderFormItems = ({ isEditing }: Props) => {
               <TableHead className="w-[120px] border-[0.5px] text-right  flex items-center justify-end">
                 {formatNumber(
                   currentOrder.items?.reduce(
-                    (acc, b) => (acc += b.quantity * b.unitPriceBase),
+                    (acc, b) => (acc += b.orderQuantity * b.priceTablePrice),
                     0
                   ),
                   2
@@ -224,6 +228,7 @@ export const OrderFormItems = ({ isEditing }: Props) => {
               <OrderItemCard
                 key={`${item.productId}_${index}`}
                 data={item}
+                isEditing={isEditing}
                 className="even:bg-neutral-300"
               />
             ))}

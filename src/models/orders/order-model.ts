@@ -3,6 +3,8 @@ import type { CustomerModel } from "../registrations/customer.model";
 import type { RepresentativeModel } from "../representative.model";
 import type { PriceTableModel } from "../registrations/price-table.model";
 import type { DeliveryLocationModel } from "../delivery-location.model";
+import type { CarrierModel } from "../carrier.model";
+import type { PaymentConditionModel } from "../registrations/payment-condition.model";
 
 export type OrderModel = {
   id: string;
@@ -51,4 +53,6 @@ export type OrderModel = {
   representative?: RepresentativeModel;
   priceTable?: PriceTableModel;
   deliveryLocation?: DeliveryLocationModel;
+  carrier?: CarrierModel;
+  paymentCondition?: PaymentConditionModel;
 };

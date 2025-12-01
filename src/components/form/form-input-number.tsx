@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/form";
 import { NumericFormat } from "react-number-format";
 
-interface FormInputProps<
+interface FormInputNumberProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > {
@@ -26,7 +26,7 @@ interface FormInputProps<
   autoFocus?: React.InputHTMLAttributes<HTMLInputElement>["autoFocus"];
 }
 
-export function FormInput<
+export function FormInputNumber<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
@@ -35,7 +35,7 @@ export function FormInput<
   label,
   required = false,
   className = "space-y-0",
-}: FormInputProps<TFieldValues, TName>) {
+}: FormInputNumberProps<TFieldValues, TName>) {
   return (
     <FormField
       control={control}

@@ -3,7 +3,6 @@ export type CalcOrderFreightsRequestDto = {
   customerAbbreviation: string;
   deliveryLocationId: string;
   totalOrder: number;
-  items: CalcOrderFreightsItem[];
 };
 
 export type CalcOrderFreightsItem = {

@@ -55,6 +55,7 @@ export const FreightTable = ({ data, onRefreshCalc }: Props) => {
         <TableBody>
           {data.map((item: CalcFreightsResposeDto) => (
             <TableRow
+              key={item.carrierId}
               className={
                 selectedCarrier == item.carrierId.toString()
                   ? "bg-blue-100"

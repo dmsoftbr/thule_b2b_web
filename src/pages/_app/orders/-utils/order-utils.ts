@@ -30,19 +30,46 @@ export const NEW_ORDER_EMPTY: OrderModel = {
   isCompleted: false,
   isParcialBilling: true,
   comments: "",
+  additionalDiscount: 0,
+  createdBy: "",
+  creditStatusId: 1,
+  currencyId: 0,
+  customerAbbreviation: "",
+  erpOrderId: 0,
+  freightPayedValue: 0,
+  freightPaymentId: 1,
+  freightTypeId: 1,
+  freightValue: 0,
+  orderId: "",
+  orderRepId: "",
+  origin: "",
+  priceTypeId: 1,
+  useCustomerCarrier: false,
 };
 
 export const NEW_ORDER_ITEM_EMPTY: OrderItemModel = {
   orderId: "",
   sequence: 0,
   productId: "",
-  quantity: 0,
+  orderQuantity: 0,
   availability: "",
   deliveryDate: new Date(),
-  unitPriceBase: 0,
-  unitPriceSuggest: 0,
+  inputPrice: 0,
+  priceTablePrice: 0,
+  suggestPrice: 0,
   priceTableId: "",
-  totalValue: 0,
+  grossItemValue: 0,
+  allocatedQuantity: 0,
+  comments: "",
+  customerAbbreviation: "",
+  deliveredQuantity: 0,
+  fiscalClassificationId: "",
+  id: "",
+  ncm: "",
+  netItemValue: 0,
+  originalDeliveryDate: new Date(),
+  referenceCode: "",
+  statusId: 1,
 };
 
 export const NEW_BUDGET_EMPTY: OrderModel = {
@@ -67,6 +94,22 @@ export const NEW_BUDGET_EMPTY: OrderModel = {
   fiscalClassificationId: "",
   isCompleted: false,
   comments: "",
+  additionalDiscount: 0,
+  currencyId: 0,
+  createdBy: "",
+  creditStatusId: 1,
+  customerAbbreviation: "",
+  erpOrderId: 0,
+  freightPayedValue: 0,
+  freightPaymentId: 0,
+  freightTypeId: 1,
+  freightValue: 0,
+  isParcialBilling: true,
+  orderId: "",
+  orderRepId: "",
+  origin: "",
+  priceTypeId: 1,
+  useCustomerCarrier: false,
 };
 
 export const generateOrderFromOutlet = async (): Promise<OrderModel> => {
@@ -101,12 +144,12 @@ export const generateOrderFromOutlet = async (): Promise<OrderModel> => {
     for (const [index, item] of (outletJson.items ?? []).entries()) {
       const orderItem: OrderItemModel = { ...NEW_ORDER_ITEM_EMPTY };
       orderItem.availability = "C";
-      orderItem.quantity = item.quantity;
+      orderItem.orderQuantity = item.quantity;
       orderItem.productId = item.id;
       orderItem.priceTableId = item.priceTableId;
       orderItem.sequence = (index + 1) * 10;
-      orderItem.unitPriceBase = item.price;
-      orderItem.unitPriceSuggest = item.price;
+      orderItem.inputPrice = item.price;
+      orderItem.suggestPrice = item.price;
       const productData = await ProductsService.getById(item.id);
       orderItem.product = productData;
 

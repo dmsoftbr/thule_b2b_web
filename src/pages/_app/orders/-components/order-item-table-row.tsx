@@ -4,7 +4,7 @@ import { ProductImage } from "@/components/app/product-image";
 import { FormInputQty } from "@/components/form/form-qty-input";
 import { formatNumber } from "@/lib/number-utils";
 import { Badge } from "@/components/ui/badge";
-import { PencilIcon, TrashIcon } from "lucide-react";
+import { TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -68,18 +68,19 @@ export const OrderItemTableRow = ({ item, isEditing }: Props) => {
       </TableCell>
       <TableCell className="border-r text-right w-[160px]">
         <FormInputQty
-          value={item.quantity}
+        disabled={!isEditing}
+          value={item.orderQuantity}
           onValueChange={(value) => handleUpdateQuantity(value ?? 0)}
         />
       </TableCell>
       <TableCell className="w-[120px] border-r text-right">
-        {formatNumber(item.unitPriceSuggest, 2)}
+        {formatNumber(item.inputPrice, 2)}
       </TableCell>
       <TableCell className="w-[120px] border-r text-right">
-        {formatNumber(item.unitPriceBase, 2)}
+        {formatNumber(item.inputPrice, 2)}
       </TableCell>
       <TableCell className="w-[120px] border-r text-right">
-        {formatNumber(item.unitPriceBase * item.quantity, 2)}
+        {formatNumber(item.inputPrice * item.orderQuantity, 2)}
       </TableCell>
       <TableCell className="w-[120px] border-r flex-wrap ">
         {format(item.deliveryDate, "dd/MM/yyyy")}{" "}

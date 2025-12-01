@@ -64,14 +64,8 @@ export const MENU_MOCK: MenuModel[] = [
     children: [
       {
         id: "51",
-        title: "Relatório de Pedidos",
-        url: "/relatorio-pedidos",
-        icon: "CircleIcon",
-      },
-      {
-        id: "52",
-        title: "Relatório de Vendas",
-        url: "/relatorio-vendas",
+        title: "Lista de Clientes",
+        url: "/reports/customers-list",
         icon: "CircleIcon",
       },
     ],

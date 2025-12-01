@@ -1,15 +1,30 @@
 import type { ProductModel } from "../product.model";
+import type { OrderItemTaxModel } from "./order-item-tax-model";
 
 export type OrderItemModel = {
-  sequence: number;
+  id: string;
   orderId: string;
   productId: string;
-  quantity: number;
-  unitPriceSuggest: number;
-  unitPriceBase: number;
-  totalValue: number;
-  deliveryDate: Date;
-  availability: string;
+  orderQuantity: number;
+  inputPrice: number;
+  priceTablePrice: number;
   priceTableId: string;
+  deliveryDate: Date;
+  originalDeliveryDate: Date;
+  availability: string;
+  referenceCode: string;
+  ncm: string;
+  sequence: number;
+  deliveredQuantity: number;
+  allocatedQuantity: number;
+  statusId: number;
+  comments: string;
+  customerAbbreviation: string;
+  fiscalClassificationId: string;
+  grossItemValue: number;
+  netItemValue: number;
+  suggestPrice: number;
+
   product?: ProductModel;
+  taxes?: OrderItemTaxModel[];
 };

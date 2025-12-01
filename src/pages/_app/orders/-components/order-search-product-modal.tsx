@@ -13,10 +13,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-//import { Input } from "@/components/ui/input";
 import type { ProductModel } from "@/models/product.model";
 import { MinusIcon, PlusIcon, SearchIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useOrder } from "../-hooks/use-order";
 import { ProductImage } from "@/components/app/product-image";
 import { formatNumber } from "@/lib/number-utils";
@@ -25,30 +24,14 @@ export const OrderSearchProductModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   //const [data, setData] = useState<ProductModel[]>([]);
   const { currentOrder, setCurrentOrder } = useOrder();
-  useEffect(() => {
-    //if (isOpen) onSearch("");
-  }, [isOpen]);
 
-  // async function onSearch(searchText: string) {
-  //   startTransition(async () => {
-  //     const { data } = await api.post("/registrations/products/search", {
-  //       customerId: currentOrder.customerId,
-  //       priceTableId: currentOrder.priceTableId,
-  //       search: searchText,
-  //       pageSize: 7,
-  //     });
-
-  //     //setData(data);
-  //   });
-  // }
-
-  function handleAddItemToOrder(product: ProductModel, quantity: number) {
+  function handleAddItemToOrder(product: ProductModel, orderQuantity: number) {
     const newOrder = { ...currentOrder };
     const existingItemIndex = newOrder.items.findIndex(
       (f) => f.productId == product.id
     );
     if (existingItemIndex >= 0) {
-      newOrder.items[existingItemIndex].quantity = quantity;
+      newOrder.items[existingItemIndex].orderQuantity = orderQuantity;
     } else {
       newOrder.items.push({
         availability: "C",
@@ -57,10 +40,22 @@ export const OrderSearchProductModal = () => {
         orderId: currentOrder.id,
         product: product,
         productId: product.id,
-        quantity,
-        totalValue: quantity * product.unitPriceInTable,
-        unitPriceBase: product.unitPriceInTable,
-        unitPriceSuggest: product.suggestUnitPrice,
+        orderQuantity,
+        grossItemValue: orderQuantity * product.unitPriceInTable,
+        inputPrice: product.unitPriceInTable,
+        suggestPrice: product.suggestUnitPrice,
+        allocatedQuantity: 0,
+        comments: "",
+        customerAbbreviation: currentOrder.customerAbbreviation,
+        deliveredQuantity: 0,
+        fiscalClassificationId: "",
+        id: "",
+        ncm: "",
+        netItemValue: 0,
+        originalDeliveryDate: new Date(),
+        priceTablePrice: product.unitPriceInTable,
+        referenceCode: product.referenceCode,
+        statusId: 1,
         priceTableId: currentOrder.priceTableId,
       });
     }
@@ -199,18 +194,9 @@ export const OrderSearchProductModal = () => {
         </DialogHeader>
 
         <div className="flex flex-col w-full">
-          {/* <div className="flex mb-2 items-center gap-x-2">
-            <Button>
-              <RefreshCwIcon />
-            </Button>
-            <Input
-              onChange={() => {}}
-              placeholder="Digite parte do código longo, código curto ou descrição do produto"
-            />
-          </div> */}
           <ServerTable<ProductModel>
             columns={columns}
-            dataUrl="/registrations/products/search"
+            dataUrl="/registrations/products/list-paged"
             searchFields={[
               { id: "id", label: "Código" },
               { id: "description", label: "Descrição" },

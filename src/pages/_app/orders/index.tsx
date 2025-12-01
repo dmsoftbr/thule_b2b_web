@@ -16,11 +16,37 @@ import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { useOrder } from "./-hooks/use-order";
+import { add } from "date-fns";
+import { NEW_ORDER_EMPTY } from "./-utils/order-utils";
 
 const searchFieldsList: ServerTableSearchField[] = [
   {
-    id: "id",
-    label: "Código",
+    id: "orderId",
+    label: "Pedido",
+  },
+  {
+    id: "customerAbbreviation",
+    label: "Abrev. Cliente",
+  },
+  {
+    id: "customerId",
+    label: "Cód. Cliente",
+  },
+  {
+    id: "representativeId",
+    label: "Cód. Representante",
+  },
+  {
+    id: "RepresentativeAbbreviation",
+    label: "Abrev. Representante",
+  },
+  {
+    id: "CustomerDocumentNumber",
+    label: "CPF/CNPJ Cliente",
+  },
+  {
+    id: "CustomerName",
+    label: "Razão Social Cliente",
   },
 ];
 
@@ -33,15 +59,16 @@ function ListOrdersPage() {
   const { showAppDialog } = useAppDialog();
   const [tableToken, setTableToken] = useState(new Date().valueOf());
   const [createdAtFrom, setCreatedAtFrom] = useState<Date | undefined>(
-    undefined
+    new Date(add(new Date(), { days: -30 }))
   );
-  const [createdAtTo, setCreatedAtTo] = useState<Date | undefined>(undefined);
+  const [createdAtTo, setCreatedAtTo] = useState<Date | undefined>(new Date());
   const [selectedReps, setSelectedReps] = useState<number[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<number[]>([]);
-  const [customWhere, setCustomWhere] = useState("");
-  const { setCurrentOrder } = useOrder();
+  const { setCurrentOrder, clearItems } = useOrder();
 
   const handleAdd = () => {
+    setCurrentOrder(NEW_ORDER_EMPTY);
+    clearItems();
     navigate({ to: "/orders/new-order" });
   };
 
@@ -67,9 +94,6 @@ function ListOrdersPage() {
     });
 
     if (continueDelete) {
-      console.log(data);
-      console.log(selectedReps, selectedStatus, customWhere);
-
       await api.delete(`/orders/${data.id}`);
 
       //await OrdersService
@@ -84,6 +108,10 @@ function ListOrdersPage() {
       return data;
     },
   });
+
+  const handleApplyAdvancedFilter = () => {
+    setTableToken(new Date().valueOf());
+  };
 
   const renderAdvancedFilter = () => {
     return (
@@ -123,6 +151,7 @@ function ListOrdersPage() {
         <div className="form-group flex-1">
           <Label>Situação do Pedido</Label>
           <SearchCombo
+            selectAllAsDefaultValue
             multipleSelect
             onChange={() => {}}
             onSelectOption={(values) =>
@@ -145,15 +174,13 @@ function ListOrdersPage() {
         <div className="flex gap-x-2 mt-5">
           <Button
             onClick={() => {
-              setCustomWhere("");
-              setTableToken(new Date().valueOf());
+              handleApplyAdvancedFilter();
             }}
           >
             Aplicar Filtro
           </Button>
           <Button
             onClick={() => {
-              setCustomWhere("");
               setTableToken(new Date().valueOf());
             }}
           >
@@ -169,7 +196,7 @@ function ListOrdersPage() {
       <div className="p-2">
         <ServerTable<OrderModel>
           key={tableToken}
-          defaultSearchField="id"
+          defaultSearchField="orderId"
           defaultSortFieldDataIndex="createdAt"
           defaultSortDesc
           searchFields={searchFieldsList}
@@ -183,6 +210,13 @@ function ListOrdersPage() {
           dataUrl="/orders/list-paged"
           advancedFilterSlot={renderAdvancedFilter()}
           showAdvancedFilter
+          additionalInfo={{
+            statusIds: selectedStatus,
+            representativeIds: selectedReps,
+            createdAtFrom:
+              createdAtFrom ?? new Date(add(new Date(), { days: -30 })),
+            createdAtTo: createdAtTo ?? new Date(),
+          }}
         />
       </div>
     </AppPageHeader>

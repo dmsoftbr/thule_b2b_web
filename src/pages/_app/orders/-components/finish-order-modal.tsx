@@ -37,21 +37,27 @@ import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { Loader2Icon, Undo2Icon } from "lucide-react";
 import { AppTooltip } from "@/components/layout/app-tooltip";
-import type { CalcOrderFreightsRequestDto } from "@/models/dto/requests/calc-freights-request.model";
+import type {
+  CalcOrderFreightsItem,
+  CalcOrderFreightsRequestDto,
+} from "@/models/dto/requests/calc-freights-request.model";
 import type { CalcFreightsResposeDto } from "@/models/dto/responses/calculated-freights-response.model";
 import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 import type { PaymentConditionModel } from "@/models/registrations/payment-condition.model";
+import { InputMask } from "@/components/ui/input-mask";
 
 interface Props {
   isOpen: boolean;
+  isEditing: boolean;
   onClose: () => void;
 }
 
-export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
+export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
   const navigate = useNavigate();
   const { session } = useAuth();
   const { currentOrder, setCurrentOrder } = useOrder();
   const { showAppDialog } = useAppDialog();
+
   const [orderValidationMessage, setOrderValidationMessage] = useState("");
   const [paymentConditionsData, setPaymentConditionsData] = useState<
     SearchComboItem[]
@@ -69,17 +75,31 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
 
   const [isCalculatingFreight, setIsCalculatingFreight] = useState(false);
   const [isFreightError, setIsFreightError] = useState(false);
+
   async function handleSendOrder() {
     //save the order / budget
     let savedOrderId = "";
+    const orderData = { ...currentOrder, history: [] };
+
+    orderData.items.map((item) => (item.taxes = []));
+
     if (currentOrder.id) {
       // update
-      const { data } = await api.patch(`/orders`, currentOrder);
+      const { data } = await api.patch(`/orders`, orderData);
       savedOrderId = data.orderId;
     } else {
       // add
-      const { data } = await api.post(`/orders`, currentOrder);
+      const { data } = await api.post(`/orders`, orderData);
       savedOrderId = data.orderId;
+    }
+
+    if (orderData.maxBillingDate) {
+      await showAppDialog({
+        title: "ATENÇÃO",
+        message:
+          "Você informou uma Data Mínima de Faturamento. Favor entrar em contato com a THULE pelo e-mail <b>pedidos.itupeva@thule.com<b/> e solicitar a alocação do estoque para este Pedido.",
+        type: "info",
+      });
     }
 
     onClose();
@@ -100,14 +120,14 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
 
   const getSubTotal = () => {
     return currentOrder.items.reduce(
-      (accum, b) => (accum += b.quantity * b.unitPriceBase),
+      (accum, b) => (accum += b.orderQuantity * b.inputPrice),
       0
     );
   };
 
   const getTotal = () => {
     let grossValue = currentOrder.items.reduce(
-      (accum, b) => (accum += b.quantity * b.unitPriceBase),
+      (accum, b) => (accum += b.orderQuantity * b.inputPrice),
       0
     );
 
@@ -126,15 +146,12 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
       2
     );
 
-    // const newOrder = { ...currentOrder, grossValue };
-    // setCurrentOrder(newOrder);
-
     return grossValue;
   };
 
   const getSelectedDeliveryLocation = () => {
     if (!currentOrder.customer) return undefined;
-
+    console.log(currentOrder.customer);
     const deliveryLocation = currentOrder.customer.deliveryLocations.filter(
       (f) => f.id == currentOrder.deliveryLocationId
     );
@@ -165,27 +182,13 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   };
 
   const getOrderPaymentCondition = () => {
-    if (
-      !currentOrder.customer?.paymentConditions ||
-      currentOrder.customer?.paymentConditions.length == 0
-    )
-      return undefined;
-
-    const orderPaymentCondition = currentOrder.customer?.paymentConditions.find(
-      (f) => f.id == currentOrder.paymentConditionId
+    const orderPaymentCondition = paymentConditionsData.find(
+      (f) => f.value == currentOrder.paymentConditionId.toString()
     );
 
     if (!orderPaymentCondition) return undefined;
-    const opt: SearchComboItem = {
-      value: orderPaymentCondition.id.toString(),
-      label: orderPaymentCondition.name,
-      extra: orderPaymentCondition,
-      keyworks: [
-        orderPaymentCondition.id.toString(),
-        orderPaymentCondition.name,
-      ],
-    };
-    return [opt];
+
+    return [orderPaymentCondition];
   };
 
   const getPermissions = async () => {
@@ -216,27 +219,34 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   };
 
   const getFreights = async () => {
+    if (!isEditing) return;
     setIsCalculatingFreight(true);
     setIsFreightError(false);
     try {
       setFreightsData([]);
-      const params: CalcOrderFreightsRequestDto = {
-        customerAbbreviation: currentOrder.customer?.abbreviation ?? "",
-        deliveryLocationId:
-          currentOrder.customer?.deliveryLocations[0].id ?? "",
-        orderId: currentOrder.id ?? "",
-        totalOrder: getTotal(),
-        items: currentOrder.items.map((item) => {
+      const ttParam: CalcOrderFreightsRequestDto[] = [
+        {
+          customerAbbreviation: currentOrder.customer?.abbreviation ?? "",
+          deliveryLocationId:
+            currentOrder.customer?.deliveryLocations[0].id ?? "",
+          orderId: currentOrder.id ?? "",
+          totalOrder: getTotal(),
+        },
+      ];
+
+      const ttItems: CalcOrderFreightsItem[] = currentOrder.items.map(
+        (item) => {
           return {
             productId: item.productId,
-            quantity: item.quantity,
+            quantity: item.orderQuantity,
             sequence: item.sequence,
           };
-        }),
-      };
+        }
+      );
+
       const { data } = await api.post<CalcFreightsResposeDto[]>(
         `/orders/calculate-freights`,
-        params
+        { ttParam: ttParam, ttItems: ttItems }
       );
 
       if (data && data.length > 0) {
@@ -265,26 +275,31 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   };
 
   const getTaxes = async () => {
-    if (currentOrder.items.length == 0) return;
-    const params: any[] = [];
-    currentOrder.items.map((item) => {
-      params.push({
-        siteCode: currentOrder.branchId,
-        customerCode: currentOrder.customerId,
-        itemCode: item.productId,
-        quantity: item.quantity,
-        negotiatedPrice: item.unitPriceBase,
+    try {
+      if (!isEditing) return;
+      if (currentOrder.items.length == 0) return;
+      const params: any[] = [];
+      currentOrder.items.map((item) => {
+        params.push({
+          siteCode: currentOrder.branchId,
+          customerCode: currentOrder.customerId,
+          itemCode: item.productId,
+          quantity: item.orderQuantity,
+          negotiatedPrice: item.inputPrice,
+        });
       });
-    });
 
-    const { data } = await api.post(`/order-items/calc-item-taxes`, params);
-    console.log(data);
+      const { data } = await api.post(`/order-items/calc-item-taxes`, params);
+      if (data) {
+      }
+    } catch (error) {
+      toast.error(handleError(error));
+    }
   };
 
   useEffect(() => {
     if (isOpen) {
       getPaymentConditions();
-      console.log(currentOrder.customer);
       getPermissions();
       getFreights();
       getTaxes();
@@ -293,8 +308,8 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
 
   useEffect(() => {
     setOrderValidationMessage("");
+    const orderTotal = getTotal();
     if (selectedPaymentCondition) {
-      const orderTotal = getTotal();
       if (
         selectedPaymentCondition.minOrderValue > 0 &&
         orderTotal < selectedPaymentCondition.minOrderValue
@@ -304,14 +319,24 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
         );
       }
     }
-  }, [selectedPaymentCondition]);
+
+    if (currentOrder.customer) {
+      if (
+        currentOrder.customer.minValuePayedFreight > 0 &&
+        currentOrder.freightPaymentId == 1 &&
+        orderTotal < currentOrder.customer.minValuePayedFreight
+      ) {
+      }
+    }
+  }, [selectedPaymentCondition, currentOrder.grossTotalValue]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="min-w-[70%]">
         <DialogHeader>
           <DialogTitle>
-            {currentOrder.isBudget ? "Finalizar Simulação" : "Finalizar Pedido"}
+            {isEditing ? "Finalizar " : "Resumo de "}{" "}
+            {currentOrder.isBudget ? "Simulação" : "Pedido"}
           </DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
@@ -326,7 +351,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                 </Label>
                 <Select
                   defaultValue={currentOrder.orderClassificationId.toString()}
-                  disabled={isItemPermissionDisabled("317")}
+                  disabled={!isEditing || isItemPermissionDisabled("317")}
                 >
                   <SelectTrigger className="w-full bg-white">
                     <SelectValue placeholder="Selecione uma opção" />
@@ -343,13 +368,27 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               </div>
               <div className="form-group">
                 <Label>Nº Pedido Distribuidor</Label>
-                <Input />
+                <Input disabled={!isEditing} />
+              </div>
+            </div>
+            <div>
+              <div className="form-group">
+                <Label>Nº Whatsapp</Label>
+                <InputMask
+                  value={currentOrder.whatAppPhoneNumber}
+                  onChange={(value) => {
+                    currentOrder.whatAppPhoneNumber = value ?? "";
+                    setCurrentOrder(currentOrder);
+                  }}
+                  disabled={!isEditing}
+                  mask="(00) 00000-0000"
+                />
               </div>
             </div>
             <div className="form-group">
               <Label>Endereço de Entrega</Label>
               <SearchCombo
-                disabled={isItemPermissionDisabled("308")}
+                disabled={!isEditing || isItemPermissionDisabled("308")}
                 placeholder="Selecione o Endereço de Entrega"
                 staticItems={convertArrayToSearchComboItem(
                   currentOrder.customer?.deliveryLocations ?? [],
@@ -358,36 +397,43 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                     `${item.id} - ${item.address} - ${item.city} - ${item.state}`
                 )}
                 defaultValue={getSelectedDeliveryLocation()}
-                onChange={function (value: string): void {
-                  console.log(value);
-                }}
               />
             </div>
             <div className="form-group">
               <Label>Condição de Pagamento</Label>
-              <SearchCombo
-                placeholder="Selecione a Condição de Pagamento"
-                staticItems={paymentConditionsData}
-                defaultValue={getOrderPaymentCondition()}
-                onChange={function (value: string): void {
-                  const newOrder = { ...currentOrder };
-                  const pc = paymentConditionsData.find((f) => f.value == value)
-                    ?.extra as PaymentConditionModel;
-                  newOrder.paymentConditionId = Number(value);
-                  if (pc && pc.additionalDiscountPercent > 0)
-                    newOrder.additionalDiscount = pc.additionalDiscountPercent;
+              {!isEditing && (
+                <Input
+                  readOnly
+                  value={`${currentOrder.paymentConditionId} - ${currentOrder.paymentCondition?.name}`}
+                />
+              )}
+              {isEditing && (
+                <SearchCombo
+                  placeholder="Selecione a Condição de Pagamento"
+                  staticItems={paymentConditionsData}
+                  defaultValue={getOrderPaymentCondition()}
+                  onChange={function (value: string): void {
+                    const newOrder = { ...currentOrder };
+                    const pc = paymentConditionsData.find(
+                      (f) => f.value == value
+                    )?.extra as PaymentConditionModel;
+                    newOrder.paymentConditionId = Number(value);
+                    if (pc && pc.additionalDiscountPercent > 0)
+                      newOrder.additionalDiscount =
+                        pc.additionalDiscountPercent;
 
-                  setCurrentOrder(newOrder);
-                  setSelectedPaymentCondition(pc);
-                }}
-              />
+                    setCurrentOrder(newOrder);
+                    setSelectedPaymentCondition(pc);
+                  }}
+                />
+              )}
             </div>
             <div className="form-group">
               <Label>Estabelecimento</Label>
               <div className="flex items-center gap-x-2">
                 <Select
                   defaultValue={currentOrder.branchId}
-                  disabled={isItemPermissionDisabled("309")}
+                  disabled={!isEditing || isItemPermissionDisabled("309")}
                 >
                   <SelectTrigger className="w-full bg-white">
                     <SelectValue placeholder="Selecione uma opção" />
@@ -399,20 +445,20 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                   </SelectContent>
                 </Select>
                 <Label>
-                  <Checkbox />
+                  <Checkbox disabled={!isEditing} />
                   Importadora
                 </Label>
               </div>
             </div>
-            {!isItemPermissionDisabled("312") && (
+            {(!isEditing || !isItemPermissionDisabled("312")) && (
               <div className="grid grid-cols-2 gap-x-4 ">
                 <div className="form-group">
                   <Label>Data Mínima de Faturamento</Label>
-                  <DatePicker />
+                  <DatePicker disabled={!isEditing} />
                 </div>
                 <div className="form-group">
                   <Label>Data Máxima de Faturamento</Label>
-                  <DatePicker />
+                  <DatePicker disabled={!isEditing} />
                 </div>
               </div>
             )}
@@ -420,6 +466,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               <div className="form-group">
                 <Label>
                   <Checkbox
+                    disabled={!isEditing}
                     checked={currentOrder.isParcialBilling}
                     onCheckedChange={(checked) => {
                       const newOrder = {
@@ -433,9 +480,10 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                 </Label>
               </div>
               <div className="form-group">
-                {!isItemPermissionDisabled("314") && (
+                {(!isEditing || !isItemPermissionDisabled("314")) && (
                   <Label>
                     <Checkbox
+                      disabled={!isEditing}
                       checked={currentOrder.freightPaymentId == 3}
                       onCheckedChange={(checked) => {
                         const newOrder = {
@@ -450,9 +498,10 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                 )}
               </div>
               <div className="form-group">
-                {!isItemPermissionDisabled("315") && (
+                {(!isEditing || !isItemPermissionDisabled("315")) && (
                   <Label>
                     <Checkbox
+                      disabled={!isEditing}
                       checked={currentOrder.useCustomerCarrier}
                       onCheckedChange={(checked) => {
                         const newOrder = {
@@ -466,20 +515,9 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                   </Label>
                 )}
               </div>
-
-              {/* {selectedPaymentCondition &&
-                selectedPaymentCondition.additionalDiscountPercent > 0 && (
-                  <div className="form-group">
-                    <Label>
-                      <Checkbox />
-                      Desconto Adicional
-                    </Label>
-                  </div>
-                )} */}
-
               <div className="form-group">
                 <Label>
-                  <Checkbox />
+                  <Checkbox disabled={!isEditing} />
                   Enviar Display com o Pedido
                 </Label>
               </div>
@@ -487,20 +525,36 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
           </div>
           {/* Segunda coluna */}
           <div className="border-l px-4">
-            <h3 className="font-semibold text-xl">
-              Selecione uma opção de Frete
-            </h3>
-            {isCalculatingFreight && (
-              <div className="flex items-center justify-center h-[100px] border">
-                <Loader2Icon className="animate-spin mr-1.5 text-blue-600" />
-                <span>Caculando Frete. Aguarde...</span>
+            {!isEditing && (
+              <div className="mb-2 form-group">
+                <Label>Transportadora</Label>
+                <Input
+                  readOnly
+                  value={`${currentOrder.carrier?.id} - ${currentOrder.carrier?.abbreviation}`}
+                />
               </div>
             )}
-            {!isCalculatingFreight && (
-              <FreightTable
-                data={freightsData}
-                onRefreshCalc={() => getFreights()}
-              />
+            {isEditing && (
+              <>
+                {" "}
+                <h3 className="font-semibold text-xl">
+                  Selecione uma opção de Frete
+                </h3>
+                <div>
+                  {isCalculatingFreight && (
+                    <div className="flex items-center justify-center h-[100px] border">
+                      <Loader2Icon className="animate-spin mr-1.5 text-blue-600" />
+                      <span>Caculando Frete. Aguarde...</span>
+                    </div>
+                  )}
+                  {!isCalculatingFreight && (
+                    <FreightTable
+                      data={freightsData}
+                      onRefreshCalc={() => getFreights()}
+                    />
+                  )}
+                </div>
+              </>
             )}
             <div className="bg-neutral-100 px-4 rounded-md py-2 space-y-2">
               <div className="flex justify-between pr-2">
@@ -518,6 +572,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                     decimalSeparator=","
                     decimalScale={2}
                     fixedDecimalScale
+                    disabled={!isEditing}
                     max={100}
                     min={0}
                     maxLength={6}
@@ -532,18 +587,20 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                       handleChangeDiscountPercentual(value.floatValue ?? 0)
                     }
                   />
-                  <AppTooltip message="Desfazer">
-                    <button
-                      className="hover:bg-neutral-200 bg-neutral-50 p-1 rounded border border-neutral-300"
-                      onClick={() => {
-                        handleChangeDiscountPercentual(
-                          currentOrder.customer?.discountPercent ?? 0
-                        );
-                      }}
-                    >
-                      <Undo2Icon className="size-4" />
-                    </button>
-                  </AppTooltip>
+                  {isEditing && (
+                    <AppTooltip message="Desfazer">
+                      <button
+                        className="hover:bg-neutral-200 bg-neutral-50 p-1 rounded border border-neutral-300"
+                        onClick={() => {
+                          handleChangeDiscountPercentual(
+                            currentOrder.customer?.discountPercent ?? 0
+                          );
+                        }}
+                      >
+                        <Undo2Icon className="size-4" />
+                      </button>
+                    </AppTooltip>
+                  )}
                 </div>
               </div>
               {selectedPaymentCondition &&
@@ -587,7 +644,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
           <Button variant="secondary" onClick={() => onClose()}>
             Voltar
           </Button>
-          {currentOrder.isBudget && (
+          {currentOrder.isBudget && isEditing && (
             <Button
               disabled={isCalculatingFreight || isFreightError}
               variant="green"
@@ -598,9 +655,11 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
             </Button>
           )}
 
-          <Button onClick={handleSendOrder} disabled={isCalculatingFreight}>
-            {currentOrder.isBudget ? "Gerar" : "Enviar"} Pedido
-          </Button>
+          {isEditing && (
+            <Button onClick={handleSendOrder} disabled={isCalculatingFreight}>
+              {currentOrder.isBudget ? "Gerar" : "Enviar"} Pedido
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

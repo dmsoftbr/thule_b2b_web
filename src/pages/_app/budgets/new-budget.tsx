@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { v7 as uuidv7 } from "uuid";
 import { OrderForm } from "../orders/-components/order-form";
 
 export const Route = createFileRoute("/_app/budgets/new-budget")({
@@ -12,7 +11,7 @@ function NewBudgetPage() {
       <h1 className="font-semibold text-lg px-2 bg-neutral-200">
         Nova Simulação
       </h1>
-      <OrderForm orderId={uuidv7()} action="NEW" orderType="BUDGET" />
+      <OrderForm action="NEW" orderType="BUDGET" />
     </div>
   );
 }

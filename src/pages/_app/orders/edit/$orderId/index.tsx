@@ -1,5 +1,5 @@
 import { AppPageHeader } from "@/components/layout/app-page-header";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useParams } from "@tanstack/react-router";
 import { OrderForm } from "../../-components/order-form";
 
 export const Route = createFileRoute("/_app/orders/edit/$orderId/")({
@@ -7,9 +7,10 @@ export const Route = createFileRoute("/_app/orders/edit/$orderId/")({
 });
 
 function EditOrderPageComponent() {
+  const { orderId } = useParams({ from: "/_app/orders/edit/$orderId/" });
   return (
     <AppPageHeader titleSlot={"Alterar Pedido de Venda"}>
-      <OrderForm orderId="" action="EDIT" orderType="ORDER" />
+      <OrderForm orderId={orderId} action="EDIT" orderType="ORDER" />
     </AppPageHeader>
   );
 }

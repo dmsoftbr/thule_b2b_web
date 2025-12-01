@@ -37,7 +37,7 @@ interface SearchComboProps {
   noResultsText?: string;
   disabled?: boolean;
   defaultValue?: SearchComboItem[];
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   className?: string;
   showValueInSelectedItem?: boolean;
   multipleSelect?: boolean;
@@ -46,6 +46,7 @@ interface SearchComboProps {
   valueProp?: string;
   labelProp?: string;
   deSelectOnClick?: boolean;
+  selectAllAsDefaultValue?: boolean;
 }
 
 export const SearchCombo: React.FC<SearchComboProps> = ({
@@ -135,7 +136,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
         }
       }
     }
-  }, [defaultValue, items]);
+  }, [defaultValue]);
 
   // Efeito para atualizar o item selecionado quando o valor mudar externamente
   // useEffect(() => {
@@ -188,7 +189,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
       }
 
       setSelectedItems(newItems);
-      onChange(currentValue);
+      onChange?.(currentValue);
       onSelectOption?.(newItems);
       if (!multipleSelect) setOpen(false);
     }

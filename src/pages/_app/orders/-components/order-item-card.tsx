@@ -17,16 +17,17 @@ import { getAvailabilityColor } from "../-utils/order-utils";
 interface Props {
   data: OrderItemModel;
   className?: string;
+  isEditing: boolean;
 }
 
-export const OrderItemCard = ({ data, className }: Props) => {
+export const OrderItemCard = ({ data, className, isEditing }: Props) => {
   const { onUpdateItem, onRemoveItem, currentOrder } = useOrder();
 
   const handleUpdateQuantity = async (newQuantity: number | undefined) => {
-    if (!newQuantity) {
-      onRemoveItem(data);
-      return;
-    }
+    // if (!newQuantity) {
+    //   onRemoveItem(data);
+    //   return;
+    // }
 
     // chama a api que calcula data de entrega
     var params = {
@@ -43,11 +44,11 @@ export const OrderItemCard = ({ data, className }: Props) => {
 
     const updatedItem = {
       ...data,
-      quantity: Number(newQuantity),
+      orderQuantity: Number(newQuantity),
       deliveryDate: response.estimatedDate,
       availability: response.availbility,
     };
-    console.log("UPdated", updatedItem);
+
     onUpdateItem(updatedItem);
   };
 
@@ -95,11 +96,11 @@ export const OrderItemCard = ({ data, className }: Props) => {
                   {data.product?.description}
                 </p>
                 <div className="text-lg font-bold text-gray-900">
-                  Preço Sugerido: R$ {formatNumber(data.unitPriceSuggest, 2)}
+                  Preço Sugerido: R$ {formatNumber(data.suggestPrice, 2)}
                 </div>
 
                 <div className="text-lg font-bold text-gray-900">
-                  Preço c/Desconto: R$ {formatNumber(data.unitPriceBase, 2)}
+                  Preço c/Desconto: R$ {formatNumber(data.inputPrice, 2)}
                 </div>
 
                 {/* Price and Quantity Controls */}
@@ -109,7 +110,8 @@ export const OrderItemCard = ({ data, className }: Props) => {
                     <div className="flex items-center border rounded-lg gap-x-4">
                       <FormInputQty
                         min={1}
-                        value={data.quantity}
+                        disabled={!isEditing}
+                        value={data.orderQuantity}
                         onValueChange={(e) => handleUpdateQuantity(e)}
                         minusSlot={<MinusIcon className="size-3" />}
                         plusSlot={<PlusIcon className="size-3" />}
@@ -118,7 +120,7 @@ export const OrderItemCard = ({ data, className }: Props) => {
                   </div>
                   <div className="flex items-center font-bold text-lg">
                     Total: R${" "}
-                    {formatNumber(data.quantity * data.unitPriceBase, 2)}
+                    {formatNumber(data.orderQuantity * data.inputPrice, 2)}
                   </div>
                 </div>
 

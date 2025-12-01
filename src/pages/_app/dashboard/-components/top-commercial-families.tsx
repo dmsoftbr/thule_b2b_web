@@ -7,34 +7,20 @@ import {
 import { Label, LabelList, Pie, PieChart, Sector } from "recharts";
 import type { PieSectorDataItem } from "recharts/types/polar/Pie";
 
-export const TopCommercialFamilies = () => {
-  const chartData = [
-    {
-      commercialFamilyId: "AWK",
-      percent: 50,
-      fill: "#93c5fd", // blue-300
-    },
-    {
-      commercialFamilyId: "AWK1",
-      percent: 10,
-      fill: "#60a5fa", // blue-400
-    },
-    {
-      commercialFamilyId: "AWK2",
-      percent: 15,
-      fill: "#3b82f6", // blue-500
-    },
-    {
-      commercialFamilyId: "AWK3",
-      percent: 20,
-      fill: "#2563eb", // blue-600
-    },
-    {
-      commercialFamilyId: "Outras",
-      percent: 10,
-      fill: "#1d4ed8", // blue-700
-    },
-  ];
+interface Props {
+  data: any[];
+}
+
+const CHART_COLORS = ["#93c5fd", "#60a5fa", "#3b82f6", "#2563eb", "#1d4ed8"];
+
+export const TopCommercialFamilies = ({ data }: Props) => {
+  const chartData = data.map((item, index) => {
+    return {
+      commercialFamilyId: item.commercialFamilyId,
+      percent: item.familyValue,
+      fill: CHART_COLORS[index],
+    };
+  });
 
   const chartConfig = {
     commercialFamilyId: {

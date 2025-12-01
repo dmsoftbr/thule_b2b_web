@@ -1,5 +1,11 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
-import React, { forwardRef, useCallback, useEffect, useState } from "react";
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { NumericFormat, type NumericFormatProps } from "react-number-format";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -19,6 +25,7 @@ interface Props extends Omit<NumericFormatProps, "value" | "onValueChange"> {
   decimalScale?: number;
   plusSlot?: React.ReactElement;
   minusSlot?: React.ReactElement;
+  disabled?: boolean;
 }
 
 export const FormInputQty = forwardRef<HTMLInputElement, Props>(
@@ -38,6 +45,7 @@ export const FormInputQty = forwardRef<HTMLInputElement, Props>(
       value: controlledValue,
       minusSlot,
       plusSlot,
+      disabled,
       ...props
     },
     ref
@@ -46,7 +54,10 @@ export const FormInputQty = forwardRef<HTMLInputElement, Props>(
       controlledValue ?? defaultValue
     );
 
+    const inputRef = useRef<HTMLInputElement>(null);
+
     const handleIncrement = useCallback(() => {
+      if (disabled) return;
       setValue((prev) =>
         prev === undefined
           ? (stepper ?? 1)
@@ -55,6 +66,7 @@ export const FormInputQty = forwardRef<HTMLInputElement, Props>(
     }, [stepper, max]);
 
     const handleDecrement = useCallback(() => {
+      if (disabled) return;
       setValue((prev) =>
         prev === undefined
           ? -(stepper ?? 1)
@@ -93,6 +105,7 @@ export const FormInputQty = forwardRef<HTMLInputElement, Props>(
       value: string;
       floatValue: number | undefined;
     }) => {
+      if (disabled) return;
       const newValue =
         values.floatValue === undefined ? undefined : values.floatValue;
       setValue(newValue);
@@ -102,18 +115,13 @@ export const FormInputQty = forwardRef<HTMLInputElement, Props>(
     };
 
     const handleBlur = () => {
-      if (
-        value !== undefined &&
-        (ref as React.RefObject<HTMLInputElement>).current
-      ) {
+      if (value !== undefined && inputRef && inputRef.current) {
         if (value < min) {
           setValue(min);
-          (ref as React.RefObject<HTMLInputElement>).current!.value =
-            String(min);
+          inputRef.current!.value = String(min);
         } else if (value > max) {
           setValue(max);
-          (ref as React.RefObject<HTMLInputElement>).current!.value =
-            String(max);
+          inputRef.current!.value = String(max);
         }
       }
     };
@@ -125,7 +133,7 @@ export const FormInputQty = forwardRef<HTMLInputElement, Props>(
           className="px-2 h-9 rounded-r-none rounded-tr-none border-input border-r-0 focus-visible:relative"
           variant="outline"
           onClick={handleDecrement}
-          disabled={value === min}
+          disabled={disabled || value === min}
         >
           {minusSlot ? minusSlot : <ChevronDown size={15} />}
         </Button>
@@ -145,7 +153,8 @@ export const FormInputQty = forwardRef<HTMLInputElement, Props>(
           customInput={Input}
           placeholder={placeholder}
           className="[appearance:textfield] min-w-[60px] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-center rounded-none relative"
-          getInputRef={ref}
+          getInputRef={inputRef}
+          disabled={disabled}
           {...props}
         />
 
@@ -155,7 +164,7 @@ export const FormInputQty = forwardRef<HTMLInputElement, Props>(
             className="px-2 h-9 rounded-tl-none rounded-bl-none border-input border-l-0 border-b-[0.5px] focus-visible:relative"
             variant="outline"
             onClick={handleIncrement}
-            disabled={value === max}
+            disabled={disabled || value === max}
           >
             {plusSlot ? plusSlot : <ChevronUp size={15} />}
           </Button>

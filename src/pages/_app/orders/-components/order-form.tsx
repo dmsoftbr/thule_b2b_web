@@ -4,24 +4,20 @@ import { OrderFormHeader } from "./order-form-header";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useOrder } from "../-hooks/use-order";
-import {
-  generateOrderFromOutlet,
-  NEW_BUDGET_EMPTY,
-  NEW_ORDER_EMPTY,
-} from "../-utils/order-utils";
+import { generateOrderFromOutlet } from "../-utils/order-utils";
 import { DiscountMatrizModal } from "./discount-matriz-modal";
 import { SalesChannelModal } from "./sales-channel-modal";
 import { FinishOrderModal } from "./finish-order-modal";
 import { toast } from "sonner";
-import { handleError } from "@/lib/api";
-
+import { api, handleError } from "@/lib/api";
+import { ExportOrder } from "./export-order";
 interface Props {
   orderId: string;
   action: "NEW" | "VIEW" | "APPROVAL" | "CANCEL" | "EDIT";
   orderType: "ORDER" | "BUDGET";
 }
 
-export const OrderForm = ({ orderType, orderId, action }: Props) => {
+export const OrderForm = ({ orderId, orderType, action }: Props) => {
   const navigate = useNavigate();
 
   const [showFinishOrderModal, setShowFinishOrderModal] = useState(false);
@@ -33,20 +29,6 @@ export const OrderForm = ({ orderType, orderId, action }: Props) => {
     setRepresentative,
     setDiscountPercent,
   } = useOrder();
-
-  useEffect(() => {
-    if (action === "NEW") {
-      setCurrentOrder(
-        orderType == "ORDER" ? NEW_ORDER_EMPTY : NEW_BUDGET_EMPTY
-      );
-    } else {
-      console.log(currentOrder, orderId);
-    }
-  }, [action]);
-
-  useEffect(() => {
-    handleSetOrderFromOutlet();
-  }, []);
 
   const isEditing = action == "NEW" || action == "EDIT";
 
@@ -70,6 +52,19 @@ export const OrderForm = ({ orderType, orderId, action }: Props) => {
     }
   };
 
+  const handleLoadOrder = async () => {
+    console.log("aki", action, currentOrder, orderId);
+    if (!currentOrder.id && action != "NEW") {
+      const { data } = await api.get(`/orders/${orderId}`);
+      setCurrentOrder(data);
+    }
+  };
+
+  useEffect(() => {
+    handleSetOrderFromOutlet();
+    handleLoadOrder();
+  }, []);
+
   return (
     <>
       <div
@@ -82,6 +77,7 @@ export const OrderForm = ({ orderType, orderId, action }: Props) => {
           <div className="flex gap-x-2">
             <DiscountMatrizModal />
             <SalesChannelModal />
+            {isEditing && currentOrder.orderId !== "" && <ExportOrder />}
           </div>
           <div className="flex items-center justify-center gap-x-2">
             <Button
@@ -92,21 +88,22 @@ export const OrderForm = ({ orderType, orderId, action }: Props) => {
               Cancelar
             </Button>
 
-            {isEditing && (
-              <Button
-                disabled={currentOrder.items.length == 0}
-                size="sm"
-                type="button"
-                onClick={() => setShowFinishOrderModal(true)}
-              >
-                Concluir {orderType == "ORDER" ? "Pedido" : "Simulação"}
-              </Button>
-            )}
+            <Button
+              disabled={currentOrder.items.length == 0}
+              size="sm"
+              type="button"
+              onClick={() => setShowFinishOrderModal(true)}
+            >
+              {isEditing
+                ? `Concluir ${orderType == "ORDER" ? "Pedido" : "Simulação"}`
+                : "Ver Resumo"}
+            </Button>
           </div>
         </div>
       </div>
       {showFinishOrderModal && (
         <FinishOrderModal
+          isEditing={isEditing}
           isOpen={showFinishOrderModal}
           onClose={() => setShowFinishOrderModal(false)}
         />

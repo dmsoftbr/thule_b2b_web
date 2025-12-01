@@ -82,6 +82,7 @@ interface ServerTableProps<T> {
   refreshDataToken?: string | number | Date | undefined;
   additionalButtons?: React.ReactNode | React.ReactNode[];
   searchPlaceHolder?: string;
+  hideToolbar?: boolean;
   onAdd?: () => void;
   onAfterGetData?: (data: any) => void;
   rowCss?: (row: T) => string;
@@ -115,6 +116,7 @@ export const ServerTable = <T,>({
   tableClassNames = "",
   refreshDataToken = "",
   additionalButtons,
+  hideToolbar,
   searchPlaceHolder = "Pesquisar",
   rowCss = (_) => "",
   groupConfig,
@@ -625,7 +627,7 @@ export const ServerTable = <T,>({
 
   return (
     <div className="w-full relative min-h-full">
-      <div className="flex flex-col w-full">
+      <div className={cn("flex flex-col w-full", hideToolbar && "hidden")}>
         <div className="flex flex-wrap md:flex-nowrap gap-y-1.5 items-center justify-between gap-x-2">
           <AppTooltip message="Atualizar Lista">
             <Button

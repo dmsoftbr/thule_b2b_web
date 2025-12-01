@@ -17,6 +17,8 @@ import { handleError } from "@/lib/api";
 import type { UserPermissionModel } from "@/models/admin/user-permission.model";
 import { getUserPermissions } from "../-utils/order-utils";
 import { useAuth } from "@/hooks/use-auth";
+import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
+import { formatCpfCnpj } from "@/lib/string-utils";
 
 interface Props {
   isEditing: boolean;
@@ -33,10 +35,14 @@ export const OrderFormHeader = ({ isEditing }: Props) => {
     setDeliveryLocation,
   } = useOrder();
   const { session } = useAuth();
+  const { showAppDialog } = useAppDialog();
+
   const [priceTablesData, setPriceTablesData] = useState<SearchComboItem[]>([]);
   const [userPermissions, setUserPermissions] = useState<UserPermissionModel[]>(
     []
   );
+
+  const isNew = isEditing && currentOrder.orderId == "";
 
   const getPermissions = async () => {
     const data = await getUserPermissions(session?.user.id ?? "");
@@ -51,7 +57,17 @@ export const OrderFormHeader = ({ isEditing }: Props) => {
   };
 
   function handleChangeCustomer(customer: CustomerModel | undefined) {
-    if (!customer) return;
+    if (!customer) return false;
+    if (customer.creditStatus == "3" || customer.creditStatus == "4") {
+      showAppDialog({
+        title: "Cliente",
+        message:
+          "Cliente suspenso para implantação de pedidos, por favor, entre em contato com a Thule.",
+        type: "warning",
+      });
+      return false;
+    }
+
     setCustomer(customer);
     setRepresentative(customer.representative);
     setDiscountPercent(customer.discountPercent);
@@ -64,6 +80,8 @@ export const OrderFormHeader = ({ isEditing }: Props) => {
     if (customer.deliveryLocations && customer.deliveryLocations.length > 0) {
       setDeliveryLocation(customer.deliveryLocations[0]);
     }
+
+    return true;
   }
 
   function convertPriceTablesToSearchComboItems(data: PriceTableModel[]) {
@@ -100,11 +118,23 @@ export const OrderFormHeader = ({ isEditing }: Props) => {
         <div className="space-y-2 col-span-2">
           <div className="form-group">
             <Label>Cliente</Label>
-            <CustomersCombo
-              defaultValue={currentOrder.customerId || undefined}
-              disabled={!isEditing}
-              onSelect={(customer) => handleChangeCustomer(customer)}
-            />
+            {(!isEditing || !isNew) && (
+              <div className="text-sm border px-2.5 rounded-md py-1.5 bg-neutral-100 text-black font-medium">
+                {`${currentOrder.customerId} - ${currentOrder.customer?.abbreviation}`}
+                {" - "}
+                <span className="text-xs text-muted-foreground">
+                  CPF/CNPJ:{" "}
+                  {formatCpfCnpj(currentOrder.customer?.documentNumber ?? "")}
+                </span>
+              </div>
+            )}
+            {isNew && (
+              <CustomersCombo
+                defaultValue={currentOrder.customerId || undefined}
+                disabled={!isEditing}
+                onSelect={(customer) => handleChangeCustomer(customer)}
+              />
+            )}{" "}
           </div>
         </div>
         <div className="space-y-2">
@@ -113,7 +143,8 @@ export const OrderFormHeader = ({ isEditing }: Props) => {
             {currentOrder.orderClassificationId == 6 && (
               <Input value="Outlet" readOnly />
             )}
-            {currentOrder.orderClassificationId < 6 && (
+            {!isEditing && <Input value={currentOrder.priceTableId} readOnly />}
+            {currentOrder.orderClassificationId < 6 && isEditing && (
               <SearchCombo
                 disabled={!isEditing || isItemPermissionDisabled("316")}
                 key={priceTablesData.length > 0 ? 1 : 0}
@@ -122,8 +153,8 @@ export const OrderFormHeader = ({ isEditing }: Props) => {
                 defaultValue={[
                   currentOrder.priceTable
                     ? {
-                        value: currentOrder.priceTable.id ?? "",
-                        label: currentOrder.priceTable.id ?? "",
+                        value: currentOrder.priceTableId ?? "",
+                        label: currentOrder.priceTableId ?? "",
                       }
                     : { value: "", label: "" },
                 ]}

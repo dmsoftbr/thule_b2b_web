@@ -37,7 +37,7 @@ export const CustomersCombo = ({ disabled, onSelect, defaultValue }: Props) => {
   const debouncedValue = useDebounceCallback(setSearchText, 200);
 
   function getSelectedItem() {
-    const item = data.find((item) => item.id === value);
+    const item = data.find((item) => item.id == value);
 
     if (item) {
       return (
@@ -68,8 +68,14 @@ export const CustomersCombo = ({ disabled, onSelect, defaultValue }: Props) => {
   }, [searchText]);
 
   useEffect(() => {
-    setValue(defaultValue);
-    setSearchText(defaultValue?.toString() ?? "");
+    const fn = async () => {
+      if (defaultValue && data) {
+        setValue(defaultValue);
+        await onSearch(defaultValue.toString());
+      }
+    };
+
+    fn();
   }, [defaultValue]);
 
   return (

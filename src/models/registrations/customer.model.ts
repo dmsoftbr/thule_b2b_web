@@ -3,6 +3,7 @@ import type { DeliveryLocationModel } from "../delivery-location.model";
 import type { PaymentConditionModel } from "./payment-condition.model";
 import type { PriceTableModel } from "./price-table.model";
 import type { RepresentativeModel } from "../representative.model";
+import type { CustomerGroupModel } from "./customer-group.model";
 
 export type CustomerModel = {
   id: number;
@@ -18,11 +19,33 @@ export type CustomerModel = {
   carrierId: number;
   paymentConditionId: number;
   branchId: string;
-  discountPercent: number;
+  address: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  complement: string;
 
+  billingAddress: string;
+  billingNeighborhood: string;
+  billingCity: string;
+  billingState: string;
+  billingZipCode: string;
+  billingCountry: string;
+  billingComplement: string;
+  groupId: number;
+  discountPercent: number;
+  minValuePayedFreight: number;
+  minValueOrder: number;
   carrier: CarrierModel;
   priceTables: PriceTableModel[];
   representative: RepresentativeModel;
   deliveryLocations: DeliveryLocationModel[];
   paymentConditions: PaymentConditionModel[];
+  group?: CustomerGroupModel;
+
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
 };

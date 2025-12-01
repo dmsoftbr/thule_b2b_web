@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { SearchCombo } from "@/components/ui/search-combo";
 import { Button } from "@/components/ui/button";
-import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
+import { ArrowDownIcon, ArrowUpIcon, Loader2Icon } from "lucide-react";
 import { TopCommercialFamilies } from "./top-commercial-families";
 import { TopRepresentatives } from "./top-representatives";
 import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
@@ -22,6 +22,9 @@ import { useQuery } from "@tanstack/react-query";
 import type { DashboardFilter } from "../types/dashboard-filter";
 import { toast } from "sonner";
 import { AppPageHeader } from "@/components/layout/app-page-header";
+import { formatNumber } from "@/lib/number-utils";
+import { cn } from "@/lib/utils";
+import { AppTooltip } from "@/components/layout/app-tooltip";
 
 export const DashboardAdministrative = () => {
   const yearInputRef = useRef<HTMLInputElement | null>(null);
@@ -30,6 +33,17 @@ export const DashboardAdministrative = () => {
     year: new Date().getFullYear(),
     representatives: [],
   });
+  const [grossRevenue, setGrossRevenue] = useState(0);
+  const [percGrossRevenue, setPercGrossRevenue] = useState(0);
+  const [orderQuantity, setOrderQuantity] = useState(0);
+  const [percOrderQuantity, setPercOrderQuantity] = useState(0);
+  const [averageTicket, setAverageTicket] = useState(0);
+  const [percAverageTicket, setPercAverageTicket] = useState(0);
+  const [annualRevenue, setAnnualRevenue] = useState(0);
+  const [percAnnualRevenue, setPercAnnualRevenue] = useState(0);
+  const [families, setFamilies] = useState<any[]>([]);
+  const [representatives, setRepresentatives] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { data: representativesData } = useQuery({
     queryKey: ["representatives"],
@@ -59,6 +73,7 @@ export const DashboardAdministrative = () => {
   };
 
   useEffect(() => {
+    handleApplyFilter();
     if (yearInputRef.current) {
       const maskInstance = IMask(yearInputRef.current, {
         mask: Number,
@@ -73,8 +88,25 @@ export const DashboardAdministrative = () => {
     }
   }, []);
 
-  const handleApplyFilter = () => {
-    //
+  const handleApplyFilter = async () => {
+    setIsLoading(true);
+    const { data } = await api.post(`/dashboards/dashboard1`, filter);
+    if (data) {
+      setGrossRevenue(data.grossRevenue);
+      setPercGrossRevenue(data.percGrossRevenue);
+
+      setOrderQuantity(data.orderQuantity);
+      setPercOrderQuantity(data.percOrderQuantity);
+
+      setAverageTicket(data.averageTicket);
+      setPercAverageTicket(data.percAverageTicket);
+
+      setAnnualRevenue(data.annualRevenue);
+      setPercAnnualRevenue(data.percAnnualRevenue);
+      setFamilies(data.families);
+      setRepresentatives(data.representatives);
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -118,7 +150,10 @@ export const DashboardAdministrative = () => {
                   ref={yearInputRef}
                   className="w-32 text-right"
                   value={filter.year.toString()}
-                  onChange={(e) => {
+                  onChange={(e) =>
+                    setFilter({ ...filter, year: parseInt(e.target.value) })
+                  }
+                  onBlur={(e) => {
                     const newYear = parseInt(e.target.value);
                     if (newYear >= 1900 && newYear <= 2072) {
                       setFilter({ ...filter, year: parseInt(e.target.value) });
@@ -162,50 +197,146 @@ export const DashboardAdministrative = () => {
                 <p className="text-muted-foreground font-semibold">
                   Faturamento{" "}
                   <span className="text-xs text-muted-foreground">
-                    (Valor Bruto)
+                    (Sem Impostos)
                   </span>
                 </p>
-                <p className="text-3xl font-bold">R$ 2.54M</p>
-                <p className="flex items-center text-xs text-emerald-600 font-semibold">
-                  <ArrowUpIcon className="size-3 mr-1.5 stroke-[4px]" />
-                  12,5%
-                </p>
+                {isLoading ? (
+                  <div className="flex items-center justify-center w-full h-full">
+                    <Loader2Icon className="size-6 animate-spin" />
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-3xl font-bold">
+                      R$ {formatNumber(grossRevenue / 1_000_000, 2)}M
+                    </p>
+                    <AppTooltip message="Em relação ao mês passado">
+                      <p
+                        className={cn(
+                          "flex items-center text-xs font-semibold hover:cursor-pointer w-fit",
+                          percGrossRevenue > 0
+                            ? "text-emerald-600"
+                            : "text-red-500"
+                        )}
+                      >
+                        {percGrossRevenue >= 0 && (
+                          <ArrowUpIcon className="size-3 mr-1.5 stroke-[4px]" />
+                        )}
+                        {percGrossRevenue < 0 && (
+                          <ArrowDownIcon className="size-3 mr-1.5 stroke-[4px]" />
+                        )}
+                        {formatNumber(percGrossRevenue * 100, 2)}%
+                      </p>
+                    </AppTooltip>
+                  </>
+                )}
               </div>
 
               <div className="rounded-lg shadow border flex flex-col justify-center  space-y-2 bg-white p-6">
                 <p className="text-muted-foreground font-semibold">
                   Quantidade de Pedidos
                 </p>
-                <p className="text-3xl font-bold">2.540</p>
-                <p className="flex items-center text-xs text-emerald-600 font-semibold">
-                  <ArrowUpIcon className="size-3 mr-1.5 stroke-[4px]" />
-                  5,5%
-                </p>
+                {isLoading ? (
+                  <div className="flex items-center justify-center w-full h-full">
+                    <Loader2Icon className="size-6 animate-spin" />
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-3xl font-bold">
+                      {formatNumber(orderQuantity, 0)}
+                    </p>
+                    <AppTooltip message="Em relação ao mês passado">
+                      <p
+                        className={cn(
+                          "flex items-center text-xs font-semibold hover:cursor-pointer w-fit",
+                          percOrderQuantity > 0
+                            ? "text-emerald-600"
+                            : "text-red-500"
+                        )}
+                      >
+                        {percOrderQuantity >= 0 && (
+                          <ArrowUpIcon className="size-3 mr-1.5 stroke-[4px]" />
+                        )}
+                        {percOrderQuantity < 0 && (
+                          <ArrowDownIcon className="size-3 mr-1.5 stroke-[4px]" />
+                        )}
+                        {formatNumber(percOrderQuantity * 100, 2)}%
+                      </p>
+                    </AppTooltip>
+                  </>
+                )}
               </div>
 
               <div className="rounded-lg shadow border flex flex-col justify-center space-y-2 bg-white p-6">
                 <p className="text-muted-foreground font-semibold">
                   Ticket Médio
                 </p>
-                <p className="text-3xl font-bold">R$ 2.000,00</p>
-                <p className="flex items-center text-xs text-red-500">
-                  <ArrowDownIcon className="size-3 text-red-500 mr-1.5 stroke-[4px]" />
-                  -5,5%
-                </p>
+                {isLoading ? (
+                  <div className="flex items-center justify-center w-full h-full">
+                    <Loader2Icon className="size-6 animate-spin" />
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-3xl font-bold">
+                      R$ {formatNumber(averageTicket, 2)}
+                    </p>
+                    <AppTooltip message="Em relação ao mês passado">
+                      <p
+                        className={cn(
+                          "flex items-center text-xs font-semibold hover:cursor-pointer w-fit",
+                          percAverageTicket > 0
+                            ? "text-emerald-600"
+                            : "text-red-500"
+                        )}
+                      >
+                        {percAverageTicket >= 0 && (
+                          <ArrowUpIcon className="size-3 mr-1.5 stroke-[4px]" />
+                        )}
+                        {percAverageTicket < 0 && (
+                          <ArrowDownIcon className="size-3 mr-1.5 stroke-[4px]" />
+                        )}
+                        {formatNumber(percAverageTicket * 100, 2)}%
+                      </p>
+                    </AppTooltip>
+                  </>
+                )}
               </div>
 
               <div className="rounded-lg shadow border flex flex-col justify-center  space-y-2 bg-white p-6">
                 <p className="text-muted-foreground font-semibold">
                   Faturamento Anual{" "}
                   <span className="text-xs text-muted-foreground">
-                    (Valor Bruto)
+                    (Sem Impostos)
                   </span>
                 </p>
-                <p className="text-3xl font-bold">R$ 12.54M</p>
-                <p className="flex items-center text-xs text-emerald-600 font-semibold">
-                  <ArrowUpIcon className="size-3 mr-1.5 stroke-[4px]" />
-                  12,5%
-                </p>
+                {isLoading ? (
+                  <div className="flex items-center justify-center w-full h-full">
+                    <Loader2Icon className="size-6 animate-spin" />
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-3xl font-bold">
+                      R$ {formatNumber(annualRevenue / 1_000_000, 2)}M
+                    </p>
+                    <AppTooltip message="Em relação ao ano passado">
+                      <p
+                        className={cn(
+                          "flex items-center text-xs font-semibold hover:cursor-pointer w-fit",
+                          percAnnualRevenue > 0
+                            ? "text-emerald-600"
+                            : "text-red-500"
+                        )}
+                      >
+                        {percAnnualRevenue >= 0 && (
+                          <ArrowUpIcon className="size-3 mr-1.5 stroke-[4px]" />
+                        )}
+                        {percAnnualRevenue < 0 && (
+                          <ArrowDownIcon className="size-3 mr-1.5 stroke-[4px]" />
+                        )}
+                        {formatNumber(percAnnualRevenue * 100, 2)}%
+                      </p>
+                    </AppTooltip>
+                  </>
+                )}
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -213,13 +344,25 @@ export const DashboardAdministrative = () => {
                 <p className="text-muted-foreground font-semibold">
                   Top Famílias Comerciais
                 </p>
-                <TopCommercialFamilies />
+                {isLoading ? (
+                  <div className="flex items-center justify-center w-full h-full">
+                    <Loader2Icon className="size-6 animate-spin" />
+                  </div>
+                ) : (
+                  <TopCommercialFamilies data={families} />
+                )}
               </div>
               <div className="rounded-lg shadow bg-white flex-1 p-6">
                 <p className="text-muted-foreground font-semibold">
                   Top Representantes
                 </p>
-                <TopRepresentatives />
+                {isLoading ? (
+                  <div className="flex items-center justify-center w-full h-full">
+                    <Loader2Icon className="size-6 animate-spin" />
+                  </div>
+                ) : (
+                  <TopRepresentatives data={representatives} />
+                )}
               </div>
             </div>
           </div>
