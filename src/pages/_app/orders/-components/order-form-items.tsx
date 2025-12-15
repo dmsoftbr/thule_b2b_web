@@ -4,53 +4,57 @@ import { OrderItemCard } from "./order-item-card";
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { OrderSearchProductModal } from "./order-search-product-modal";
-import { useOrder } from "../-hooks/use-order";
 import type { ProductModel } from "@/models/product.model";
 import { toast } from "sonner";
 import { EmptyOrder } from "./empty-order";
 import { formatNumber } from "@/lib/number-utils";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Table,
-  TableBody,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import type { OrderItemModel } from "@/models/orders/order-item-model";
 import { NEW_ORDER_ITEM_EMPTY } from "../-utils/order-utils";
 import { api } from "@/lib/api";
-import { OrderItemTableRow } from "./order-item-table-row";
+import { OrderItemTable } from "./order-item-table";
+import { useOrder } from "../-context/order-context";
+import { SearchCombo } from "@/components/ui/search-combo";
+import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
+import { type PriceTableModel } from "@/models/registrations/price-table.model";
 
-interface Props {
-  isEditing: boolean;
-}
-
-export const OrderFormItems = ({ isEditing }: Props) => {
-  const { currentOrder, onAddItem: addItem } = useOrder();
+export const OrderFormItems = () => {
+  const { order, addItem, mode } = useOrder();
   const [showCard, setShowCard] = useState(true);
+  const [priceTable, setPriceTable] = useState<PriceTableModel>(
+    order.customer?.priceTables[0] ?? {
+      id: "PrBase",
+      isOutlet: false,
+      name: "PrBase",
+      validFrom: new Date(2000, 1, 1),
+      validTo: new Date(2072, 12, 31),
+      zeroDiscount: false,
+    }
+  );
+  const isEditing = mode == "NEW" || mode == "EDIT";
 
-  const hasCustomerAndPriceTable =
-    currentOrder.customer && currentOrder.priceTableId;
+  const hasCustomer = order.customer;
 
-  if (!hasCustomerAndPriceTable) {
+  if (!hasCustomer) {
     return (
       <div className="w-full p-2 flex flex-col items-center min-h-[100px]">
         <div className="my-4">
-          Selecione o Cliente e a Tabela de Preço para poder selecionar os
-          Produtos
+          Selecione o Cliente para poder selecionar os Produtos
         </div>
       </div>
     );
   }
 
   const handleAddItem = async (product: ProductModel | undefined) => {
+    if (!priceTable) {
+      toast.warning("Selecione a tabela de Preço");
+      return;
+    }
     if (!product) return;
     if (
-      currentOrder.items &&
-      currentOrder.items?.findIndex(
+      order.items &&
+      order.items?.findIndex(
         (f) => f.productId.toLowerCase() === product.id.toLowerCase()
       ) >= 0
     ) {
@@ -62,8 +66,8 @@ export const OrderFormItems = ({ isEditing }: Props) => {
     // api que calcula data de entrega
 
     var params = {
-      orderId: currentOrder.id,
-      customerAbbreviation: currentOrder.customerAbbreviation,
+      orderId: order.id,
+      customerAbbreviation: order.customerAbbreviation,
       productId: product.id,
       quantity: 1,
     };
@@ -76,19 +80,27 @@ export const OrderFormItems = ({ isEditing }: Props) => {
       ...NEW_ORDER_ITEM_EMPTY,
       ...product,
       productId: product.id,
+      product: product,
       deliveryDate: deliveryData.estimatedDate,
       availability: deliveryData.availbility,
       inputPrice: product.unitPriceInTable,
+      suggestPrice: product.suggestUnitPrice,
       priceTablePrice: product.suggestUnitPrice,
       grossItemValue: product.unitPriceInTable * 1,
       orderQuantity: 1,
-      sequence: currentOrder.items.length + 10,
+      sequence: order.items.length + 10,
+      taxes: [],
+      priceTable,
+      priceTableId: priceTable.id,
     };
 
     addItem(newOrderItem);
+    toast.success("Produto adicionado ao pedido", {
+      duration: 1000,
+    });
   };
 
-  const orderTotal = currentOrder.items.reduce(
+  const orderTotal = order.items.reduce(
     (acc, b) => acc + b.inputPrice * b.orderQuantity,
     0
   );
@@ -98,14 +110,28 @@ export const OrderFormItems = ({ isEditing }: Props) => {
       <div className="flex gap-x-4 mb-2 container w-full">
         <div className="flex flex-1 items-center justify-center">
           <div className="flex gap-x-2 w-full items-end">
-            {currentOrder.orderClassificationId < 6 && isEditing ? (
+            {order.orderClassificationId < 6 && isEditing ? (
               <>
+                <div className="flex-0 form-group">
+                  <Label>Tabela de Preço</Label>
+                  <SearchCombo
+                    className="h-9.5 min-w-[200px]"
+                    defaultValue={order.customer?.priceTables[0].id}
+                    staticItems={convertArrayToSearchComboItem(
+                      order.customer?.priceTables ?? [],
+                      "id",
+                      "id"
+                    )}
+                    onSelectOption={(opt) => setPriceTable(opt[0].extra)}
+                  />
+                </div>
                 <div className="flex-1 form-group">
                   <Label>Pesquisar Produto para Adicionar</Label>
                   <ProductsCombo
                     onSelect={handleAddItem}
-                    priceTableId={currentOrder.priceTableId}
-                    customerId={currentOrder.customerId}
+                    priceTableId={order.customer?.priceTables[0].id ?? ""}
+                    customerId={order.customerId}
+                    closeOnSelect
                   />
                 </div>
                 <OrderSearchProductModal />
@@ -123,99 +149,12 @@ export const OrderFormItems = ({ isEditing }: Props) => {
           </div>
         </div>
       </div>
-
-      {!showCard && (
-        <Table className="w-full table-fixed text-xs flex flex-col">
-          <TableHeader className="flex">
-            <TableRow className="flex w-full hover:bg-neutral-300 bg-neutral-300">
-              <TableHead className="w-[72px] border flex items-center text-xs text-black">
-                Imagem
-              </TableHead>
-              <TableHead className="flex-1 border flex items-center text-xs text-black">
-                Produto
-              </TableHead>
-              <TableHead className="w-[160px] border flex items-center text-xs text-black">
-                Qtde
-              </TableHead>
-              <TableHead className="w-[120px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
-                <span>Preço</span>
-                <span>Sugerido</span>
-              </TableHead>
-              <TableHead className="w-[120px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
-                <span>Valor</span>
-                <span>c/Desconto</span>
-              </TableHead>
-              <TableHead className="w-[120px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
-                <span>Total</span>
-                <span>c/Desconto</span>
-              </TableHead>
-              <TableHead className="w-[120px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
-                Prev. Entrega
-              </TableHead>
-
-              <TableHead className="w-[100px] border flex items-center text-xs text-black">
-                Ações
-              </TableHead>
-              <TableHead className="w-[17px] max-w-[17px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody
-            className="flex flex-col overflow-y-visible w-full"
-            style={{ maxHeight: "230px" }}
-          >
-            {currentOrder.items.length == 0 && (
-              <tr className="h-10">
-                <td
-                  className="flex items-center justify-center h-10 border"
-                  colSpan={9}
-                >
-                  Sem Itens no Pedido
-                </td>
-              </tr>
-            )}
-            {currentOrder.items?.map((item: OrderItemModel, index: number) => (
-              <OrderItemTableRow
-                key={index}
-                item={item}
-                isEditing={isEditing}
-              />
-            ))}
-          </TableBody>
-          <TableFooter className="flex w-full">
-            <TableRow className="flex w-full bg-neutral-300 align-middle text-sm hover:bg-neutral-300">
-              <TableHead
-                colSpan={2}
-                className="flex-1 border-[0.5px] flex items-center"
-              >
-                Total
-              </TableHead>
-              <TableHead className=" border-[0.5px] w-[160px]   flex items-center justify-end">
-                {currentOrder.items?.length}
-              </TableHead>
-              <TableHead
-                colSpan={2}
-                className="w-[240px] border-[0.5px]"
-              ></TableHead>
-              <TableHead className="w-[120px] border-[0.5px] text-right  flex items-center justify-end">
-                {formatNumber(
-                  currentOrder.items?.reduce(
-                    (acc, b) => (acc += b.orderQuantity * b.priceTablePrice),
-                    0
-                  ),
-                  2
-                )}
-              </TableHead>
-              <TableHead className="w-[220px] border-r"></TableHead>
-              <TableHead className="w-[17px]"></TableHead>
-            </TableRow>
-          </TableFooter>
-        </Table>
-      )}
+      {!showCard && <OrderItemTable />}
       {showCard && (
         <div
           className={cn(
             "grid grid-cols-[70%_30%] border-y w-full",
-            !currentOrder.items && "grid-cols-1 border-0"
+            !order.items && "grid-cols-1 border-0"
           )}
         >
           <ScrollArea
@@ -223,35 +162,32 @@ export const OrderFormItems = ({ isEditing }: Props) => {
             style={{ height: "calc(100vh - 330px)" }}
             type="always"
           >
-            {!currentOrder.items?.length && <EmptyOrder />}
-            {currentOrder.items?.map((item: OrderItemModel, index) => (
+            {!order.items?.length && <EmptyOrder />}
+            {order.items?.map((item: OrderItemModel, index) => (
               <OrderItemCard
                 key={`${item.productId}_${index}`}
                 data={item}
-                isEditing={isEditing}
                 className="even:bg-neutral-300"
               />
             ))}
           </ScrollArea>
-          {currentOrder.items && (
+          {order.items && (
             <div className="border-x  flex items-center justify-center flex-col">
               <div className="flex items-center text-lg font-semibold">
-                Total do Pedido: R$ {formatNumber(orderTotal, 2)}
+                Total {order.isBudget ? "da Simulação" : "do Pedido"}: R${" "}
+                {formatNumber(orderTotal, 2)}
                 <div className="text-xs font-semibold bg-neutral-700 text-white rounded px-1.5 py-0.5 flex items-center justify-center ml-2">
-                  {`(${currentOrder.items.length}) ${currentOrder.items.length > 1 ? "itens" : "item"}`}
+                  {`(${order.items.length}) ${order.items.length > 1 ? "itens" : "item"}`}
                 </div>
               </div>
               <div className="text-green-600 font-semibold">
                 Desconto: R${" "}
-                {formatNumber(
-                  orderTotal * (currentOrder.discountPercentual / 100),
-                  2
-                )}
+                {formatNumber(orderTotal * (order.discountPercentual / 100), 2)}
               </div>
               <div className="text-xl font-bold">
                 Total com Desconto: R${" "}
                 {formatNumber(
-                  orderTotal * (1 - currentOrder.discountPercentual / 100),
+                  orderTotal * (1 - order.discountPercentual / 100),
                   2
                 )}
               </div>

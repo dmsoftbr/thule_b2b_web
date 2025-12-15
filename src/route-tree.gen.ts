@@ -22,10 +22,12 @@ import { Route as AppBudgetsNewBudgetRouteImport } from './pages/_app/budgets/ne
 import { Route as AppSystemSyncStatusIndexRouteImport } from './pages/_app/system/sync-status/index'
 import { Route as AppStockProductStockIndexRouteImport } from './pages/_app/stock/product-stock/index'
 import { Route as AppStockEsli011IndexRouteImport } from './pages/_app/stock/esli011/index'
+import { Route as AppReportsDashboardProductGroupsIndexRouteImport } from './pages/_app/reports/dashboard-product-groups/index'
 import { Route as AppReportsCustomersListIndexRouteImport } from './pages/_app/reports/customers-list/index'
 import { Route as AppRegistrationsSalesGroupIndexRouteImport } from './pages/_app/registrations/sales-group/index'
 import { Route as AppRegistrationsRepresentativeGoalsIndexRouteImport } from './pages/_app/registrations/representative-goals/index'
 import { Route as AppRegistrationsProductsIndexRouteImport } from './pages/_app/registrations/products/index'
+import { Route as AppRegistrationsPriceTablesIndexRouteImport } from './pages/_app/registrations/price-tables/index'
 import { Route as AppRegistrationsPaymentConditionsIndexRouteImport } from './pages/_app/registrations/payment-conditions/index'
 import { Route as AppRegistrationsCustomersIndexRouteImport } from './pages/_app/registrations/customers/index'
 import { Route as AppRegistrationsApprovalLevelsIndexRouteImport } from './pages/_app/registrations/approval-levels/index'
@@ -44,6 +46,7 @@ import { Route as AppAdminUsersNewUserRouteImport } from './pages/_app/admin/use
 import { Route as AppAdminUserGroupsNewUserGroupRouteImport } from './pages/_app/admin/user-groups/new-user-group'
 import { Route as AppRegistrationsSalesGroupGroupIdIndexRouteImport } from './pages/_app/registrations/sales-group/$groupId/index'
 import { Route as AppRegistrationsProductsProductIdIndexRouteImport } from './pages/_app/registrations/products/$productId/index'
+import { Route as AppRegistrationsPriceTablesPriceTableIdIndexRouteImport } from './pages/_app/registrations/price-tables/$priceTableId/index'
 import { Route as AppRegistrationsPaymentConditionsConditionIdIndexRouteImport } from './pages/_app/registrations/payment-conditions/$conditionId/index'
 import { Route as AppRegistrationsApprovalLevelsLevelIdIndexRouteImport } from './pages/_app/registrations/approval-levels/$levelId/index'
 import { Route as AppOrdersViewOrderIdIndexRouteImport } from './pages/_app/orders/view/$orderId/index'
@@ -125,6 +128,12 @@ const AppStockEsli011IndexRoute = AppStockEsli011IndexRouteImport.update({
   path: '/stock/esli011/',
   getParentRoute: () => AppLayoutRoute,
 } as any)
+const AppReportsDashboardProductGroupsIndexRoute =
+  AppReportsDashboardProductGroupsIndexRouteImport.update({
+    id: '/reports/dashboard-product-groups/',
+    path: '/reports/dashboard-product-groups/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 const AppReportsCustomersListIndexRoute =
   AppReportsCustomersListIndexRouteImport.update({
     id: '/reports/customers-list/',
@@ -147,6 +156,12 @@ const AppRegistrationsProductsIndexRoute =
   AppRegistrationsProductsIndexRouteImport.update({
     id: '/registrations/products/',
     path: '/registrations/products/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppRegistrationsPriceTablesIndexRoute =
+  AppRegistrationsPriceTablesIndexRouteImport.update({
+    id: '/registrations/price-tables/',
+    path: '/registrations/price-tables/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
 const AppRegistrationsPaymentConditionsIndexRoute =
@@ -248,6 +263,12 @@ const AppRegistrationsProductsProductIdIndexRoute =
   AppRegistrationsProductsProductIdIndexRouteImport.update({
     id: '/registrations/products/$productId/',
     path: '/registrations/products/$productId/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppRegistrationsPriceTablesPriceTableIdIndexRoute =
+  AppRegistrationsPriceTablesPriceTableIdIndexRouteImport.update({
+    id: '/registrations/price-tables/$priceTableId/',
+    path: '/registrations/price-tables/$priceTableId/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
 const AppRegistrationsPaymentConditionsConditionIdIndexRoute =
@@ -361,10 +382,12 @@ export interface FileRoutesByFullPath {
   '/registrations/approval-levels': typeof AppRegistrationsApprovalLevelsIndexRoute
   '/registrations/customers': typeof AppRegistrationsCustomersIndexRoute
   '/registrations/payment-conditions': typeof AppRegistrationsPaymentConditionsIndexRoute
+  '/registrations/price-tables': typeof AppRegistrationsPriceTablesIndexRoute
   '/registrations/products': typeof AppRegistrationsProductsIndexRoute
   '/registrations/representative-goals': typeof AppRegistrationsRepresentativeGoalsIndexRoute
   '/registrations/sales-group': typeof AppRegistrationsSalesGroupIndexRoute
   '/reports/customers-list': typeof AppReportsCustomersListIndexRoute
+  '/reports/dashboard-product-groups': typeof AppReportsDashboardProductGroupsIndexRoute
   '/stock/esli011': typeof AppStockEsli011IndexRoute
   '/stock/product-stock': typeof AppStockProductStockIndexRoute
   '/system/sync-status': typeof AppSystemSyncStatusIndexRoute
@@ -381,6 +404,7 @@ export interface FileRoutesByFullPath {
   '/orders/view/$orderId': typeof AppOrdersViewOrderIdIndexRoute
   '/registrations/approval-levels/$levelId': typeof AppRegistrationsApprovalLevelsLevelIdIndexRoute
   '/registrations/payment-conditions/$conditionId': typeof AppRegistrationsPaymentConditionsConditionIdIndexRoute
+  '/registrations/price-tables/$priceTableId': typeof AppRegistrationsPriceTablesPriceTableIdIndexRoute
   '/registrations/products/$productId': typeof AppRegistrationsProductsProductIdIndexRoute
   '/registrations/sales-group/$groupId': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   '/registrations/customers/$customerId/price-tables': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
@@ -411,10 +435,12 @@ export interface FileRoutesByTo {
   '/registrations/approval-levels': typeof AppRegistrationsApprovalLevelsIndexRoute
   '/registrations/customers': typeof AppRegistrationsCustomersIndexRoute
   '/registrations/payment-conditions': typeof AppRegistrationsPaymentConditionsIndexRoute
+  '/registrations/price-tables': typeof AppRegistrationsPriceTablesIndexRoute
   '/registrations/products': typeof AppRegistrationsProductsIndexRoute
   '/registrations/representative-goals': typeof AppRegistrationsRepresentativeGoalsIndexRoute
   '/registrations/sales-group': typeof AppRegistrationsSalesGroupIndexRoute
   '/reports/customers-list': typeof AppReportsCustomersListIndexRoute
+  '/reports/dashboard-product-groups': typeof AppReportsDashboardProductGroupsIndexRoute
   '/stock/esli011': typeof AppStockEsli011IndexRoute
   '/stock/product-stock': typeof AppStockProductStockIndexRoute
   '/system/sync-status': typeof AppSystemSyncStatusIndexRoute
@@ -431,6 +457,7 @@ export interface FileRoutesByTo {
   '/orders/view/$orderId': typeof AppOrdersViewOrderIdIndexRoute
   '/registrations/approval-levels/$levelId': typeof AppRegistrationsApprovalLevelsLevelIdIndexRoute
   '/registrations/payment-conditions/$conditionId': typeof AppRegistrationsPaymentConditionsConditionIdIndexRoute
+  '/registrations/price-tables/$priceTableId': typeof AppRegistrationsPriceTablesPriceTableIdIndexRoute
   '/registrations/products/$productId': typeof AppRegistrationsProductsProductIdIndexRoute
   '/registrations/sales-group/$groupId': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   '/registrations/customers/$customerId/price-tables': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
@@ -463,10 +490,12 @@ export interface FileRoutesById {
   '/_app/registrations/approval-levels/': typeof AppRegistrationsApprovalLevelsIndexRoute
   '/_app/registrations/customers/': typeof AppRegistrationsCustomersIndexRoute
   '/_app/registrations/payment-conditions/': typeof AppRegistrationsPaymentConditionsIndexRoute
+  '/_app/registrations/price-tables/': typeof AppRegistrationsPriceTablesIndexRoute
   '/_app/registrations/products/': typeof AppRegistrationsProductsIndexRoute
   '/_app/registrations/representative-goals/': typeof AppRegistrationsRepresentativeGoalsIndexRoute
   '/_app/registrations/sales-group/': typeof AppRegistrationsSalesGroupIndexRoute
   '/_app/reports/customers-list/': typeof AppReportsCustomersListIndexRoute
+  '/_app/reports/dashboard-product-groups/': typeof AppReportsDashboardProductGroupsIndexRoute
   '/_app/stock/esli011/': typeof AppStockEsli011IndexRoute
   '/_app/stock/product-stock/': typeof AppStockProductStockIndexRoute
   '/_app/system/sync-status/': typeof AppSystemSyncStatusIndexRoute
@@ -483,6 +512,7 @@ export interface FileRoutesById {
   '/_app/orders/view/$orderId/': typeof AppOrdersViewOrderIdIndexRoute
   '/_app/registrations/approval-levels/$levelId/': typeof AppRegistrationsApprovalLevelsLevelIdIndexRoute
   '/_app/registrations/payment-conditions/$conditionId/': typeof AppRegistrationsPaymentConditionsConditionIdIndexRoute
+  '/_app/registrations/price-tables/$priceTableId/': typeof AppRegistrationsPriceTablesPriceTableIdIndexRoute
   '/_app/registrations/products/$productId/': typeof AppRegistrationsProductsProductIdIndexRoute
   '/_app/registrations/sales-group/$groupId/': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   '/_app/registrations/customers/$customerId/price-tables/': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
@@ -515,10 +545,12 @@ export interface FileRouteTypes {
     | '/registrations/approval-levels'
     | '/registrations/customers'
     | '/registrations/payment-conditions'
+    | '/registrations/price-tables'
     | '/registrations/products'
     | '/registrations/representative-goals'
     | '/registrations/sales-group'
     | '/reports/customers-list'
+    | '/reports/dashboard-product-groups'
     | '/stock/esli011'
     | '/stock/product-stock'
     | '/system/sync-status'
@@ -535,6 +567,7 @@ export interface FileRouteTypes {
     | '/orders/view/$orderId'
     | '/registrations/approval-levels/$levelId'
     | '/registrations/payment-conditions/$conditionId'
+    | '/registrations/price-tables/$priceTableId'
     | '/registrations/products/$productId'
     | '/registrations/sales-group/$groupId'
     | '/registrations/customers/$customerId/price-tables'
@@ -565,10 +598,12 @@ export interface FileRouteTypes {
     | '/registrations/approval-levels'
     | '/registrations/customers'
     | '/registrations/payment-conditions'
+    | '/registrations/price-tables'
     | '/registrations/products'
     | '/registrations/representative-goals'
     | '/registrations/sales-group'
     | '/reports/customers-list'
+    | '/reports/dashboard-product-groups'
     | '/stock/esli011'
     | '/stock/product-stock'
     | '/system/sync-status'
@@ -585,6 +620,7 @@ export interface FileRouteTypes {
     | '/orders/view/$orderId'
     | '/registrations/approval-levels/$levelId'
     | '/registrations/payment-conditions/$conditionId'
+    | '/registrations/price-tables/$priceTableId'
     | '/registrations/products/$productId'
     | '/registrations/sales-group/$groupId'
     | '/registrations/customers/$customerId/price-tables'
@@ -616,10 +652,12 @@ export interface FileRouteTypes {
     | '/_app/registrations/approval-levels/'
     | '/_app/registrations/customers/'
     | '/_app/registrations/payment-conditions/'
+    | '/_app/registrations/price-tables/'
     | '/_app/registrations/products/'
     | '/_app/registrations/representative-goals/'
     | '/_app/registrations/sales-group/'
     | '/_app/reports/customers-list/'
+    | '/_app/reports/dashboard-product-groups/'
     | '/_app/stock/esli011/'
     | '/_app/stock/product-stock/'
     | '/_app/system/sync-status/'
@@ -636,6 +674,7 @@ export interface FileRouteTypes {
     | '/_app/orders/view/$orderId/'
     | '/_app/registrations/approval-levels/$levelId/'
     | '/_app/registrations/payment-conditions/$conditionId/'
+    | '/_app/registrations/price-tables/$priceTableId/'
     | '/_app/registrations/products/$productId/'
     | '/_app/registrations/sales-group/$groupId/'
     | '/_app/registrations/customers/$customerId/price-tables/'
@@ -739,6 +778,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStockEsli011IndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/reports/dashboard-product-groups/': {
+      id: '/_app/reports/dashboard-product-groups/'
+      path: '/reports/dashboard-product-groups'
+      fullPath: '/reports/dashboard-product-groups'
+      preLoaderRoute: typeof AppReportsDashboardProductGroupsIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/reports/customers-list/': {
       id: '/_app/reports/customers-list/'
       path: '/reports/customers-list'
@@ -765,6 +811,13 @@ declare module '@tanstack/react-router' {
       path: '/registrations/products'
       fullPath: '/registrations/products'
       preLoaderRoute: typeof AppRegistrationsProductsIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/registrations/price-tables/': {
+      id: '/_app/registrations/price-tables/'
+      path: '/registrations/price-tables'
+      fullPath: '/registrations/price-tables'
+      preLoaderRoute: typeof AppRegistrationsPriceTablesIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/registrations/payment-conditions/': {
@@ -893,6 +946,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRegistrationsProductsProductIdIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/registrations/price-tables/$priceTableId/': {
+      id: '/_app/registrations/price-tables/$priceTableId/'
+      path: '/registrations/price-tables/$priceTableId'
+      fullPath: '/registrations/price-tables/$priceTableId'
+      preLoaderRoute: typeof AppRegistrationsPriceTablesPriceTableIdIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/registrations/payment-conditions/$conditionId/': {
       id: '/_app/registrations/payment-conditions/$conditionId/'
       path: '/registrations/payment-conditions/$conditionId'
@@ -1019,10 +1079,12 @@ interface AppLayoutRouteChildren {
   AppRegistrationsApprovalLevelsIndexRoute: typeof AppRegistrationsApprovalLevelsIndexRoute
   AppRegistrationsCustomersIndexRoute: typeof AppRegistrationsCustomersIndexRoute
   AppRegistrationsPaymentConditionsIndexRoute: typeof AppRegistrationsPaymentConditionsIndexRoute
+  AppRegistrationsPriceTablesIndexRoute: typeof AppRegistrationsPriceTablesIndexRoute
   AppRegistrationsProductsIndexRoute: typeof AppRegistrationsProductsIndexRoute
   AppRegistrationsRepresentativeGoalsIndexRoute: typeof AppRegistrationsRepresentativeGoalsIndexRoute
   AppRegistrationsSalesGroupIndexRoute: typeof AppRegistrationsSalesGroupIndexRoute
   AppReportsCustomersListIndexRoute: typeof AppReportsCustomersListIndexRoute
+  AppReportsDashboardProductGroupsIndexRoute: typeof AppReportsDashboardProductGroupsIndexRoute
   AppStockEsli011IndexRoute: typeof AppStockEsli011IndexRoute
   AppStockProductStockIndexRoute: typeof AppStockProductStockIndexRoute
   AppSystemSyncStatusIndexRoute: typeof AppSystemSyncStatusIndexRoute
@@ -1039,6 +1101,7 @@ interface AppLayoutRouteChildren {
   AppOrdersViewOrderIdIndexRoute: typeof AppOrdersViewOrderIdIndexRoute
   AppRegistrationsApprovalLevelsLevelIdIndexRoute: typeof AppRegistrationsApprovalLevelsLevelIdIndexRoute
   AppRegistrationsPaymentConditionsConditionIdIndexRoute: typeof AppRegistrationsPaymentConditionsConditionIdIndexRoute
+  AppRegistrationsPriceTablesPriceTableIdIndexRoute: typeof AppRegistrationsPriceTablesPriceTableIdIndexRoute
   AppRegistrationsProductsProductIdIndexRoute: typeof AppRegistrationsProductsProductIdIndexRoute
   AppRegistrationsSalesGroupGroupIdIndexRoute: typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute: typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
@@ -1074,11 +1137,14 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppRegistrationsCustomersIndexRoute: AppRegistrationsCustomersIndexRoute,
   AppRegistrationsPaymentConditionsIndexRoute:
     AppRegistrationsPaymentConditionsIndexRoute,
+  AppRegistrationsPriceTablesIndexRoute: AppRegistrationsPriceTablesIndexRoute,
   AppRegistrationsProductsIndexRoute: AppRegistrationsProductsIndexRoute,
   AppRegistrationsRepresentativeGoalsIndexRoute:
     AppRegistrationsRepresentativeGoalsIndexRoute,
   AppRegistrationsSalesGroupIndexRoute: AppRegistrationsSalesGroupIndexRoute,
   AppReportsCustomersListIndexRoute: AppReportsCustomersListIndexRoute,
+  AppReportsDashboardProductGroupsIndexRoute:
+    AppReportsDashboardProductGroupsIndexRoute,
   AppStockEsli011IndexRoute: AppStockEsli011IndexRoute,
   AppStockProductStockIndexRoute: AppStockProductStockIndexRoute,
   AppSystemSyncStatusIndexRoute: AppSystemSyncStatusIndexRoute,
@@ -1100,6 +1166,8 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
     AppRegistrationsApprovalLevelsLevelIdIndexRoute,
   AppRegistrationsPaymentConditionsConditionIdIndexRoute:
     AppRegistrationsPaymentConditionsConditionIdIndexRoute,
+  AppRegistrationsPriceTablesPriceTableIdIndexRoute:
+    AppRegistrationsPriceTablesPriceTableIdIndexRoute,
   AppRegistrationsProductsProductIdIndexRoute:
     AppRegistrationsProductsProductIdIndexRoute,
   AppRegistrationsSalesGroupGroupIdIndexRoute:

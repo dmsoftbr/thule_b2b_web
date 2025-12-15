@@ -38,6 +38,7 @@ export type CustomerModel = {
   discountPercent: number;
   minValuePayedFreight: number;
   minValueOrder: number;
+  paymentCondition: PaymentConditionModel;
   carrier: CarrierModel;
   priceTables: PriceTableModel[];
   representative: RepresentativeModel;

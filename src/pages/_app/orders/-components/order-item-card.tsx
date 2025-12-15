@@ -7,22 +7,21 @@ import { formatDate } from "@/lib/datetime-utils";
 import { cn } from "@/lib/utils";
 import type { OrderItemModel } from "@/models/orders/order-item-model";
 import { CalendarIcon, MinusIcon, PlusIcon } from "lucide-react";
-import { useOrder } from "../-hooks/use-order";
 import { formatNumber } from "@/lib/number-utils";
 import { api } from "@/lib/api";
 import { AppTooltip } from "@/components/layout/app-tooltip";
 import { AvailabilityInfo } from "./availability-info";
 import { getAvailabilityColor } from "../-utils/order-utils";
+import { useOrder } from "../-context/order-context";
 
 interface Props {
   data: OrderItemModel;
   className?: string;
-  isEditing: boolean;
 }
 
-export const OrderItemCard = ({ data, className, isEditing }: Props) => {
-  const { onUpdateItem, onRemoveItem, currentOrder } = useOrder();
-
+export const OrderItemCard = ({ data, className }: Props) => {
+  const { updateItem, removeItem, order, mode } = useOrder();
+  const isEditing = mode == "NEW" || mode == "EDIT";
   const handleUpdateQuantity = async (newQuantity: number | undefined) => {
     // if (!newQuantity) {
     //   onRemoveItem(data);
@@ -31,8 +30,8 @@ export const OrderItemCard = ({ data, className, isEditing }: Props) => {
 
     // chama a api que calcula data de entrega
     var params = {
-      orderId: currentOrder.id,
-      customerAbbreviation: currentOrder.customerAbbreviation,
+      orderId: order.id,
+      customerAbbreviation: order.customerAbbreviation,
       productId: data.productId,
       quantity: newQuantity,
     };
@@ -49,11 +48,11 @@ export const OrderItemCard = ({ data, className, isEditing }: Props) => {
       availability: response.availbility,
     };
 
-    onUpdateItem(updatedItem);
+    updateItem(updatedItem);
   };
 
   const handleRemoveItem = () => {
-    onRemoveItem(data);
+    removeItem(data);
   };
 
   return (
@@ -82,25 +81,34 @@ export const OrderItemCard = ({ data, className, isEditing }: Props) => {
                   <h3 className="text-lg font-bold text-gray-900 truncate pr-4">
                     {data.product?.id}
                   </h3>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    onClick={() => handleRemoveItem()}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 underline"
-                  >
-                    Remover
-                  </Button>
+                  {isEditing && (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={() => handleRemoveItem()}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 underline text-sm "
+                    >
+                      Remover
+                    </Button>
+                  )}
                 </div>
 
                 <p className="text-gray-600 text-sm line-clamp-2">
                   {data.product?.description}
                 </p>
+                <div className="text-sm font-bold text-gray-900">
+                  Tabela de Preço:
+                  <Badge variant="destructive" className="ml-1">
+                    {data.priceTableId}
+                  </Badge>
+                </div>
                 <div className="text-lg font-bold text-gray-900">
-                  Preço Sugerido: R$ {formatNumber(data.suggestPrice, 2)}
+                  Preço Sugerido Consumidor: R${" "}
+                  {formatNumber(data.suggestPrice, 2)}
                 </div>
 
                 <div className="text-lg font-bold text-gray-900">
-                  Preço c/Desconto: R$ {formatNumber(data.inputPrice, 2)}
+                  Preço Tabela: R$ {formatNumber(data.inputPrice, 2)}
                 </div>
 
                 {/* Price and Quantity Controls */}

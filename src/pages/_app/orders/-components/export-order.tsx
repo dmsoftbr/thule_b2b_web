@@ -8,13 +8,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { api } from "@/lib/api";
 import { ChevronDownIcon } from "lucide-react";
-import { useOrder } from "../-hooks/use-order";
+import { useOrder } from "../-context/order-context";
 
 export const ExportOrder = () => {
-  const { currentOrder } = useOrder();
+  const { order } = useOrder();
 
   const handleGetExcel = async () => {
-    const response = await api.get(`/orders/xlsx/${currentOrder.id}`, {
+    const response = await api.get(`/orders/xlsx/${order.id}`, {
       responseType: "blob",
     });
     const blob = new Blob([response.data], {
@@ -23,7 +23,7 @@ export const ExportOrder = () => {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `${currentOrder.orderId}.xlsx`);
+    link.setAttribute("download", `${order.orderId}.xlsx`);
     document.body.appendChild(link);
     link.click();
     link.parentNode?.removeChild(link);
@@ -31,7 +31,7 @@ export const ExportOrder = () => {
   };
 
   const handleGetPdf = async () => {
-    const response = await api.get(`/orders/pdf/${currentOrder.id}`, {
+    const response = await api.get(`/orders/pdf/${order.id}`, {
       responseType: "blob",
     });
     const blob = new Blob([response.data], { type: "application/pdf" });

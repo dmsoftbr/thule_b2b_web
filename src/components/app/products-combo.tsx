@@ -11,13 +11,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronsUpDownIcon } from "lucide-react";
+import { ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 import type { ProductModel } from "@/models/product.model";
-import { useMemo } from "react";
 import { ProductImage } from "./product-image";
 
 interface Props {
@@ -26,6 +25,7 @@ interface Props {
   disabled?: boolean;
   customerId: number;
   priceTableId: string;
+  closeOnSelect?: boolean;
 }
 
 export const ProductsCombo = ({
@@ -34,51 +34,107 @@ export const ProductsCombo = ({
   className,
   disabled,
   onSelect,
+  closeOnSelect = false,
 }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const [data, setData] = useState<ProductModel[]>([]);
-  const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
   const [value, setValue] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const debounceTimerRef = useRef<number | undefined>(undefined);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const getSelectedItem = useMemo(() => {
+  // Memoiza o item selecionado
+  const selectedItem = useMemo(() => {
+    if (!value) return "";
     const item = data.find((item) => item.id === value);
-
-    if (item) {
-      return `${item.id} - ${item.description}`;
-    }
-
-    return "";
+    return item ? `${item.id} - ${item.description}` : "";
   }, [value, data]);
 
-  async function onSearch(searchText: string) {
-    startTransition(async () => {
-      const { data } = await api.post("/registrations/products/search", {
-        search: searchText,
-        customerId,
-        priceTableId,
-      });
-      setData(data);
-    });
-  }
+  // Função de busca otimizada com abort controller
+  const performSearch = useCallback(
+    async (searchText: string) => {
+      // Cancela requisição anterior se existir
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
 
-  const renderItems = useMemo(() => {
-    return data.map((item) => (
+      if (!searchText.trim()) {
+        setData([]);
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      abortControllerRef.current = new AbortController();
+
+      try {
+        const { data: products } = await api.post(
+          "/registrations/products/search",
+          {
+            search: searchText,
+            customerId,
+            priceTableId,
+          },
+          {
+            signal: abortControllerRef.current.signal,
+          }
+        );
+        setData(products);
+      } catch (error: any) {
+        if (error.name !== "AbortError") {
+          console.error("Erro na busca:", error);
+          setData([]);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [customerId, priceTableId]
+  );
+
+  // Debounce na busca
+  const onSearch = useCallback(
+    (searchText: string) => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      debounceTimerRef.current = window.setTimeout(() => {
+        performSearch(searchText);
+      }, 300);
+    },
+    [performSearch]
+  );
+
+  // Handler de seleção otimizado
+  const handleSelect = useCallback(
+    (item: ProductModel) => {
+      setValue(""); // Limpa a seleção visual
+      onSelect?.(item);
+
+      if (closeOnSelect) {
+        setIsOpen(false);
+      }
+
+      if (searchInputRef.current) {
+        searchInputRef.current.value = ""; // Limpa o input de busca
+        searchInputRef.current.focus();
+      }
+
+      setData([]); // Limpa os resultados
+    },
+    [onSelect, closeOnSelect]
+  );
+
+  // Componente de item memoizado
+  const ProductItem = useMemo(() => {
+    return ({ item }: { item: ProductModel }) => (
       <CommandItem
         key={item.id}
         disabled={!item.isActive}
         value={item.id.toString()}
-        onSelect={() => {
-          setValue(item.id.toString());
-
-          onSelect?.(item);
-          //setIsOpen(false);
-          if (searchInputRef.current) {
-            searchInputRef.current.select();
-            searchInputRef.current.focus();
-            //setData([]);
-          }
-        }}
+        onSelect={() => handleSelect(item)}
         keywords={[item.id, item.referenceCode, item.description]}
         className={cn(
           "even:bg-neutral-50 border-t rounded-none",
@@ -86,42 +142,54 @@ export const ProductsCombo = ({
           value === item.id.toString() && "!bg-blue-100"
         )}
       >
-        <div className={cn("grid grid-cols-[128px_1fr]")}>
-          <div className="w-[128px] h-[128px] max-w-[128px] max-h-[128px] relative bg-transparent">
-            <ProductImage productId={`${item.id}`} alt={"Foto do Produto"} />
+        <div className="grid grid-cols-[128px_1fr] gap-2">
+          <div className="w-[128px] h-[128px] relative bg-transparent flex-shrink-0">
+            <ProductImage productId={`${item.id}`} alt="Foto do Produto" />
           </div>
-          <div className="flex flex-col ml-2">
-            <div className="w-full flex-1 flex justify-between items-center">
-              <span className="font-bold text-blue-600">
-                {item.id} - {item.description}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">
+          <div className="flex flex-col justify-center min-w-0">
+            <span className="font-bold text-blue-600 truncate">
+              {item.id} - {item.description}
+            </span>
+            <p className="text-xs text-muted-foreground truncate">
               Classificação: {item.productGroup?.name}
             </p>
           </div>
         </div>
       </CommandItem>
-    ));
-  }, [data, value, onSelect, setIsOpen, setValue]);
+    );
+  }, [className, value, handleSelect]);
 
-  // Usage: {renderItems}
+  // Cleanup de timers e abort controllers
+  const handleOpenChange = useCallback((open: boolean) => {
+    setIsOpen(open);
+
+    if (!open) {
+      // Limpa debounce ao fechar
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      // Cancela requisições pendentes
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    }
+  }, []);
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild disabled={disabled}>
         <Button
-          useAnimation={false}
+          type="button"
           variant="outline"
           role="combobox"
           className="w-full flex-1 justify-between hover:not-disabled:!bg-white"
         >
           {value
-            ? getSelectedItem
-            : isPending
+            ? selectedItem
+            : isLoading
               ? "Procurando..."
               : "Selecione o Produto"}
-          <ChevronsUpDownIcon className="opacity-50" />
+          <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
 
@@ -131,15 +199,21 @@ export const ProductsCombo = ({
             ref={searchInputRef}
             placeholder="Procurar..."
             className="h-9"
-            onValueChange={(value) => onSearch(value)}
+            onValueChange={onSearch}
           />
           <CommandList>
             <CommandEmpty>
-              {!value
-                ? "Digite o termo a procurar: Código Longo/Código Curto/Descrição"
-                : "Produto não cadastrado na lista de preço ou não disponível para seu canal de vendas."}
+              {isLoading
+                ? "Carregando..."
+                : !value
+                  ? "Digite o termo a procurar: Código Longo/Código Curto/Descrição"
+                  : "Produto não cadastrado na lista de preço ou não disponível para seu canal de vendas."}
             </CommandEmpty>
-            <CommandGroup className="p-0">{renderItems}</CommandGroup>
+            <CommandGroup className="p-0">
+              {data.map((item) => (
+                <ProductItem key={item.id} item={item} />
+              ))}
+            </CommandGroup>
           </CommandList>
         </Command>
       </PopoverContent>

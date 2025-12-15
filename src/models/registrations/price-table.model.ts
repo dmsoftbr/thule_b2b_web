@@ -4,4 +4,5 @@ export type PriceTableModel = {
   validFrom: Date;
   validTo: Date;
   isOutlet: boolean;
+  zeroDiscount: boolean;
 };

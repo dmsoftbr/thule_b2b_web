@@ -157,7 +157,7 @@ export const columns = ({
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <DollarSignIcon className="size-4 text-emerald-600" />
-              Ver Faturamento
+              Ver Dados da Nota
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>

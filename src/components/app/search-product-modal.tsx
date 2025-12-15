@@ -179,11 +179,7 @@ export const SearchProductModal = ({ onSelect }: Props) => {
             showAddButton={false}
             defaultPageSize={6}
             dataUrl="/registrations/products/list-paged"
-            searchFields={[
-              { id: "id", label: "Código" },
-              { id: "description", label: "Descrição" },
-              { id: "referenceCode", label: "Código Curto" },
-            ]}
+            searchFields={[{ id: "id", label: "Código/Descrição/Cód.Curto" }]}
             defaultSearchField="id"
             onSelectRow={(row) => setSelectedItem(row)}
           />

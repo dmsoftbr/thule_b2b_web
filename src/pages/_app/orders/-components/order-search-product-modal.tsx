@@ -16,17 +16,24 @@ import {
 import type { ProductModel } from "@/models/product.model";
 import { MinusIcon, PlusIcon, SearchIcon } from "lucide-react";
 import { useState } from "react";
-import { useOrder } from "../-hooks/use-order";
 import { ProductImage } from "@/components/app/product-image";
 import { formatNumber } from "@/lib/number-utils";
+import { useOrder } from "../-context/order-context";
+import type { PriceTableModel } from "@/models/registrations/price-table.model";
+import { SearchCombo } from "@/components/ui/search-combo";
 
 export const OrderSearchProductModal = () => {
   const [isOpen, setIsOpen] = useState(false);
-  //const [data, setData] = useState<ProductModel[]>([]);
-  const { currentOrder, setCurrentOrder } = useOrder();
+  const { order, setOrder } = useOrder();
+  const [priceTable, setPriceTable] = useState<PriceTableModel | null>(null);
+  const [tableToken, setTableToken] = useState(new Date().valueOf());
 
-  function handleAddItemToOrder(product: ProductModel, orderQuantity: number) {
-    const newOrder = { ...currentOrder };
+  function handleAddItemToOrder(
+    priceTable: PriceTableModel,
+    product: ProductModel,
+    orderQuantity: number
+  ) {
+    const newOrder = { ...order };
     const existingItemIndex = newOrder.items.findIndex(
       (f) => f.productId == product.id
     );
@@ -37,7 +44,7 @@ export const OrderSearchProductModal = () => {
         availability: "C",
         deliveryDate: new Date(),
         sequence: 0,
-        orderId: currentOrder.id,
+        orderId: order.id,
         product: product,
         productId: product.id,
         orderQuantity,
@@ -46,7 +53,7 @@ export const OrderSearchProductModal = () => {
         suggestPrice: product.suggestUnitPrice,
         allocatedQuantity: 0,
         comments: "",
-        customerAbbreviation: currentOrder.customerAbbreviation,
+        customerAbbreviation: order.customerAbbreviation,
         deliveredQuantity: 0,
         fiscalClassificationId: "",
         id: "",
@@ -56,10 +63,12 @@ export const OrderSearchProductModal = () => {
         priceTablePrice: product.unitPriceInTable,
         referenceCode: product.referenceCode,
         statusId: 1,
-        priceTableId: currentOrder.priceTableId,
+        priceTableId: priceTable.id,
+        priceTable,
+        taxes: [],
       });
     }
-    setCurrentOrder(newOrder);
+    setOrder(newOrder);
   }
 
   const columns: ServerTableColumn[] = [
@@ -163,7 +172,9 @@ export const OrderSearchProductModal = () => {
         <div>
           <Button
             onClick={() => {
+              if (!priceTable) return;
               handleAddItemToOrder(
+                priceTable,
                 product,
                 product.quantity < 1 ? 1 : product.quantity
               );
@@ -187,23 +198,30 @@ export const OrderSearchProductModal = () => {
       </DialogTrigger>
       <DialogContent className="min-w-[90%]">
         <DialogHeader>
-          <DialogTitle>
-            Pesquisar Produtos - {currentOrder.priceTableId}
-          </DialogTitle>
+          <DialogTitle>Pesquisar Produtos</DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col w-full">
           <ServerTable<ProductModel>
+            key={tableToken}
+            searchSlot={
+              <SearchCombo
+                apiEndpoint="/registrations/price-tables/all"
+                valueProp="id"
+                labelProp="id"
+                onSelectOption={(opt) => {
+                  setPriceTable(opt[0].extra);
+                  setTableToken(new Date().valueOf());
+                }}
+              />
+            }
             columns={columns}
             dataUrl="/registrations/products/list-paged"
-            searchFields={[
-              { id: "id", label: "Código" },
-              { id: "description", label: "Descrição" },
-              { id: "referenceCode", label: "Código Curto" },
-            ]}
+            searchFields={[]}
             defaultPageSize={8}
-            defaultSearchField="id"
+            defaultSearchField="all"
+            additionalInfo={{ priceTableId: priceTable?.id ?? "" }}
           />
         </div>
         <DialogFooter>

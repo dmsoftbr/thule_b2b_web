@@ -17,7 +17,6 @@ export type ProductModel = {
   productFamily?: ProductFamilyModel;
   productCommercialFamily?: ProductCommercialFamilyModel;
   imageUrl?: string;
-
   suggestUnitPrice: number;
   unitPriceInTable: number;
   quantity: number;

@@ -6,7 +6,6 @@ import { routeTree } from "./route-tree.gen";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "./contexts/auth-context";
 import { AppDialogProvider } from "./components/app-dialog/app-dialog-context";
-
 const router = createRouter({ routeTree, basepath: "/b2b" });
 
 declare module "@tanstack/react-router" {

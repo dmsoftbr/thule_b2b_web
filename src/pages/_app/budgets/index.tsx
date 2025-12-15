@@ -7,8 +7,6 @@ import {
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 import { useState } from "react";
 import { add } from "date-fns";
-import { useOrder } from "../orders/-hooks/use-order";
-import { NEW_BUDGET_EMPTY } from "../orders/-utils/order-utils";
 import type { OrderModel } from "@/models/orders/order-model";
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
@@ -64,21 +62,16 @@ function BudgetsPage() {
   );
   const [createdAtTo, setCreatedAtTo] = useState<Date | undefined>(new Date());
   const [selectedReps, setSelectedReps] = useState<number[]>([]);
-  const { setCurrentOrder, clearItems } = useOrder();
 
   const handleAdd = () => {
-    setCurrentOrder(NEW_BUDGET_EMPTY);
-    clearItems();
     navigate({ to: "/budgets/new-budget" });
   };
 
   const handleEdit = (data: OrderModel) => {
-    setCurrentOrder(data);
     navigate({ to: `/budgets/edit/${data.id}` });
   };
 
   const handleView = (data: OrderModel) => {
-    setCurrentOrder(data);
     navigate({ to: `/budgets/view/${data.id}` });
   };
 

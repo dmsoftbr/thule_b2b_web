@@ -1,7 +1,6 @@
 import type { OrderItemModel } from "./order-item-model";
 import type { CustomerModel } from "../registrations/customer.model";
 import type { RepresentativeModel } from "../representative.model";
-import type { PriceTableModel } from "../registrations/price-table.model";
 import type { DeliveryLocationModel } from "../delivery-location.model";
 import type { CarrierModel } from "../carrier.model";
 import type { PaymentConditionModel } from "../registrations/payment-condition.model";
@@ -41,7 +40,7 @@ export type OrderModel = {
   creditStatusId: number;
   freightTypeId: number;
   origin: string;
-  priceTableId: string;
+  //  priceTableId: string;
   priceTypeId: number;
   isCompleted: boolean;
   fiscalClassificationId: string;
@@ -51,7 +50,7 @@ export type OrderModel = {
   items: OrderItemModel[];
   customer?: CustomerModel;
   representative?: RepresentativeModel;
-  priceTable?: PriceTableModel;
+  //priceTable?: PriceTableModel;
   deliveryLocation?: DeliveryLocationModel;
   carrier?: CarrierModel;
   paymentCondition?: PaymentConditionModel;

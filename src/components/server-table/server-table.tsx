@@ -81,6 +81,7 @@ interface ServerTableProps<T> {
   groupConfig?: ServerTableGroupConfig;
   refreshDataToken?: string | number | Date | undefined;
   additionalButtons?: React.ReactNode | React.ReactNode[];
+  searchSlot?: React.ReactNode | React.ReactNode[];
   searchPlaceHolder?: string;
   hideToolbar?: boolean;
   onAdd?: () => void;
@@ -112,6 +113,7 @@ export const ServerTable = <T,>({
   isPending = false,
   showAdvancedFilter = false,
   advancedFilterSlot,
+  searchSlot,
   additionalInfo = {},
   tableClassNames = "",
   refreshDataToken = "",
@@ -669,28 +671,30 @@ export const ServerTable = <T,>({
                 </AppTooltip>
               </div>
             )}
-
-          <Select
-            onValueChange={(e) => {
-              setSearchField(e);
-              const _searchField = searchFields.find((f) => f.id == e);
-              setCustomWhere(_searchField?.customWhere ?? "");
-            }}
-            value={searchField}
-          >
-            <SelectTrigger className="flex-1">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {searchFields &&
-                searchFields.length > 0 &&
-                searchFields.map((item, index) => (
-                  <SelectItem key={index} value={item.id}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
+          <div>{searchSlot}</div>
+          {searchFields.length > 0 && (
+            <Select
+              onValueChange={(e) => {
+                setSearchField(e);
+                const _searchField = searchFields.find((f) => f.id == e);
+                setCustomWhere(_searchField?.customWhere ?? "");
+              }}
+              value={searchField}
+            >
+              <SelectTrigger className="flex-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {searchFields &&
+                  searchFields.length > 0 &&
+                  searchFields.map((item, index) => (
+                    <SelectItem key={index} value={item.id}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          )}
           <div className="relative flex items-center justify-center w-full">
             <div className="absolute left-3 select-none text-neutral-600">
               <SearchIcon className="size-3" />

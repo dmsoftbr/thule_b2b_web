@@ -25,7 +25,7 @@ export function convertArrayToSearchComboItem(
     list.push({
       value,
       label,
-      keyworks: [value, label],
+      keywords: [value, label],
       extra: item,
     });
   });

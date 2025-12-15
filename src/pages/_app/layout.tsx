@@ -16,7 +16,7 @@ function AppLayout() {
   if (isPending) {
     return <AppSkeleton />;
   }
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/auth/login" replace />;
   }
@@ -29,6 +29,7 @@ function AppLayout() {
           <AppHeader />
           <main className="w-full flex flex-1 bg-neutral-100">
             <Outlet />
+            {/* <TanStackRouterDevtools /> */}
           </main>
         </div>
       </SidebarProvider>

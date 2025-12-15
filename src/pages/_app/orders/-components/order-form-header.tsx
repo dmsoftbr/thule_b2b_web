@@ -1,62 +1,29 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  SearchCombo,
-  type SearchComboItem,
-} from "@/components/ui/search-combo";
 
 import { CustomersCombo } from "@/components/app/customers-combo";
-import { useEffect, useState } from "react";
-import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
-import { useOrder } from "../-hooks/use-order";
-import type { PriceTableModel } from "@/models/registrations/price-table.model";
 import { formatNumber } from "@/lib/number-utils";
 import type { CustomerModel } from "@/models/registrations/customer.model";
-import { toast } from "sonner";
-import { handleError } from "@/lib/api";
-import type { UserPermissionModel } from "@/models/admin/user-permission.model";
-import { getUserPermissions } from "../-utils/order-utils";
-import { useAuth } from "@/hooks/use-auth";
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 import { formatCpfCnpj } from "@/lib/string-utils";
+import { useOrder } from "../-context/order-context";
+import { SearchCombo } from "@/components/ui/search-combo";
 
-interface Props {
-  isEditing: boolean;
-}
-
-export const OrderFormHeader = ({ isEditing }: Props) => {
+export const OrderFormHeader = () => {
   const {
-    clearItems,
-    currentOrder,
+    order,
     setCustomer,
-    setPriceTable,
     setRepresentative,
-    setDiscountPercent,
+    setDiscountPercentual,
     setDeliveryLocation,
+    clearItems,
+    mode,
   } = useOrder();
-  const { session } = useAuth();
   const { showAppDialog } = useAppDialog();
+  const isEditing = mode == "NEW" || mode == "EDIT";
+  const isNew = isEditing && order.orderId == "";
 
-  const [priceTablesData, setPriceTablesData] = useState<SearchComboItem[]>([]);
-  const [userPermissions, setUserPermissions] = useState<UserPermissionModel[]>(
-    []
-  );
-
-  const isNew = isEditing && currentOrder.orderId == "";
-
-  const getPermissions = async () => {
-    const data = await getUserPermissions(session?.user.id ?? "");
-    setUserPermissions(data ?? []);
-  };
-
-  const isItemPermissionDisabled = (permissionId: string) => {
-    const item = userPermissions.find((f) => f.permissionId == permissionId);
-
-    if (!item) return true;
-    return !item.isPermitted;
-  };
-
-  function handleChangeCustomer(customer: CustomerModel | undefined) {
+  function handleChangeCustomer(customer?: CustomerModel) {
     if (!customer) return false;
     if (customer.creditStatus == "3" || customer.creditStatus == "4") {
       showAppDialog({
@@ -70,12 +37,7 @@ export const OrderFormHeader = ({ isEditing }: Props) => {
 
     setCustomer(customer);
     setRepresentative(customer.representative);
-    setDiscountPercent(customer.discountPercent);
-
-    if (customer.priceTables && customer.priceTables.length > 0) {
-      setPriceTable(customer.priceTables[0]);
-      convertPriceTablesToSearchComboItems(customer.priceTables ?? []);
-    }
+    setDiscountPercentual(customer.discountPercent);
 
     if (customer.deliveryLocations && customer.deliveryLocations.length > 0) {
       setDeliveryLocation(customer.deliveryLocations[0]);
@@ -84,33 +46,43 @@ export const OrderFormHeader = ({ isEditing }: Props) => {
     return true;
   }
 
-  function convertPriceTablesToSearchComboItems(data: PriceTableModel[]) {
-    const newOptions = convertArrayToSearchComboItem(data, "id", "id");
-    setPriceTablesData(newOptions);
-  }
-
-  function handleChangePriceTable(priceTableId: string) {
-    try {
-      if (
-        priceTableId.toLowerCase() != currentOrder?.priceTableId.toLowerCase()
-      ) {
-        const pt = priceTablesData.find((f) => f.value == priceTableId);
-        if (!pt) throw new Error("Tabela de Preço Inválida");
-
-        setPriceTable(pt.extra);
-
-        if (currentOrder.items.length > 0) {
-          clearItems();
-        }
-      }
-    } catch (error) {
-      toast.error(handleError(error));
+  const handlePreSelect = async (
+    newCustomer: CustomerModel | undefined,
+    currentCustomer: CustomerModel | undefined,
+    confirm: () => void,
+    cancel: () => void
+  ) => {
+    // Se não há cliente atual (primeira seleção), confirma direto
+    if (!currentCustomer) {
+      confirm();
+      return;
     }
-  }
-
-  useEffect(() => {
-    getPermissions();
-  }, []);
+    console.log(newCustomer?.id);
+    // Se há itens no pedido, pede confirmação
+    if (order.items.length > 0) {
+      const dialogResult = await showAppDialog({
+        message: "Se trocar o cliente o pedido será redefinido",
+        title: "Atenção",
+        type: "confirm",
+        buttons: [
+          { text: "Trocar", variant: "danger", value: true, autoClose: true },
+          {
+            text: "Cancelar",
+            variant: "secondary",
+            value: false,
+            autoClose: true,
+          },
+        ],
+      });
+      if (dialogResult) {
+        clearItems();
+        confirm();
+      } else cancel();
+    } else {
+      // Se não há itens, confirma direto
+      confirm();
+    }
+  };
 
   return (
     <>
@@ -120,57 +92,34 @@ export const OrderFormHeader = ({ isEditing }: Props) => {
             <Label>Cliente</Label>
             {(!isEditing || !isNew) && (
               <div className="text-sm border px-2.5 rounded-md py-1.5 bg-neutral-100 text-black font-medium">
-                {`${currentOrder.customerId} - ${currentOrder.customer?.abbreviation}`}
+                {`${order.customerId} - ${order.customer?.abbreviation}`}
                 {" - "}
                 <span className="text-xs text-muted-foreground">
                   CPF/CNPJ:{" "}
-                  {formatCpfCnpj(currentOrder.customer?.documentNumber ?? "")}
+                  {formatCpfCnpj(order.customer?.documentNumber ?? "")}
                 </span>
               </div>
             )}
             {isNew && (
               <CustomersCombo
-                defaultValue={currentOrder.customerId || undefined}
+                defaultValue={order.customerId || undefined}
                 disabled={!isEditing}
                 onSelect={(customer) => handleChangeCustomer(customer)}
+                closeOnSelect
+                onPreSelect={handlePreSelect}
               />
             )}{" "}
           </div>
         </div>
         <div className="space-y-2">
           <div className="form-group">
-            <Label>Tabela de Preço</Label>
-            {currentOrder.orderClassificationId == 6 && (
-              <Input value="Outlet" readOnly />
-            )}
-            {!isEditing && <Input value={currentOrder.priceTableId} readOnly />}
-            {currentOrder.orderClassificationId < 6 && isEditing && (
-              <SearchCombo
-                disabled={!isEditing || isItemPermissionDisabled("316")}
-                key={priceTablesData.length > 0 ? 1 : 0}
-                placeholder="Selecione a Tabela de Preço"
-                staticItems={priceTablesData}
-                defaultValue={[
-                  currentOrder.priceTable
-                    ? {
-                        value: currentOrder.priceTableId ?? "",
-                        label: currentOrder.priceTableId ?? "",
-                      }
-                    : { value: "", label: "" },
-                ]}
-                onChange={(priceTableId: string) =>
-                  handleChangePriceTable(priceTableId)
-                }
-              />
-            )}
-          </div>
-        </div>
-        <div className="space-y-2">
-          <div className="form-group">
             <Label>Representante</Label>
-            <Input
-              readOnly
-              defaultValue={currentOrder.representative?.abbreviation ?? ""}
+            <SearchCombo
+              defaultValue={order.representativeId.toString()}
+              apiEndpoint="/registrations/representatives/all"
+              labelProp="abbreviation"
+              valueProp="id"
+              disabled={!isEditing}
             />
           </div>
         </div>
@@ -180,7 +129,7 @@ export const OrderFormHeader = ({ isEditing }: Props) => {
             <Input
               className="text-right"
               readOnly
-              value={formatNumber(currentOrder.discountPercentual, 2) ?? "0,00"}
+              value={formatNumber(order.discountPercentual, 2) ?? "0,00"}
             />
           </div>
         </div>

@@ -1,4 +1,5 @@
 import type { ProductModel } from "../product.model";
+import type { PriceTableModel } from "../registrations/price-table.model";
 import type { OrderItemTaxModel } from "./order-item-tax-model";
 
 export type OrderItemModel = {
@@ -25,6 +26,7 @@ export type OrderItemModel = {
   netItemValue: number;
   suggestPrice: number;
 
-  product?: ProductModel;
-  taxes?: OrderItemTaxModel[];
+  product: ProductModel;
+  taxes: OrderItemTaxModel[];
+  priceTable: PriceTableModel;
 };

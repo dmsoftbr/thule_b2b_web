@@ -1,16 +1,26 @@
 import { AppPageHeader } from "@/components/layout/app-page-header";
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { OrderForm } from "../../-components/order-form";
+import { OrderProvider } from "../../-context/order-context";
+import { api } from "@/lib/api";
 
 export const Route = createFileRoute("/_app/orders/edit/$orderId/")({
   component: EditOrderPageComponent,
+  loader: async ({ params }) => {
+    const { orderId } = params;
+    const { data } = await api.get(`/orders/${orderId}`);
+    return data;
+  },
 });
 
 function EditOrderPageComponent() {
-  const { orderId } = useParams({ from: "/_app/orders/edit/$orderId/" });
+  const order = Route.useLoaderData();
+
   return (
-    <AppPageHeader titleSlot={"Alterar Pedido de Venda"}>
-      <OrderForm orderId={orderId} action="EDIT" orderType="ORDER" />
+    <AppPageHeader titleSlot={`Alterar Pedido de Venda: ${order.orderId}`}>
+      <OrderProvider initialOrder={order} formMode="EDIT">
+        <OrderForm />
+      </OrderProvider>
     </AppPageHeader>
   );
 }

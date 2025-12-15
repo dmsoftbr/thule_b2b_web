@@ -26,7 +26,6 @@ export const SalesChannelModal = () => {
       const { data } = await api.get<TreeNode[]>(
         `/registrations/sales-groups/grid/teste`
       );
-
       return data;
     },
   });

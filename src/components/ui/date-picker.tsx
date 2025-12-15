@@ -47,6 +47,8 @@ export function DatePicker({
           align="start"
         >
           <Calendar
+            startMonth={new Date(2000, 0, 1)}
+            endMonth={new Date(9999, 11, 31)}
             mode="single"
             selected={date}
             captionLayout="dropdown"

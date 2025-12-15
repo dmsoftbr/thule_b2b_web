@@ -22,7 +22,6 @@ export const NEW_ORDER_EMPTY: OrderModel = {
   netTotalValue: 0,
   statusId: 0,
   whatAppPhoneNumber: "",
-  priceTableId: "",
   branchId: "",
   items: [],
   isBudget: false,
@@ -47,7 +46,10 @@ export const NEW_ORDER_EMPTY: OrderModel = {
   useCustomerCarrier: false,
 };
 
-export const NEW_ORDER_ITEM_EMPTY: OrderItemModel = {
+export const NEW_ORDER_ITEM_EMPTY: Omit<
+  OrderItemModel,
+  "priceTable" | "product" | "taxes"
+> = {
   orderId: "",
   sequence: 0,
   productId: "",
@@ -87,7 +89,6 @@ export const NEW_BUDGET_EMPTY: OrderModel = {
   orderClassificationId: 1,
   statusId: 0,
   whatAppPhoneNumber: "",
-  priceTableId: "",
   branchId: "",
   items: [],
   isBudget: true,
@@ -122,7 +123,6 @@ export const generateOrderFromOutlet = async (): Promise<OrderModel> => {
   if (outletJson) {
     sessionStorage.removeItem("b2b@outletOrderData");
     newOrder.customerId = Number(outletJson.customerId);
-    newOrder.priceTableId = outletJson.items[0].priceTableId;
     newOrder.representativeId = 1;
     newOrder.branchId = "1";
     newOrder.currencyId = 0;
@@ -142,7 +142,12 @@ export const generateOrderFromOutlet = async (): Promise<OrderModel> => {
         ? customerData.deliveryLocations[0].id
         : "";
     for (const [index, item] of (outletJson.items ?? []).entries()) {
-      const orderItem: OrderItemModel = { ...NEW_ORDER_ITEM_EMPTY };
+      const orderItem: OrderItemModel = {
+        ...NEW_ORDER_ITEM_EMPTY,
+        product: item.product,
+        taxes: [],
+        priceTable: item.priceTable,
+      };
       orderItem.availability = "C";
       orderItem.orderQuantity = item.quantity;
       orderItem.productId = item.id;

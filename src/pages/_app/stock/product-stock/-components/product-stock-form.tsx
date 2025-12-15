@@ -18,11 +18,13 @@ export const ProductStockForm = () => {
   const [stockData, setStockData] =
     useState<ProductPriceEstimatedDateModel | null>(null);
 
-  async function getData() {
+  async function getData(itemId: string = "") {
+    if (!productId && !itemId) return;
     setIsLoading(true);
     try {
-      const stockData =
-        await StockService.getStockByPriceAndEstimatedDate(productId);
+      const stockData = await StockService.getStockByPriceAndEstimatedDate(
+        itemId ? itemId : productId
+      );
       setStockData(stockData);
     } catch (error) {
       toast.error(handleError(error));
@@ -55,6 +57,7 @@ export const ProductStockForm = () => {
             onSelect={(product) => {
               if (product) {
                 setProductId(product.id);
+                getData();
               }
             }}
           />

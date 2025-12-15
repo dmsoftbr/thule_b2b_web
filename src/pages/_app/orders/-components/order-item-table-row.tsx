@@ -9,29 +9,30 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { getAvailabilityColor } from "../-utils/order-utils";
-import { useOrder } from "../-hooks/use-order";
 import { api } from "@/lib/api";
 import { AvailabilityInfo } from "./availability-info";
 import { AppTooltip } from "@/components/layout/app-tooltip";
+import { useOrder } from "../-context/order-context";
 
 interface Props {
   item: OrderItemModel;
-  isEditing?: boolean;
 }
 
-export const OrderItemTableRow = ({ item, isEditing }: Props) => {
-  const { currentOrder, onRemoveItem, onUpdateItem } = useOrder();
+export const OrderItemTableRow = ({ item }: Props) => {
+  const { order, removeItem, updateItem, mode } = useOrder();
+
+  const isEditing = mode == "NEW" || mode == "EDIT";
 
   const handleUpdateQuantity = async (newQuantity: number | undefined) => {
     if (!newQuantity) {
-      onRemoveItem(item);
+      removeItem(item);
       return;
     }
 
     // chama a api que calcula data de entrega
     var params = {
-      orderId: currentOrder.id,
-      customerAbbreviation: currentOrder.customerAbbreviation,
+      orderId: order.id,
+      customerAbbreviation: order.customerAbbreviation,
       productId: item.productId,
       quantity: newQuantity,
     };
@@ -43,12 +44,12 @@ export const OrderItemTableRow = ({ item, isEditing }: Props) => {
 
     const updatedItem = {
       ...item,
-      quantity: Number(newQuantity),
+      orderQuantity: Number(newQuantity),
       deliveryDate: response.estimatedDate,
       availability: response.availbility,
     };
 
-    onUpdateItem(updatedItem);
+    updateItem(updatedItem);
   };
 
   return (
@@ -68,13 +69,13 @@ export const OrderItemTableRow = ({ item, isEditing }: Props) => {
       </TableCell>
       <TableCell className="border-r text-right w-[160px]">
         <FormInputQty
-        disabled={!isEditing}
+          disabled={!isEditing}
           value={item.orderQuantity}
           onValueChange={(value) => handleUpdateQuantity(value ?? 0)}
         />
       </TableCell>
       <TableCell className="w-[120px] border-r text-right">
-        {formatNumber(item.inputPrice, 2)}
+        {formatNumber(item.suggestPrice, 2)}
       </TableCell>
       <TableCell className="w-[120px] border-r text-right">
         {formatNumber(item.inputPrice, 2)}
@@ -110,7 +111,7 @@ export const OrderItemTableRow = ({ item, isEditing }: Props) => {
             <Button
               size="icon"
               variant="destructive"
-              onClick={() => onRemoveItem(item)}
+              onClick={() => removeItem(item)}
             >
               <TrashIcon />
             </Button>

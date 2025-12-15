@@ -1,16 +1,25 @@
 import { AppPageHeader } from "@/components/layout/app-page-header";
+import { api } from "@/lib/api";
 import { OrderForm } from "@/pages/_app/orders/-components/order-form";
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { OrderProvider } from "@/pages/_app/orders/-context/order-context";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/budgets/view/$orderId/")({
   component: RouteComponent,
+  loader: async ({ params }) => {
+    const { orderId } = params;
+    const { data } = await api.get(`/orders/${orderId}`);
+    return data;
+  },
 });
 
 function RouteComponent() {
-  const { orderId } = useParams({ from: "/_app/orders/view/$orderId/" });
+  const order = Route.useLoaderData();
   return (
-    <AppPageHeader titleSlot={"Visualizar Simulação"}>
-      <OrderForm orderId={orderId} action="VIEW" orderType="BUDGET" />
+    <AppPageHeader titleSlot={`Visualizar Simulação: ${order.orderId}`}>
+      <OrderProvider initialOrder={order} formMode="VIEW">
+        <OrderForm />
+      </OrderProvider>
     </AppPageHeader>
   );
 }

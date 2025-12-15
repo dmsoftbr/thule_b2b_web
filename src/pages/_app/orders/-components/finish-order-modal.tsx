@@ -12,7 +12,6 @@ import {
   SearchCombo,
   type SearchComboItem,
 } from "@/components/ui/search-combo";
-import { useOrder } from "../-hooks/use-order";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { FreightTable } from "./freight-table";
@@ -45,18 +44,22 @@ import type { CalcFreightsResposeDto } from "@/models/dto/responses/calculated-f
 import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 import type { PaymentConditionModel } from "@/models/registrations/payment-condition.model";
 import { InputMask } from "@/components/ui/input-mask";
+import { useOrder } from "../-context/order-context";
+import { TaxesModal } from "./taxes-modal";
 
 interface Props {
   isOpen: boolean;
-  isEditing: boolean;
+  //isEditing: boolean;
   onClose: () => void;
 }
 
-export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
+export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   const navigate = useNavigate();
   const { session } = useAuth();
-  const { currentOrder, setCurrentOrder } = useOrder();
+  const { order, mode, setOrder, getOrderTotalTaxes } = useOrder();
   const { showAppDialog } = useAppDialog();
+
+  const isEditing = mode == "NEW" || mode == "EDIT";
 
   const [orderValidationMessage, setOrderValidationMessage] = useState("");
   const [paymentConditionsData, setPaymentConditionsData] = useState<
@@ -79,11 +82,11 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
   async function handleSendOrder() {
     //save the order / budget
     let savedOrderId = "";
-    const orderData = { ...currentOrder, history: [] };
+    const orderData = { ...order, history: [] };
 
     orderData.items.map((item) => (item.taxes = []));
 
-    if (currentOrder.id) {
+    if (order.id) {
       // update
       const { data } = await api.patch(`/orders`, orderData);
       savedOrderId = data.orderId;
@@ -105,44 +108,44 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
     onClose();
     await showAppDialog({
       type: "success",
-      title: currentOrder.isBudget
+      title: order.isBudget
         ? "Simulação Enviada com Sucesso"
         : "Pedido Enviado com sucesso!",
-      message: currentOrder.isBudget
+      message: order.isBudget
         ? `Gerada a Simulação ${savedOrderId}`
         : `Gerado o Pedido ${savedOrderId}`,
       buttons: [
         { text: "OK", variant: "primary", value: "ok", autoClose: true },
       ],
     });
-    navigate({ to: "/orders" });
+    if (order.isBudget) navigate({ to: "/budgets" });
+    else navigate({ to: "/orders" });
   }
 
   const getSubTotal = () => {
-    return currentOrder.items.reduce(
+    return order.items.reduce(
       (accum, b) => (accum += b.orderQuantity * b.inputPrice),
       0
     );
   };
 
   const getTotal = () => {
-    let grossValue = currentOrder.items.reduce(
+    let grossValue = order.items.reduce(
       (accum, b) => (accum += b.orderQuantity * b.inputPrice),
       0
     );
 
-    if (currentOrder.additionalDiscount > 0) {
+    if (order.additionalDiscount > 0) {
       grossValue = roundNumber(
-        grossValue -
-          (grossValue * (currentOrder?.additionalDiscount ?? 0)) / 100,
+        grossValue - (grossValue * (order?.additionalDiscount ?? 0)) / 100,
         2
       );
     }
 
     grossValue = roundNumber(
       grossValue -
-        (grossValue * (currentOrder?.discountPercentual ?? 0)) / 100 +
-        (currentOrder?.freightValue ?? 0),
+        (grossValue * (order?.discountPercentual ?? 0)) / 100 +
+        (order?.freightValue ?? 0),
       2
     );
 
@@ -150,10 +153,10 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
   };
 
   const getSelectedDeliveryLocation = () => {
-    if (!currentOrder.customer) return undefined;
-    console.log(currentOrder.customer);
-    const deliveryLocation = currentOrder.customer.deliveryLocations.filter(
-      (f) => f.id == currentOrder.deliveryLocationId
+    if (!order.customer) return undefined;
+    console.log(order.customer);
+    const deliveryLocation = order.customer.deliveryLocations.filter(
+      (f) => f.id == order.deliveryLocationId
     );
 
     if (!deliveryLocation) return undefined;
@@ -183,7 +186,7 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
 
   const getOrderPaymentCondition = () => {
     const orderPaymentCondition = paymentConditionsData.find(
-      (f) => f.value == currentOrder.paymentConditionId.toString()
+      (f) => f.value == order.paymentConditionId.toString()
     );
 
     if (!orderPaymentCondition) return undefined;
@@ -214,8 +217,8 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
       return;
     }
 
-    currentOrder.discountPercentual = newPercentual;
-    setCurrentOrder({ ...currentOrder });
+    order.discountPercentual = newPercentual;
+    setOrder({ ...order });
   };
 
   const getFreights = async () => {
@@ -226,23 +229,20 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
       setFreightsData([]);
       const ttParam: CalcOrderFreightsRequestDto[] = [
         {
-          customerAbbreviation: currentOrder.customer?.abbreviation ?? "",
-          deliveryLocationId:
-            currentOrder.customer?.deliveryLocations[0].id ?? "",
-          orderId: currentOrder.id ?? "",
+          customerAbbreviation: order.customer?.abbreviation ?? "",
+          deliveryLocationId: order.customer?.deliveryLocations[0].id ?? "",
+          orderId: order.id ?? "",
           totalOrder: getTotal(),
         },
       ];
 
-      const ttItems: CalcOrderFreightsItem[] = currentOrder.items.map(
-        (item) => {
-          return {
-            productId: item.productId,
-            quantity: item.orderQuantity,
-            sequence: item.sequence,
-          };
-        }
-      );
+      const ttItems: CalcOrderFreightsItem[] = order.items.map((item) => {
+        return {
+          productId: item.productId,
+          quantity: item.orderQuantity,
+          sequence: item.sequence,
+        };
+      });
 
       const { data } = await api.post<CalcFreightsResposeDto[]>(
         `/orders/calculate-freights`,
@@ -259,10 +259,8 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
           }
           return a.freightValue - b.freightValue;
         });
-        currentOrder.freightValue =
-          currentOrder.freightPaymentId == 1
-            ? 0
-            : sortedCarriers[0].freightValue;
+        order.freightValue =
+          order.freightPaymentId == 1 ? 0 : sortedCarriers[0].freightValue;
         setFreightsData(sortedCarriers);
       }
     } catch (error) {
@@ -277,12 +275,12 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
   const getTaxes = async () => {
     try {
       if (!isEditing) return;
-      if (currentOrder.items.length == 0) return;
+      if (order.items.length == 0) return;
       const params: any[] = [];
-      currentOrder.items.map((item) => {
+      order.items.map((item) => {
         params.push({
-          siteCode: currentOrder.branchId,
-          customerCode: currentOrder.customerId,
+          siteCode: order.branchId,
+          customerCode: order.customerId,
           itemCode: item.productId,
           quantity: item.orderQuantity,
           negotiatedPrice: item.inputPrice,
@@ -320,15 +318,15 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
       }
     }
 
-    if (currentOrder.customer) {
+    if (order.customer) {
       if (
-        currentOrder.customer.minValuePayedFreight > 0 &&
-        currentOrder.freightPaymentId == 1 &&
-        orderTotal < currentOrder.customer.minValuePayedFreight
+        order.customer.minValuePayedFreight > 0 &&
+        order.freightPaymentId == 1 &&
+        orderTotal < order.customer.minValuePayedFreight
       ) {
       }
     }
-  }, [selectedPaymentCondition, currentOrder.grossTotalValue]);
+  }, [selectedPaymentCondition, order.grossTotalValue]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -336,7 +334,7 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Finalizar " : "Resumo de "}{" "}
-            {currentOrder.isBudget ? "Simulação" : "Pedido"}
+            {order.isBudget ? "Simulação" : "Pedido"}
           </DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
@@ -345,12 +343,10 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
             <div className="grid grid-cols-2 space-x-4">
               <div className="form-group">
                 <Label>
-                  {currentOrder.isBudget
-                    ? "Tipo da Simulação"
-                    : "Tipo do Pedido"}
+                  {order.isBudget ? "Tipo da Simulação" : "Tipo do Pedido"}
                 </Label>
                 <Select
-                  defaultValue={currentOrder.orderClassificationId.toString()}
+                  defaultValue={order.orderClassificationId.toString()}
                   disabled={!isEditing || isItemPermissionDisabled("317")}
                 >
                   <SelectTrigger className="w-full bg-white">
@@ -375,10 +371,10 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
               <div className="form-group">
                 <Label>Nº Whatsapp</Label>
                 <InputMask
-                  value={currentOrder.whatAppPhoneNumber}
+                  value={order.whatAppPhoneNumber}
                   onChange={(value) => {
-                    currentOrder.whatAppPhoneNumber = value ?? "";
-                    setCurrentOrder(currentOrder);
+                    order.whatAppPhoneNumber = value ?? "";
+                    setOrder(order);
                   }}
                   disabled={!isEditing}
                   mask="(00) 00000-0000"
@@ -391,7 +387,7 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
                 disabled={!isEditing || isItemPermissionDisabled("308")}
                 placeholder="Selecione o Endereço de Entrega"
                 staticItems={convertArrayToSearchComboItem(
-                  currentOrder.customer?.deliveryLocations ?? [],
+                  order.customer?.deliveryLocations ?? [],
                   "id",
                   (item) =>
                     `${item.id} - ${item.address} - ${item.city} - ${item.state}`
@@ -404,7 +400,7 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
               {!isEditing && (
                 <Input
                   readOnly
-                  value={`${currentOrder.paymentConditionId} - ${currentOrder.paymentCondition?.name}`}
+                  value={`${order.paymentConditionId} - ${order.paymentCondition?.name}`}
                 />
               )}
               {isEditing && (
@@ -413,7 +409,7 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
                   staticItems={paymentConditionsData}
                   defaultValue={getOrderPaymentCondition()}
                   onChange={function (value: string): void {
-                    const newOrder = { ...currentOrder };
+                    const newOrder = { ...order };
                     const pc = paymentConditionsData.find(
                       (f) => f.value == value
                     )?.extra as PaymentConditionModel;
@@ -422,7 +418,7 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
                       newOrder.additionalDiscount =
                         pc.additionalDiscountPercent;
 
-                    setCurrentOrder(newOrder);
+                    setOrder(newOrder);
                     setSelectedPaymentCondition(pc);
                   }}
                 />
@@ -432,7 +428,7 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
               <Label>Estabelecimento</Label>
               <div className="flex items-center gap-x-2">
                 <Select
-                  defaultValue={currentOrder.branchId}
+                  defaultValue={order.branchId}
                   disabled={!isEditing || isItemPermissionDisabled("309")}
                 >
                   <SelectTrigger className="w-full bg-white">
@@ -450,70 +446,70 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
                 </Label>
               </div>
             </div>
-            {(!isEditing || !isItemPermissionDisabled("312")) && (
-              <div className="grid grid-cols-2 gap-x-4 ">
-                <div className="form-group">
-                  <Label>Data Mínima de Faturamento</Label>
-                  <DatePicker disabled={!isEditing} />
-                </div>
-                <div className="form-group">
-                  <Label>Data Máxima de Faturamento</Label>
-                  <DatePicker disabled={!isEditing} />
-                </div>
+
+            <div className="grid grid-cols-2 gap-x-4 ">
+              <div className="form-group">
+                <Label>Data Mínima de Faturamento</Label>
+                <DatePicker
+                  disabled={!isEditing || isItemPermissionDisabled("312")}
+                />
               </div>
-            )}
+              <div className="form-group">
+                <Label>Data Máxima de Faturamento</Label>
+                <DatePicker
+                  disabled={!isEditing || isItemPermissionDisabled("312")}
+                />
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-x-4 space-y-2">
               <div className="form-group">
                 <Label>
                   <Checkbox
                     disabled={!isEditing}
-                    checked={currentOrder.isParcialBilling}
+                    checked={order.isParcialBilling}
                     onCheckedChange={(checked) => {
                       const newOrder = {
-                        ...currentOrder,
+                        ...order,
                         isParcialBilling: checked ? true : false,
                       };
-                      setCurrentOrder(newOrder);
+                      setOrder(newOrder);
                     }}
                   />
                   Fatura Parcial
                 </Label>
               </div>
               <div className="form-group">
-                {(!isEditing || !isItemPermissionDisabled("314")) && (
-                  <Label>
-                    <Checkbox
-                      disabled={!isEditing}
-                      checked={currentOrder.freightPaymentId == 3}
-                      onCheckedChange={(checked) => {
-                        const newOrder = {
-                          ...currentOrder,
-                          freightPaymentId: checked ? 3 : 1,
-                        };
-                        setCurrentOrder(newOrder);
-                      }}
-                    />
-                    Frete Pago
-                  </Label>
-                )}
+                <Label>
+                  <Checkbox
+                    disabled={!isEditing || isItemPermissionDisabled("314")}
+                    checked={order.freightPaymentId == 3}
+                    onCheckedChange={(checked) => {
+                      const newOrder = {
+                        ...order,
+                        freightPaymentId: checked ? 3 : 1,
+                      };
+                      setOrder(newOrder);
+                    }}
+                  />
+                  Frete Pago
+                </Label>
               </div>
               <div className="form-group">
-                {(!isEditing || !isItemPermissionDisabled("315")) && (
-                  <Label>
-                    <Checkbox
-                      disabled={!isEditing}
-                      checked={currentOrder.useCustomerCarrier}
-                      onCheckedChange={(checked) => {
-                        const newOrder = {
-                          ...currentOrder,
-                          useCustomerCarrier: checked ? true : false,
-                        };
-                        setCurrentOrder(newOrder);
-                      }}
-                    />
-                    Usa Transportadora do Cliente
-                  </Label>
-                )}
+                <Label>
+                  <Checkbox
+                    disabled={!isEditing || isItemPermissionDisabled("315")}
+                    checked={order.useCustomerCarrier}
+                    onCheckedChange={(checked) => {
+                      const newOrder = {
+                        ...order,
+                        useCustomerCarrier: checked ? true : false,
+                      };
+                      setOrder(newOrder);
+                    }}
+                  />
+                  Usa Transportadora do Cliente
+                </Label>
               </div>
               <div className="form-group">
                 <Label>
@@ -530,7 +526,7 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
                 <Label>Transportadora</Label>
                 <Input
                   readOnly
-                  value={`${currentOrder.carrier?.id} - ${currentOrder.carrier?.abbreviation}`}
+                  value={`${order.carrier?.id} - ${order.carrier?.abbreviation}`}
                 />
               </div>
             )}
@@ -559,8 +555,7 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
             <div className="bg-neutral-100 px-4 rounded-md py-2 space-y-2">
               <div className="flex justify-between pr-2">
                 <span>
-                  Sub-Total{" "}
-                  {currentOrder.isBudget ? "da Simulação" : "do Pedido"}:
+                  Sub-Total {order.isBudget ? "da Simulação" : "do Pedido"}:
                 </span>
                 <span>R$ {formatNumber(getSubTotal(), 2)}</span>
               </div>
@@ -576,9 +571,9 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
                     max={100}
                     min={0}
                     maxLength={6}
-                    value={currentOrder.discountPercentual ?? 0}
+                    value={order.discountPercentual ?? 0}
                     className={cn(
-                      "file:text-foreground text-right placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-8 w-[90px] min-w-0 rounded-md border bg-white px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+                      "file:text-foreground text-right placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-8 w-[90px] min-w-0 rounded-md border bg-white px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-100 disabled:border-none disabled:shadow-none",
                       "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
                       "read-only:bg-neutral-100",
                       "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
@@ -593,7 +588,7 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
                         className="hover:bg-neutral-200 bg-neutral-50 p-1 rounded border border-neutral-300"
                         onClick={() => {
                           handleChangeDiscountPercentual(
-                            currentOrder.customer?.discountPercent ?? 0
+                            order.customer?.discountPercent ?? 0
                           );
                         }}
                       >
@@ -611,7 +606,7 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
                     </Label>
                     <div className="flex gap-x-1.5 items-center">
                       <Input
-                        value={formatNumber(currentOrder.additionalDiscount, 2)}
+                        value={formatNumber(order.additionalDiscount, 2)}
                         readOnly
                         className="max-w-[120px] text-right text-orange-600 font-semibold"
                       />
@@ -620,12 +615,19 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
                 )}
               <div className="flex justify-between pr-2 text-sm">
                 <span>Frete:</span>
-                <span>R$ {formatNumber(currentOrder.freightValue, 2)}</span>
+                <span>R$ {formatNumber(order.freightValue, 2)}</span>
               </div>
+              <div className="flex justify-between pr-2 text-sm">
+                <div className="flex">
+                  <TaxesModal />
+                  Impostos:
+                </div>
 
+                <span>R$ {formatNumber(getOrderTotalTaxes(), 2)}</span>
+              </div>
               <div className="flex justify-between font-medium pr-2 bg-emerald-600 rounded-md py-2 px-2 text-white">
                 <span>
-                  {currentOrder.isBudget
+                  {order.isBudget
                     ? "Total da Simulação"
                     : "Total do Pedido"}{" "}
                 </span>
@@ -644,7 +646,7 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
           <Button variant="secondary" onClick={() => onClose()}>
             Voltar
           </Button>
-          {currentOrder.isBudget && isEditing && (
+          {order.isBudget && isEditing && (
             <Button
               disabled={isCalculatingFreight || isFreightError}
               variant="green"
@@ -657,7 +659,7 @@ export const FinishOrderModal = ({ isOpen, onClose, isEditing }: Props) => {
 
           {isEditing && (
             <Button onClick={handleSendOrder} disabled={isCalculatingFreight}>
-              {currentOrder.isBudget ? "Gerar" : "Enviar"} Pedido
+              {order.isBudget ? "Gerar" : "Enviar"} Pedido
             </Button>
           )}
         </DialogFooter>

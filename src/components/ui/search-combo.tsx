@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -19,15 +19,13 @@ import { Badge } from "./badge";
 import { api } from "@/lib/api";
 import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 
-// Interface para os itens do combobox
 export interface SearchComboItem {
   value: string;
   label: string;
-  keyworks?: string[];
+  keywords?: string[]; // Fix: typo "keyworks"
   extra?: any;
 }
 
-// Props do componente
 interface SearchComboProps {
   staticItems?: SearchComboItem[];
   apiEndpoint?: string;
@@ -36,7 +34,7 @@ interface SearchComboProps {
   searchPlaceholder?: string;
   noResultsText?: string;
   disabled?: boolean;
-  defaultValue?: SearchComboItem[];
+  defaultValue?: SearchComboItem[] | string | string[] | SearchComboItem;
   onChange?: (value: string) => void;
   className?: string;
   showValueInSelectedItem?: boolean;
@@ -50,9 +48,9 @@ interface SearchComboProps {
 }
 
 export const SearchCombo: React.FC<SearchComboProps> = ({
-  staticItems,
+  staticItems = [],
   apiEndpoint,
-  disabled,
+  disabled = false,
   queryStringName = "search",
   placeholder = "Selecione um item...",
   searchPlaceholder = "Buscar item...",
@@ -61,205 +59,262 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
   defaultValue,
   onChange,
   className,
-  showValueInSelectedItem,
-  showSelectButtons,
+  showValueInSelectedItem = false,
+  showSelectButtons = false,
   onSelectOption,
   valueProp,
   labelProp,
-  deSelectOnClick,
+  deSelectOnClick = false,
 }) => {
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState<SearchComboItem[]>(staticItems || []);
+  const [items, setItems] = useState<SearchComboItem[]>(staticItems);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedItems, setSelectedItems] = useState<SearchComboItem[]>(
-    defaultValue ?? []
+  const [selectedItems, setSelectedItems] = useState<SearchComboItem[]>([]);
+
+  // Fetch items from API com debounce implícito
+  const fetchItems = useCallback(
+    async (query: string = "") => {
+      if (!apiEndpoint) return;
+
+      if (!valueProp || !labelProp) {
+        console.error("valueProp e labelProp são obrigatórios ao usar API");
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const separator = apiEndpoint.includes("?") ? "&" : "?";
+        const url = query
+          ? `${apiEndpoint}${separator}${queryStringName}=${encodeURIComponent(query)}`
+          : apiEndpoint;
+
+        const { data } = await api(url);
+
+        const convertedData = convertArrayToSearchComboItem(
+          data,
+          valueProp,
+          labelProp,
+          true
+        );
+
+        setItems(convertedData);
+      } catch (error) {
+        console.error("Erro ao buscar itens:", error);
+        setItems([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [apiEndpoint, queryStringName, valueProp, labelProp]
   );
 
-  // Função para buscar itens da API
-  const fetchItems = async (query: string = "") => {
-    if (!apiEndpoint) return;
-
-    if (!valueProp || !labelProp) {
-      throw new Error(
-        "valueProp e labelProp devem ser especificados quando usar api"
-      );
-    }
-
-    setLoading(true);
-    try {
-      const url = query
-        ? `${apiEndpoint}${
-            apiEndpoint.includes("?") ? "&" : "?"
-          }${queryStringName}=${encodeURIComponent(query)}`
-        : apiEndpoint;
-
-      const { data } = await api(url);
-
-      const convertedData = convertArrayToSearchComboItem(
-        data,
-        valueProp ?? "",
-        labelProp ?? "",
-        true
-      );
-
-      setItems(convertedData);
-    } catch (error) {
-      console.error("Erro ao buscar itens:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Efeito para carregar itens iniciais da API
+  // Load initial items from API
   useEffect(() => {
     if (apiEndpoint) {
       fetchItems();
     }
-  }, [apiEndpoint]);
+  }, [apiEndpoint, fetchItems]);
 
+  // Update items when staticItems change
   useEffect(() => {
-    setItems(staticItems ?? []);
-  }, [staticItems]);
+    if (!apiEndpoint) {
+      setItems(staticItems);
+    }
+  }, [staticItems, apiEndpoint]);
 
-  useEffect(() => {
-    if (!defaultValue) {
-      setSelectedItems([]);
-    } else {
-      if (Array.isArray(defaultValue)) {
-        setSelectedItems(defaultValue);
-      } else {
-        if (items) {
-          const item = items.find((f) => f.value == defaultValue);
-          console.log("SELITEM", item);
-          if (item) setSelectedItems([item]);
+  // Normalize defaultValue to array format
+  const normalizeDefaultValue = useCallback(
+    (value: typeof defaultValue): SearchComboItem[] => {
+      if (!value) return [];
+
+      // Se já é array de SearchComboItem
+      if (Array.isArray(value)) {
+        if (value.length === 0) return [];
+
+        // Se é array de strings
+        if (typeof value[0] === "string") {
+          return items.filter((item) =>
+            (value as string[]).includes(item.value)
+          );
         }
+
+        // Se é array de SearchComboItem
+        return value as SearchComboItem[];
       }
-    }
-  }, [defaultValue]);
 
-  // Efeito para atualizar o item selecionado quando o valor mudar externamente
-  // useEffect(() => {
-  //   // if (value) {
-  //   //   const found = items.filter((item) => item.value === value);
-  //   //   setSelectedItems(found);
-  //   // } else {
-  //   //   setSelectedItems(undefined);
-  //   // }
-  // }, [value, items]);
+      // Se é um único SearchComboItem
+      if (typeof value === "object" && "value" in value) {
+        return [value as SearchComboItem];
+      }
 
-  // Manipulador de pesquisa
-  const handleSearch = (search: string) => {
-    setSearchTerm(search);
-    if (apiEndpoint) {
-      fetchItems(search);
-    }
-  };
+      // Se é string única
+      if (typeof value === "string") {
+        const item = items.find((item) => item.value === value);
+        return item ? [item] : [];
+      }
 
-  // Filtrar itens localmente caso não use API
-  const filteredItems = apiEndpoint
-    ? items
-    : items.filter(
-        (item) =>
-          item.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.value.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      return [];
+    },
+    [items]
+  );
 
-  // Manipulador de seleção de item
-  const handleSelect = (currentValue: string) => {
-    const itemSelected = items.find((item) => item.value === currentValue);
-    if (itemSelected) {
-      const hasSelected = isItemSelected(currentValue);
-      let newItems = [];
+  // Handle defaultValue changes
+  useEffect(() => {
+    const normalized = normalizeDefaultValue(defaultValue);
+    setSelectedItems(normalized);
+  }, [defaultValue, normalizeDefaultValue]);
+
+  // Handle search with API or local filtering
+  const handleSearch = useCallback(
+    (search: string) => {
+      setSearchTerm(search);
+      if (apiEndpoint) {
+        fetchItems(search);
+      }
+    },
+    [apiEndpoint, fetchItems]
+  );
+
+  // Filter items locally if not using API
+  const filteredItems = useMemo(() => {
+    if (apiEndpoint) return items;
+
+    const lowerSearch = searchTerm.toLowerCase();
+    return items.filter(
+      (item) =>
+        item.label.toLowerCase().includes(lowerSearch) ||
+        item.value.toLowerCase().includes(lowerSearch) ||
+        item.keywords?.some((keyword) =>
+          keyword.toLowerCase().includes(lowerSearch)
+        )
+    );
+  }, [apiEndpoint, items, searchTerm]);
+
+  // Check if item is selected
+  const isItemSelected = useCallback(
+    (value: string): boolean => {
+      return selectedItems.some((item) => item.value === value);
+    },
+    [selectedItems]
+  );
+
+  // Handle item selection
+  const handleSelect = useCallback(
+    (currentValue: string) => {
+      const itemSelected = items.find((item) => item.value === currentValue);
+      if (!itemSelected) return;
+
+      let newItems: SearchComboItem[] = [];
+
       if (!multipleSelect) {
-        if (
-          deSelectOnClick &&
-          selectedItems.findIndex((f) => f.value == currentValue) > -1
-        ) {
-          newItems = selectedItems.filter((f) => f.value != currentValue);
-          currentValue = "";
-        } else newItems = [itemSelected];
+        // Single select mode
+        const isAlreadySelected = selectedItems.some(
+          (item) => item.value === currentValue
+        );
+
+        if (deSelectOnClick && isAlreadySelected) {
+          newItems = [];
+          onChange?.("");
+        } else {
+          newItems = [itemSelected];
+          onChange?.(currentValue);
+        }
+        setOpen(false);
       } else {
-        if (hasSelected && multipleSelect) {
-          //deselect
-          newItems = selectedItems.filter((f) => f.value != currentValue);
+        // Multiple select mode
+        const isAlreadySelected = selectedItems.some(
+          (item) => item.value === currentValue
+        );
+
+        if (isAlreadySelected) {
+          newItems = selectedItems.filter(
+            (item) => item.value !== currentValue
+          );
         } else {
           newItems = [...selectedItems, itemSelected];
         }
+
+        // Para multiple select, onChange passa o valor do último item selecionado
+        onChange?.(currentValue);
       }
 
       setSelectedItems(newItems);
-      onChange?.(currentValue);
       onSelectOption?.(newItems);
-      if (!multipleSelect) setOpen(false);
-    }
-  };
+    },
+    [
+      items,
+      selectedItems,
+      multipleSelect,
+      deSelectOnClick,
+      onChange,
+      onSelectOption,
+    ]
+  );
 
-  function isItemSelected(currentValue: string) {
-    try {
-      if (!selectedItems) return false;
-      if (Array.isArray(selectedItems)) {
-        return selectedItems.findIndex((f) => f.value == currentValue) > -1;
-      }
-      return selectedItems == currentValue;
-    } catch (error) {
-      console.log(error, selectedItems);
-    }
-  }
+  // Render selected items label
+  const renderSelectedItem = useMemo(() => {
+    if (selectedItems.length === 0) return placeholder;
 
-  const renderSelectedItem = React.useMemo(() => {
     if (multipleSelect) {
-      if (selectedItems.length === 0) return placeholder;
-      if (selectedItems.length > 1)
+      if (selectedItems.length > 1) {
         return (
-          <div className="">
-            Vários{" "}
-            <Badge className="size-4 text-tiny text-white">
-              {selectedItems.length}
-            </Badge>
+          <div className="flex items-center gap-2">
+            <span>Vários</span>
+            <Badge className="h-5 px-2 text-xs">{selectedItems.length}</Badge>
           </div>
         );
+      }
+
+      const item = selectedItems[0];
       return showValueInSelectedItem
-        ? `${selectedItems[0].value} - ${selectedItems[0].label}`
-        : selectedItems[0].label;
+        ? `${item.value} - ${item.label}`
+        : item.label;
     }
-    if (selectedItems.length > 0) return selectedItems[0].label;
-    return placeholder;
-  }, [multipleSelect, selectedItems, placeholder, showValueInSelectedItem]);
 
-  function handleSelectAll() {
-    setSelectedItems(items);
-    onSelectOption?.(items);
-  }
+    const item = selectedItems[0];
+    return showValueInSelectedItem
+      ? `${item.value} - ${item.label}`
+      : item.label;
+  }, [selectedItems, placeholder, multipleSelect, showValueInSelectedItem]);
 
-  function handleClearSelection() {
+  // Select all items
+  const handleSelectAll = useCallback(() => {
+    setSelectedItems(filteredItems);
+    onSelectOption?.(filteredItems);
+  }, [filteredItems, onSelectOption]);
+
+  // Clear selection
+  const handleClearSelection = useCallback(() => {
     setSelectedItems([]);
     onSelectOption?.([]);
-  }
+    onChange?.("");
+  }, [onSelectOption, onChange]);
 
   return (
     <Popover open={open} onOpenChange={setOpen} modal>
-      <PopoverTrigger asChild className="w-full">
+      <PopoverTrigger asChild>
         <Button
-          useAnimation={false}
           variant="outline"
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "w-full justify-between disabled:bg-neutral-200 disabled:cursor-not-allowed disabled:border-neutral-300 overflow-hidden",
+            "w-full justify-between",
+            "disabled:bg-neutral-200 disabled:cursor-not-allowed disabled:border-neutral-300",
+            "overflow-hidden",
             className
           )}
         >
-          {renderSelectedItem}
+          <span className="truncate">{renderSelectedItem}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="!w-[var(--radix-popover-trigger-width)] p-0"
-        portal={false}
+        className="w-[var(--radix-popover-trigger-width)] p-0"
+        align="start"
       >
-        <Command>
+        <Command shouldFilter={false} loop={false}>
           <CommandInput
             placeholder={searchPlaceholder}
             onValueChange={handleSearch}
@@ -272,63 +327,73 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
               <>
                 <CommandEmpty>{noResultsText}</CommandEmpty>
                 <CommandGroup>
-                  {filteredItems.map((item) => (
-                    <CommandItem
-                      key={item.value}
-                      value={item.value}
-                      onSelect={handleSelect}
-                      keywords={item.keyworks}
-                      className={cn(
-                        "cursor-pointer hover:!bg-blue-600 hover:!text-white data-[selected=true]:bg-blue-600 data-[selected=true]:text-white",
-                        isItemSelected(item.value) && "bg-accent1"
-                      )}
-                    >
-                      <div
+                  {filteredItems.map((item) => {
+                    const selected = isItemSelected(item.value);
+                    return (
+                      <CommandItem
+                        key={item.value}
+                        value={item.value}
+                        onSelect={handleSelect}
+                        keywords={item.keywords}
                         className={cn(
-                          "rounded size-4 flex items-center justify-center",
-                          multipleSelect && "border",
-                          isItemSelected(item.value) &&
-                            multipleSelect &&
-                            "bg-blue-600"
+                          "cursor-pointer",
+                          "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                          selected && "!bg-blue-500 text-white"
                         )}
                       >
-                        <Check
+                        <div
                           className={cn(
-                            "size-3",
-                            multipleSelect && " text-white",
-                            isItemSelected(item.value)
-                              ? "opacity-100"
-                              : "opacity-0"
+                            "mr-2 flex h-4 w-4 items-center justify-center rounded",
+                            multipleSelect && "border border-primary",
+                            selected &&
+                              multipleSelect &&
+                              "!bg-blue-600 !border-blue-600"
                           )}
-                        />
-                      </div>
-                      {`${showValueInSelectedItem ? `${item.value.toString()} - ` : ""}${item.label}`}
-                    </CommandItem>
-                  ))}
+                        >
+                          <Check
+                            className={cn(
+                              "h-3 w-3",
+                              multipleSelect && "text-white",
+                              selected
+                                ? "opacity-100 !stroke-white"
+                                : "opacity-0"
+                            )}
+                          />
+                        </div>
+                        <span className="truncate">
+                          {showValueInSelectedItem
+                            ? `${item.value} - ${item.label}`
+                            : item.label}
+                        </span>
+                      </CommandItem>
+                    );
+                  })}
                 </CommandGroup>
               </>
             )}
           </CommandList>
-          {showSelectButtons && (
-            <div className="border-t py-2">
-              <div className="flex items-center justify-center gap-x-2">
+          {showSelectButtons && multipleSelect && (
+            <div className="border-t p-2">
+              <div className="flex items-center justify-center gap-2">
                 <Button
                   type="button"
                   size="sm"
-                  variant="green"
-                  className="w-[80px] text-xs"
-                  onClick={() => handleSelectAll()}
+                  variant="default"
+                  className="flex-1 text-xs"
+                  onClick={handleSelectAll}
+                  disabled={loading}
                 >
-                  Marca
+                  Selecionar Todos
                 </Button>
                 <Button
                   type="button"
                   size="sm"
                   variant="secondary"
-                  className="w-[80px] text-xs"
-                  onClick={() => handleClearSelection()}
+                  className="flex-1 text-xs"
+                  onClick={handleClearSelection}
+                  disabled={loading}
                 >
-                  Desmarca
+                  Limpar
                 </Button>
               </div>
             </div>

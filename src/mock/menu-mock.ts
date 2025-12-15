@@ -120,6 +120,12 @@ export const MENU_MOCK: MenuModel[] = [
         icon: "DollarSignIcon",
       },
       {
+        id: "78",
+        title: "Tabelas de Preço",
+        url: "/registrations/price-tables",
+        icon: "TableIcon",
+      },
+      {
         id: "75",
         title: "Grupos de Venda",
         url: "/registrations/sales-group",
@@ -134,19 +140,19 @@ export const MENU_MOCK: MenuModel[] = [
     icon: "SmartphoneIcon",
     children: [
       {
-        id: "71",
+        id: "81",
         title: "Notificações",
         url: "/mobile/notifications",
         icon: "BellIcon",
       },
       {
-        id: "72",
+        id: "82",
         title: "Comunicados",
         url: "/mobile/communications",
         icon: "MessageCircleIcon",
       },
       {
-        id: "73",
+        id: "83",
         title: "Links Úteis",
         url: "/mobile/links",
         icon: "LinkIcon",
