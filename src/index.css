@@ -184,3 +184,11 @@
 .rdp-month_caption > option {
   text-transform: capitalize !important;
 }
+
+.tbl-comissao > table {
+  font-size: 10px !important;
+}
+
+.tbl-comissao > tbody > tr > td {
+  font-size: 10px !important;
+}

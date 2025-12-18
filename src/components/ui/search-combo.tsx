@@ -15,14 +15,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Badge } from "./badge";
+import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
 import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 
 export interface SearchComboItem {
   value: string;
   label: string;
-  keywords?: string[]; // Fix: typo "keyworks"
+  keywords?: string[];
   extra?: any;
 }
 
@@ -36,15 +36,14 @@ interface SearchComboProps {
   disabled?: boolean;
   defaultValue?: SearchComboItem[] | string | string[] | SearchComboItem;
   onChange?: (value: string) => void;
+  onSelectOption?: (value: SearchComboItem[]) => void;
   className?: string;
   showValueInSelectedItem?: boolean;
   multipleSelect?: boolean;
-  onSelectOption?: (value: SearchComboItem[]) => void;
   showSelectButtons?: boolean;
   valueProp?: string;
   labelProp?: string;
   deSelectOnClick?: boolean;
-  selectAllAsDefaultValue?: boolean;
 }
 
 export const SearchCombo: React.FC<SearchComboProps> = ({
@@ -58,10 +57,10 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
   multipleSelect = false,
   defaultValue,
   onChange,
+  onSelectOption,
   className,
   showValueInSelectedItem = false,
   showSelectButtons = false,
-  onSelectOption,
   valueProp,
   labelProp,
   deSelectOnClick = false,
@@ -72,7 +71,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedItems, setSelectedItems] = useState<SearchComboItem[]>([]);
 
-  // Fetch items from API com debounce implícito
+  // Fetch items from API with debounce
   const fetchItems = useCallback(
     async (query: string = "") => {
       if (!apiEndpoint) return;
@@ -118,7 +117,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
 
   // Update items when staticItems change
   useEffect(() => {
-    if (!apiEndpoint) {
+    if (!apiEndpoint && staticItems.length > 0) {
       setItems(staticItems);
     }
   }, [staticItems, apiEndpoint]);
@@ -126,7 +125,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
   // Normalize defaultValue to array format
   const normalizeDefaultValue = useCallback(
     (value: typeof defaultValue): SearchComboItem[] => {
-      if (!value) return [];
+      if (!value || items.length === 0) return [];
 
       // Se já é array de SearchComboItem
       if (Array.isArray(value)) {
@@ -161,8 +160,10 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
 
   // Handle defaultValue changes
   useEffect(() => {
-    const normalized = normalizeDefaultValue(defaultValue);
-    setSelectedItems(normalized);
+    if (defaultValue !== undefined) {
+      const normalized = normalizeDefaultValue(defaultValue);
+      setSelectedItems(normalized);
+    }
   }, [defaultValue, normalizeDefaultValue]);
 
   // Handle search with API or local filtering
@@ -178,7 +179,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
 
   // Filter items locally if not using API
   const filteredItems = useMemo(() => {
-    if (apiEndpoint) return items;
+    if (apiEndpoint || !searchTerm) return items;
 
     const lowerSearch = searchTerm.toLowerCase();
     return items.filter(
@@ -235,7 +236,6 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
           newItems = [...selectedItems, itemSelected];
         }
 
-        // Para multiple select, onChange passa o valor do último item selecionado
         onChange?.(currentValue);
       }
 
@@ -282,7 +282,12 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
   const handleSelectAll = useCallback(() => {
     setSelectedItems(filteredItems);
     onSelectOption?.(filteredItems);
-  }, [filteredItems, onSelectOption]);
+
+    // Notificar onChange com todos os valores
+    if (filteredItems.length > 0) {
+      onChange?.(filteredItems.map((item) => item.value).join(","));
+    }
+  }, [filteredItems, onSelectOption, onChange]);
 
   // Clear selection
   const handleClearSelection = useCallback(() => {
@@ -292,7 +297,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
   }, [onSelectOption, onChange]);
 
   return (
-    <Popover open={open} onOpenChange={setOpen} modal>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -314,7 +319,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
         className="w-[var(--radix-popover-trigger-width)] p-0"
         align="start"
       >
-        <Command shouldFilter={false} loop={false}>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder={searchPlaceholder}
             onValueChange={handleSearch}
@@ -334,28 +339,24 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
                         key={item.value}
                         value={item.value}
                         onSelect={handleSelect}
-                        keywords={item.keywords}
                         className={cn(
                           "cursor-pointer",
-                          "aria-selected:bg-accent aria-selected:text-accent-foreground",
-                          selected && "!bg-blue-500 text-white"
+                          selected &&
+                            "bg-white  hover:bg-blue-600 hover:!text-white"
                         )}
                       >
                         <div
                           className={cn(
                             "mr-2 flex h-4 w-4 items-center justify-center rounded",
                             multipleSelect && "border border-primary",
-                            selected &&
-                              multipleSelect &&
-                              "!bg-blue-600 !border-blue-600"
+                            selected && multipleSelect && "bg-black"
                           )}
                         >
                           <Check
                             className={cn(
                               "h-3 w-3",
-                              multipleSelect && "text-white",
                               selected
-                                ? "opacity-100 !stroke-white"
+                                ? "opacity-100 stroke-white"
                                 : "opacity-0"
                             )}
                           />
@@ -372,7 +373,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
               </>
             )}
           </CommandList>
-          {showSelectButtons && multipleSelect && (
+          {showSelectButtons && multipleSelect && filteredItems.length > 0 && (
             <div className="border-t p-2">
               <div className="flex items-center justify-center gap-2">
                 <Button
@@ -381,7 +382,9 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
                   variant="default"
                   className="flex-1 text-xs"
                   onClick={handleSelectAll}
-                  disabled={loading}
+                  disabled={
+                    loading || selectedItems.length === filteredItems.length
+                  }
                 >
                   Selecionar Todos
                 </Button>
@@ -391,7 +394,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
                   variant="secondary"
                   className="flex-1 text-xs"
                   onClick={handleClearSelection}
-                  disabled={loading}
+                  disabled={loading || selectedItems.length === 0}
                 >
                   Limpar
                 </Button>

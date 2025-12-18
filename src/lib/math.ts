@@ -82,6 +82,7 @@ export function exponentialSmoothingForecast(
   values: number[],
   alpha: number = 0.3
 ): number[] {
+  if (!values || !values.length) return [];
   const result: number[] = [];
 
   // Primeira previsão é o primeiro valor real

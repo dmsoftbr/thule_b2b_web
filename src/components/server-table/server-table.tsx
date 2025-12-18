@@ -195,13 +195,6 @@ export const ServerTable = <T,>({
           "Sem Categoria";
         const groupKey = String(groupValue);
 
-        // console.log("Verificando grupo possível:", {
-        //   possibleGroup,
-        //   groupValue,
-        //   groupKey,
-        //   jaExiste: !!grouped[groupKey],
-        // });
-
         // Se o grupo não existe nos dados agrupados, criar um array vazio
         if (!grouped[groupKey]) {
           grouped[groupKey] = [];
@@ -404,7 +397,7 @@ export const ServerTable = <T,>({
 
   useEffect(() => {
     handleGetData();
-  }, [currentPage, pageSize, sortAsc, sortField, searchField]);
+  }, [items, currentPage, pageSize, sortAsc, sortField, searchField]);
 
   useEffect(() => {
     setIsLoading(isPending);

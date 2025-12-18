@@ -68,6 +68,12 @@ export const MENU_MOCK: MenuModel[] = [
         url: "/reports/customers-list",
         icon: "CircleIcon",
       },
+      {
+        id: "52",
+        title: "Comissão",
+        url: "/reports/comission",
+        icon: "CircleIcon",
+      },
     ],
   },
   {

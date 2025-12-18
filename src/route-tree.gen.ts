@@ -24,6 +24,7 @@ import { Route as AppStockProductStockIndexRouteImport } from './pages/_app/stoc
 import { Route as AppStockEsli011IndexRouteImport } from './pages/_app/stock/esli011/index'
 import { Route as AppReportsDashboardProductGroupsIndexRouteImport } from './pages/_app/reports/dashboard-product-groups/index'
 import { Route as AppReportsCustomersListIndexRouteImport } from './pages/_app/reports/customers-list/index'
+import { Route as AppReportsComissaoIndexRouteImport } from './pages/_app/reports/comissao/index'
 import { Route as AppRegistrationsSalesGroupIndexRouteImport } from './pages/_app/registrations/sales-group/index'
 import { Route as AppRegistrationsRepresentativeGoalsIndexRouteImport } from './pages/_app/registrations/representative-goals/index'
 import { Route as AppRegistrationsProductsIndexRouteImport } from './pages/_app/registrations/products/index'
@@ -140,6 +141,11 @@ const AppReportsCustomersListIndexRoute =
     path: '/reports/customers-list/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
+const AppReportsComissaoIndexRoute = AppReportsComissaoIndexRouteImport.update({
+  id: '/reports/comissao/',
+  path: '/reports/comissao/',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
 const AppRegistrationsSalesGroupIndexRoute =
   AppRegistrationsSalesGroupIndexRouteImport.update({
     id: '/registrations/sales-group/',
@@ -386,6 +392,7 @@ export interface FileRoutesByFullPath {
   '/registrations/products': typeof AppRegistrationsProductsIndexRoute
   '/registrations/representative-goals': typeof AppRegistrationsRepresentativeGoalsIndexRoute
   '/registrations/sales-group': typeof AppRegistrationsSalesGroupIndexRoute
+  '/reports/comissao': typeof AppReportsComissaoIndexRoute
   '/reports/customers-list': typeof AppReportsCustomersListIndexRoute
   '/reports/dashboard-product-groups': typeof AppReportsDashboardProductGroupsIndexRoute
   '/stock/esli011': typeof AppStockEsli011IndexRoute
@@ -439,6 +446,7 @@ export interface FileRoutesByTo {
   '/registrations/products': typeof AppRegistrationsProductsIndexRoute
   '/registrations/representative-goals': typeof AppRegistrationsRepresentativeGoalsIndexRoute
   '/registrations/sales-group': typeof AppRegistrationsSalesGroupIndexRoute
+  '/reports/comissao': typeof AppReportsComissaoIndexRoute
   '/reports/customers-list': typeof AppReportsCustomersListIndexRoute
   '/reports/dashboard-product-groups': typeof AppReportsDashboardProductGroupsIndexRoute
   '/stock/esli011': typeof AppStockEsli011IndexRoute
@@ -494,6 +502,7 @@ export interface FileRoutesById {
   '/_app/registrations/products/': typeof AppRegistrationsProductsIndexRoute
   '/_app/registrations/representative-goals/': typeof AppRegistrationsRepresentativeGoalsIndexRoute
   '/_app/registrations/sales-group/': typeof AppRegistrationsSalesGroupIndexRoute
+  '/_app/reports/comissao/': typeof AppReportsComissaoIndexRoute
   '/_app/reports/customers-list/': typeof AppReportsCustomersListIndexRoute
   '/_app/reports/dashboard-product-groups/': typeof AppReportsDashboardProductGroupsIndexRoute
   '/_app/stock/esli011/': typeof AppStockEsli011IndexRoute
@@ -549,6 +558,7 @@ export interface FileRouteTypes {
     | '/registrations/products'
     | '/registrations/representative-goals'
     | '/registrations/sales-group'
+    | '/reports/comissao'
     | '/reports/customers-list'
     | '/reports/dashboard-product-groups'
     | '/stock/esli011'
@@ -602,6 +612,7 @@ export interface FileRouteTypes {
     | '/registrations/products'
     | '/registrations/representative-goals'
     | '/registrations/sales-group'
+    | '/reports/comissao'
     | '/reports/customers-list'
     | '/reports/dashboard-product-groups'
     | '/stock/esli011'
@@ -656,6 +667,7 @@ export interface FileRouteTypes {
     | '/_app/registrations/products/'
     | '/_app/registrations/representative-goals/'
     | '/_app/registrations/sales-group/'
+    | '/_app/reports/comissao/'
     | '/_app/reports/customers-list/'
     | '/_app/reports/dashboard-product-groups/'
     | '/_app/stock/esli011/'
@@ -790,6 +802,13 @@ declare module '@tanstack/react-router' {
       path: '/reports/customers-list'
       fullPath: '/reports/customers-list'
       preLoaderRoute: typeof AppReportsCustomersListIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/reports/comissao/': {
+      id: '/_app/reports/comissao/'
+      path: '/reports/comissao'
+      fullPath: '/reports/comissao'
+      preLoaderRoute: typeof AppReportsComissaoIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/registrations/sales-group/': {
@@ -1083,6 +1102,7 @@ interface AppLayoutRouteChildren {
   AppRegistrationsProductsIndexRoute: typeof AppRegistrationsProductsIndexRoute
   AppRegistrationsRepresentativeGoalsIndexRoute: typeof AppRegistrationsRepresentativeGoalsIndexRoute
   AppRegistrationsSalesGroupIndexRoute: typeof AppRegistrationsSalesGroupIndexRoute
+  AppReportsComissaoIndexRoute: typeof AppReportsComissaoIndexRoute
   AppReportsCustomersListIndexRoute: typeof AppReportsCustomersListIndexRoute
   AppReportsDashboardProductGroupsIndexRoute: typeof AppReportsDashboardProductGroupsIndexRoute
   AppStockEsli011IndexRoute: typeof AppStockEsli011IndexRoute
@@ -1142,6 +1162,7 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppRegistrationsRepresentativeGoalsIndexRoute:
     AppRegistrationsRepresentativeGoalsIndexRoute,
   AppRegistrationsSalesGroupIndexRoute: AppRegistrationsSalesGroupIndexRoute,
+  AppReportsComissaoIndexRoute: AppReportsComissaoIndexRoute,
   AppReportsCustomersListIndexRoute: AppReportsCustomersListIndexRoute,
   AppReportsDashboardProductGroupsIndexRoute:
     AppReportsDashboardProductGroupsIndexRoute,

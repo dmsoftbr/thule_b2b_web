@@ -11,38 +11,47 @@ import {
 } from "recharts";
 
 import { exponentialSmoothingForecast } from "@/lib/math";
+import { useEffect, useState } from "react";
+import { formatNumber } from "@/lib/number-utils";
 
 export const description = "Gráfico de Vendas";
 
-export function BillingChart() {
-  const salesData = [
-    { month: "Jan", real: 143, goal: 140 },
-    { month: "Fev", real: 240, goal: 200 },
-    { month: "Mar", real: 201, goal: 210 },
-    { month: "Abr", real: 102, goal: 180 },
-    { month: "Mai", real: 165, goal: 180 },
-    { month: "Jun", real: 178, goal: 180 },
-    { month: "Jul", real: 183, goal: 180 },
-    { month: "Ago", real: 150, goal: 180 },
-    { month: "Set", real: 200, goal: 180 },
-    { month: "Out", real: 0, goal: 180 },
-    { month: "Nov", real: 0, goal: 200 },
-    { month: "Dez", real: 0, goal: 200 },
-  ];
+export type Sales = {
+  month: string;
+  real: number;
+  goal: number;
+};
 
-  const salesDataWithForescastLinear = exponentialSmoothingForecast(
-    salesData.map((item) => item.real),
-    0.1
-  );
+interface Props {
+  salesData: Sales[];
+}
 
-  const chartData = salesData.map((item, index) => {
-    return {
-      month: item.month,
-      real: item.real,
-      predicted: salesDataWithForescastLinear[index],
-      goal: item.goal,
-    };
-  });
+type ChartDataType = {
+  real: number;
+  goal: number;
+  predicted: number;
+  month: string;
+};
+
+export function BillingChart({ salesData }: Props) {
+  const [chartData, setChartData] = useState<ChartDataType[]>([]);
+
+  useEffect(() => {
+    const salesDataWithForescastLinear = exponentialSmoothingForecast(
+      salesData.map((item) => item.real),
+      0.1
+    );
+
+    const chartData = salesData.map((item, index) => {
+      return {
+        month: item.month,
+        real: item.real,
+        predicted: salesDataWithForescastLinear[index],
+        goal: item.goal,
+      };
+    });
+    setChartData(chartData);
+  }, [salesData]);
 
   return (
     <div className="flex flex-col flex-wrap gap-4">
@@ -62,7 +71,11 @@ export function BillingChart() {
                 axisLine={false}
               />
               <YAxis />
-              <Tooltip />
+              <Tooltip
+                formatter={(value) =>
+                  `${formatNumber(Number(value), 0)}${Number(value) > 1000 ? "M" : "K"}`
+                }
+              />
               <Legend />
 
               {/* Barras para valores reais */}

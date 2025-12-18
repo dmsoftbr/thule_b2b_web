@@ -1,0 +1,26 @@
+export type ComissaoReportModel = {
+  codEstabel: string;
+  serie: string;
+  titulo: string;
+  parcela: string;
+  nomeAbrev: string;
+  codGrCli: number;
+  descrGrCli: string;
+  nrPedCli: string;
+  descrCondPag: string;
+  dtEmissao: Date;
+  dtVencto: Date;
+  dtLiquid: Date;
+  vlLiqParcela: number;
+  vlST: number;
+  vlAbatimento: number;
+  vlDesconto: number;
+  percDescPedido: number;
+  baseCalculo: number;
+  percComissao: number;
+  vlComissao: number;
+  dbCr: string;
+  especie: string;
+  moeda: string;
+  realizado: string;
+};
