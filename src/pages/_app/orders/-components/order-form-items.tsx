@@ -179,6 +179,9 @@ export const OrderFormItems = () => {
                 <div className="text-xs font-semibold bg-neutral-700 text-white rounded px-1.5 py-0.5 flex items-center justify-center ml-2">
                   {`(${order.items.length}) ${order.items.length > 1 ? "itens" : "item"}`}
                 </div>
+                <div className="text-xs font-semibold bg-neutral-500 text-white rounded px-1.5 py-0.5 flex items-center justify-center ml-2">
+                  {`(${order.items.reduce((acc, item) => (acc += item.orderQuantity), 0)}) qtde total`}
+                </div>
               </div>
               <div className="text-green-600 font-semibold">
                 Desconto: R${" "}

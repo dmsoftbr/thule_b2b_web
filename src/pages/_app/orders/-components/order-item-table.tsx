@@ -42,7 +42,12 @@ export const OrderItemTable = () => {
           <TableHead className="w-[120px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
             Prev. Entrega
           </TableHead>
-
+          <TableHead className="w-[120px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
+            Markup
+          </TableHead>
+          <TableHead className="w-[120px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
+            Margem
+          </TableHead>
           <TableHead className="w-[100px] border flex items-center text-xs text-black">
             Ações
           </TableHead>
@@ -75,8 +80,8 @@ export const OrderItemTable = () => {
           >
             Total
           </TableHead>
-          <TableHead className=" border-[0.5px] w-[160px]   flex items-center justify-end">
-            {order.items?.length}
+          <TableHead className=" border-[0.5px] w-[160px]  flex items-center justify-end">
+            {order.items?.reduce((acc, item) => (acc += item.orderQuantity), 0)}
           </TableHead>
           <TableHead
             colSpan={2}
@@ -85,7 +90,7 @@ export const OrderItemTable = () => {
           <TableHead className="w-[120px] border-[0.5px] text-right  flex items-center justify-end">
             {formatNumber(getTotalOrderWithDiscount(), 2)}
           </TableHead>
-          <TableHead className="w-[220px] border-r"></TableHead>
+          <TableHead className="w-[460px] border-r"></TableHead>
           <TableHead className="w-[17px]"></TableHead>
         </TableRow>
       </TableFooter>

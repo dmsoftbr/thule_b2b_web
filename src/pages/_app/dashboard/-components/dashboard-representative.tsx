@@ -309,7 +309,7 @@ export const DashboardRepresentative = ({}: Props) => {
                   <p className="text-muted-foreground font-semibold">
                     Top Grupos de Clientes
                   </p>
-                  <TopCustomers />
+                  <TopCustomers data={families} />
                 </div>
 
                 <div className="rounded-lg shadow bg-white flex-1 p-6 border">

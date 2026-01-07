@@ -101,6 +101,8 @@ export const OrderItemTableRow = ({ item }: Props) => {
           </Badge>
         </AppTooltip>
       </TableCell>
+      <TableCell className="w-[120px] border-r text-right">0,00</TableCell>
+      <TableCell className="w-[120px] border-r text-right">0,00</TableCell>
 
       <TableCell className="border-r w-[100px]">
         {isEditing && (

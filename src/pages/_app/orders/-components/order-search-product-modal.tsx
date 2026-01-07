@@ -21,6 +21,7 @@ import { formatNumber } from "@/lib/number-utils";
 import { useOrder } from "../-context/order-context";
 import type { PriceTableModel } from "@/models/registrations/price-table.model";
 import { SearchCombo } from "@/components/ui/search-combo";
+import { AppTooltip } from "@/components/layout/app-tooltip";
 
 export const OrderSearchProductModal = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -206,15 +207,21 @@ export const OrderSearchProductModal = () => {
           <ServerTable<ProductModel>
             key={tableToken}
             searchSlot={
-              <SearchCombo
-                apiEndpoint="/registrations/price-tables/all"
-                valueProp="id"
-                labelProp="id"
-                onSelectOption={(opt) => {
-                  setPriceTable(opt[0].extra);
-                  setTableToken(new Date().valueOf());
-                }}
-              />
+              <AppTooltip message="Tabela de Preço">
+                <SearchCombo
+                  className="min-w-[250px]"
+                  apiEndpoint={`/registrations/customer-price-tables/customer/${order.customerId}`}
+                  valueProp="priceTableId"
+                  labelProp="priceTableId"
+                  placeholder="Selecione uma Tabela de Preço"
+                  searchPlaceholder="Procurar Tabela de Preço"
+                  defaultValue={priceTable?.id ?? ""}
+                  onSelectOption={(opt) => {
+                    setPriceTable(opt[0].extra?.priceTable);
+                    setTableToken(new Date().valueOf());
+                  }}
+                />
+              </AppTooltip>
             }
             columns={columns}
             dataUrl="/registrations/products/list-paged"

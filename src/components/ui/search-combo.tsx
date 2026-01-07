@@ -94,7 +94,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
           data,
           valueProp,
           labelProp,
-          true
+          false
         );
 
         setItems(convertedData);

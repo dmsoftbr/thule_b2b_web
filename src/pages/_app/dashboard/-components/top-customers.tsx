@@ -1,7 +1,12 @@
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 
-export const TopCustomers = () => {
+interface Props {
+  data: any;
+}
+
+export const TopCustomers = ({ data }: Props) => {
+  console.log(data);
   return (
     <div>
       <div className="flex flex-col flex-1 space-y-1">

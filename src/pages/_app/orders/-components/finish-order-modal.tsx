@@ -449,13 +449,13 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
 
             <div className="grid grid-cols-2 gap-x-4 ">
               <div className="form-group">
-                <Label>Data Mínima de Faturamento</Label>
+                <Label>Faturar em</Label>
                 <DatePicker
                   disabled={!isEditing || isItemPermissionDisabled("312")}
                 />
               </div>
               <div className="form-group">
-                <Label>Data Máxima de Faturamento</Label>
+                <Label>Faturar no Máximo até</Label>
                 <DatePicker
                   disabled={!isEditing || isItemPermissionDisabled("312")}
                 />
@@ -567,7 +567,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                     decimalSeparator=","
                     decimalScale={2}
                     fixedDecimalScale
-                    disabled={!isEditing}
+                    disabled
                     max={100}
                     min={0}
                     maxLength={6}

@@ -144,7 +144,6 @@ function ListOrdersPage() {
         <div className="form-group flex-1">
           <Label>Situação do Pedido</Label>
           <SearchCombo
-            selectAllAsDefaultValue
             multipleSelect
             onChange={() => {}}
             onSelectOption={(values) =>
