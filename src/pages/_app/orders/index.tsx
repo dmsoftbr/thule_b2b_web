@@ -16,6 +16,7 @@ import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { add } from "date-fns";
+import { useRouter } from "@tanstack/react-router";
 
 const searchFieldsList: ServerTableSearchField[] = [
   {
@@ -54,6 +55,7 @@ export const Route = createFileRoute("/_app/orders/")({
 
 function ListOrdersPage() {
   const navigate = useNavigate();
+  const router = useRouter();
   const { showAppDialog } = useAppDialog();
   const [tableToken, setTableToken] = useState(new Date().valueOf());
   const [createdAtFrom, setCreatedAtFrom] = useState<Date | undefined>(
@@ -71,8 +73,15 @@ function ListOrdersPage() {
     navigate({ to: `/orders/edit/${data.id}` });
   };
 
-  const handleView = (data: OrderModel) => {
-    navigate({ to: `/orders/view/${data.id}` });
+  const handleView = (data: OrderModel, anotherTab?: boolean) => {
+    if (anotherTab) {
+      const url = router.buildLocation({
+        to: `/orders/view/${data.id}`,
+      });
+      window.open(url.url, "_blank");
+    } else {
+      navigate({ to: `/orders/view/${data.id}` });
+    }
   };
 
   const handleCancel = async (data: OrderModel) => {

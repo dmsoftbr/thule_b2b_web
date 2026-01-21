@@ -25,7 +25,7 @@ export type OrderItemModel = {
   grossItemValue: number;
   netItemValue: number;
   suggestPrice: number;
-
+  costValue: number;
   product: ProductModel;
   taxes: OrderItemTaxModel[];
   priceTable: PriceTableModel;

@@ -154,7 +154,6 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
 
   const getSelectedDeliveryLocation = () => {
     if (!order.customer) return undefined;
-    console.log(order.customer);
     const deliveryLocation = order.customer.deliveryLocations.filter(
       (f) => f.id == order.deliveryLocationId
     );
@@ -200,6 +199,8 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   };
 
   const isItemPermissionDisabled = (permissionId: string) => {
+    if (session?.user.role == 0) return false;
+
     const item = userPermissions.find((f) => f.permissionId == permissionId);
 
     if (!item) return true;
@@ -262,6 +263,11 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
         order.freightValue =
           order.freightPaymentId == 1 ? 0 : sortedCarriers[0].freightValue;
         setFreightsData(sortedCarriers);
+        setOrder({
+          ...order,
+          freightValue: sortedCarriers[0].freightValue,
+          carrierId: sortedCarriers[0].carrierId,
+        });
       }
     } catch (error) {
       setIsFreightError(true);
@@ -289,6 +295,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
 
       const { data } = await api.post(`/order-items/calc-item-taxes`, params);
       if (data) {
+        console.log(data);
       }
     } catch (error) {
       toast.error(handleError(error));
@@ -501,11 +508,22 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                     disabled={!isEditing || isItemPermissionDisabled("315")}
                     checked={order.useCustomerCarrier}
                     onCheckedChange={(checked) => {
+                      console.log("aki");
                       const newOrder = {
                         ...order,
                         useCustomerCarrier: checked ? true : false,
                       };
+                      if (checked == true) {
+                        newOrder.freightValue = 0;
+                        newOrder.freightTypeId = 4;
+                        newOrder.carrierId = newOrder.customer?.carrierId ?? 0;
+                      }
                       setOrder(newOrder);
+                      if (!checked) {
+                        setTimeout(() => {
+                          getFreights();
+                        }, 1000);
+                      }
                     }}
                   />
                   Usa Transportadora do Cliente

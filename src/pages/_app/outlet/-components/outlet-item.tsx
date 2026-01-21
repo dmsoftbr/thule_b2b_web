@@ -164,18 +164,24 @@ export const OutletItem = ({
           <div className="mt-1 text-xs">Outlet: {priceTableId}</div>
         </CardContent>
         <CardFooter className="flex items-center justify-center">
-          <Button
-            onClick={() =>
-              addItem({
-                id: productId,
-                name: description,
-                price,
-                priceTableId,
-              })
-            }
+          <AppTooltip
+            message={getItemToolTip(productId, priceTableId)}
+            className="bg-black text-white"
+            indicatorClassName="bg-black text-black fill-black"
           >
-            Adicionar ao carrinho
-          </Button>
+            <Button
+              onClick={() =>
+                addItem({
+                  id: productId,
+                  name: description,
+                  price,
+                  priceTableId,
+                })
+              }
+            >
+              Adicionar ao carrinho
+            </Button>
+          </AppTooltip>
         </CardFooter>
       </Card>
     </div>

@@ -85,7 +85,7 @@ export const VirtualTable = <T,>({
       columns.some((col) => {
         const value = col.accessor(row);
         return String(value).toLowerCase().includes(lowerSearch);
-      })
+      }),
     );
   }, [data, searchTerm, columns, searchable]);
 
@@ -97,7 +97,7 @@ export const VirtualTable = <T,>({
     const col = columns.find((c) => c.key === sortConfig.key);
     if (!col)
       throw new Error(
-        `Coluna com key [${sortConfig.key}] é inválida p/ordenação`
+        `Coluna com key [${sortConfig.key}] é inválida p/ordenação`,
       );
     const sorted = [...filteredData].sort((a, b) => {
       const aVal = col.accessor(a);
@@ -130,7 +130,7 @@ export const VirtualTable = <T,>({
   const virtual = useVirtualization(
     sortedData.length,
     rowHeight,
-    typeof containerHeight === "number" ? containerHeight : 600
+    typeof containerHeight === "number" ? containerHeight : 600,
   );
 
   const displayData = useMemo(() => {
@@ -193,7 +193,7 @@ export const VirtualTable = <T,>({
           prev.key === key && prev.direction === "asc" ? "desc" : "asc",
       }));
     },
-    [sortable]
+    [sortable],
   );
 
   const handlePageChange = useCallback((page: number) => {
@@ -206,11 +206,11 @@ export const VirtualTable = <T,>({
         virtual.setScrollTop(e.target.scrollTop);
       }
     },
-    [virtualized, virtual]
+    [virtualized, virtual],
   );
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-4 relative">
       {/* Informações e busca */}
       <div className="flex items-center justify-between gap-4">
         <div className="text-sm text-gray-600">
@@ -342,7 +342,7 @@ export const VirtualTable = <T,>({
                         className={cn(
                           "px-6 py-4 text-sm text-gray-900 flex items-center",
                           verticalBorder,
-                          cellClassName
+                          cellClassName,
                         )}
                       >
                         <div className="overflow-hidden text-ellipsis">

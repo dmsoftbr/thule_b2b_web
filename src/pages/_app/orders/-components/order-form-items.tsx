@@ -18,6 +18,7 @@ import { useOrder } from "../-context/order-context";
 import { SearchCombo } from "@/components/ui/search-combo";
 import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 import { type PriceTableModel } from "@/models/registrations/price-table.model";
+import { ProductCostsService } from "@/services/registrations/product-costs.service";
 
 export const OrderFormItems = () => {
   const { order, addItem, mode } = useOrder();
@@ -30,7 +31,7 @@ export const OrderFormItems = () => {
       validFrom: new Date(2000, 1, 1),
       validTo: new Date(2072, 12, 31),
       zeroDiscount: false,
-    }
+    },
   );
   const isEditing = mode == "NEW" || mode == "EDIT";
 
@@ -55,7 +56,7 @@ export const OrderFormItems = () => {
     if (
       order.items &&
       order.items?.findIndex(
-        (f) => f.productId.toLowerCase() === product.id.toLowerCase()
+        (f) => f.productId.toLowerCase() === product.id.toLowerCase(),
       ) >= 0
     ) {
       toast.warning("Produto já consta no pedido!");
@@ -73,7 +74,12 @@ export const OrderFormItems = () => {
     };
     const { data: deliveryData } = await api.post(
       `/stock/caculate-delivery-date`,
-      params
+      params,
+    );
+
+    const costData = await ProductCostsService.getById(
+      order.branchId,
+      product.id,
     );
 
     const newOrderItem: OrderItemModel = {
@@ -92,6 +98,7 @@ export const OrderFormItems = () => {
       taxes: [],
       priceTable,
       priceTableId: priceTable.id,
+      costValue: costData ? costData.unitCost : 0,
     };
 
     addItem(newOrderItem);
@@ -102,7 +109,7 @@ export const OrderFormItems = () => {
 
   const orderTotal = order.items.reduce(
     (acc, b) => acc + b.inputPrice * b.orderQuantity,
-    0
+    0,
   );
 
   return (
@@ -120,7 +127,7 @@ export const OrderFormItems = () => {
                     staticItems={convertArrayToSearchComboItem(
                       order.customer?.priceTables ?? [],
                       "id",
-                      "id"
+                      "id",
                     )}
                     onSelectOption={(opt) => setPriceTable(opt[0].extra)}
                   />
@@ -154,7 +161,7 @@ export const OrderFormItems = () => {
         <div
           className={cn(
             "grid grid-cols-[70%_30%] border-y w-full",
-            !order.items && "grid-cols-1 border-0"
+            !order.items && "grid-cols-1 border-0",
           )}
         >
           <ScrollArea
@@ -191,7 +198,7 @@ export const OrderFormItems = () => {
                 Total com Desconto: R${" "}
                 {formatNumber(
                   orderTotal * (1 - order.discountPercentual / 100),
-                  2
+                  2,
                 )}
               </div>
             </div>

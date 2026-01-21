@@ -39,7 +39,7 @@ export const OrderItemTableRow = ({ item }: Props) => {
 
     const { data: response } = await api.post(
       `/stock/caculate-delivery-date`,
-      params
+      params,
     );
 
     const updatedItem = {
@@ -94,15 +94,30 @@ export const OrderItemTableRow = ({ item }: Props) => {
             variant="outline"
             className={cn(
               "select-none mr-4",
-              getAvailabilityColor(item.availability)
+              getAvailabilityColor(item.availability),
             )}
           >
             {item.availability}
           </Badge>
         </AppTooltip>
       </TableCell>
-      <TableCell className="w-[120px] border-r text-right">0,00</TableCell>
-      <TableCell className="w-[120px] border-r text-right">0,00</TableCell>
+
+      <TableCell className="w-[120px] border-r text-right">
+        {formatNumber(
+          ((item.inputPrice - item.costValue) /
+            (item.costValue == 0 ? 1 : item.costValue)) *
+            100,
+          2,
+        )}
+        %
+      </TableCell>
+      <TableCell className="w-[120px] border-r text-right">
+        {formatNumber(
+          ((item.inputPrice - item.costValue) / item.inputPrice) * 100,
+          2,
+        )}
+        %
+      </TableCell>
 
       <TableCell className="border-r w-[100px]">
         {isEditing && (

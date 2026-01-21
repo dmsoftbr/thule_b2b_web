@@ -72,6 +72,7 @@ export const NEW_ORDER_ITEM_EMPTY: Omit<
   originalDeliveryDate: new Date(),
   referenceCode: "",
   statusId: 1,
+  costValue: 0,
 };
 
 export const NEW_BUDGET_EMPTY: OrderModel = {
@@ -117,7 +118,7 @@ export const generateOrderFromOutlet = async (): Promise<OrderModel> => {
   const newOrder = { ...NEW_ORDER_EMPTY };
 
   const outletJson = JSON.parse(
-    sessionStorage.getItem("b2b@outletOrderData") ?? ""
+    sessionStorage.getItem("b2b@outletOrderData") ?? "",
   );
 
   if (outletJson) {
@@ -167,7 +168,7 @@ export const generateOrderFromOutlet = async (): Promise<OrderModel> => {
 export const getUserPermissions = async (userId: string) => {
   try {
     const { data } = await api.get<UserPermissionModel[]>(
-      `/admin/users/permissions/${userId}`
+      `/admin/users/permissions/${userId}`,
     );
 
     return data;

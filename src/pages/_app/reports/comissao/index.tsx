@@ -50,7 +50,7 @@ function ComissionReportComponent() {
         },
         {
           responseType: "blob",
-        }
+        },
       );
       const blob = new Blob([response.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
@@ -79,7 +79,7 @@ function ComissionReportComponent() {
         },
         {
           responseType: "blob",
-        }
+        },
       );
       const blob = new Blob([response.data], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -144,7 +144,7 @@ function ComissionReportComponent() {
             staticItems={convertArrayToSearchComboItem(
               representativesData ?? [],
               "id",
-              "abbreviation"
+              "abbreviation",
             )}
             showSelectButtons
           />
@@ -178,11 +178,11 @@ function ComissionReportComponent() {
               Em Tela
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleGetPDF()}>
+            <DropdownMenuItem disabled onClick={() => handleGetPDF()}>
               Em PDF
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleGetExcel()}>
+            <DropdownMenuItem disabled onClick={() => handleGetExcel()}>
               Em Excel
             </DropdownMenuItem>
           </DropdownMenuContent>

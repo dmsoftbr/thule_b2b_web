@@ -130,10 +130,10 @@ export const Esli011Form = () => {
                 Qt Atende
               </TableHead>
               <TableHead className="border border-neutral-300">
-                Qt Aloca
+                Qt Aloca Ped
               </TableHead>
               <TableHead className="border border-neutral-300">
-                Qt Aloca
+                Qt Aloca Prod
               </TableHead>
             </TableRow>
           </TableHeader>

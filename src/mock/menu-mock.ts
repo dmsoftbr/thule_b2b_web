@@ -71,7 +71,7 @@ export const MENU_MOCK: MenuModel[] = [
       {
         id: "52",
         title: "Comissão",
-        url: "/reports/comission",
+        url: "/reports/comissao",
         icon: "CircleIcon",
       },
     ],

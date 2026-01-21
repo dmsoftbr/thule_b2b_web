@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 
 interface Props {
-  fnView: (order: OrderModel) => void;
+  fnView: (order: OrderModel, anotherTab?: boolean) => void;
   fnEdit: (order: OrderModel) => void;
   fnCancel: (order: OrderModel) => void;
 }
@@ -140,7 +140,7 @@ export const columns = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="">
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => fnView(order, true)}>
               <ExternalLinkIcon className="size-4" />
               Visualizar Pedido em Nova Aba
             </DropdownMenuItem>
