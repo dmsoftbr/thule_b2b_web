@@ -32,11 +32,11 @@ export const OrderSearchProductModal = () => {
   function handleAddItemToOrder(
     priceTable: PriceTableModel,
     product: ProductModel,
-    orderQuantity: number
+    orderQuantity: number,
   ) {
     const newOrder = { ...order };
     const existingItemIndex = newOrder.items.findIndex(
-      (f) => f.productId == product.id
+      (f) => f.productId == product.id,
     );
     if (existingItemIndex >= 0) {
       newOrder.items[existingItemIndex].orderQuantity = orderQuantity;
@@ -67,6 +67,7 @@ export const OrderSearchProductModal = () => {
         priceTableId: priceTable.id,
         priceTable,
         taxes: [],
+        costValue: 0,
       });
     }
     setOrder(newOrder);
@@ -177,7 +178,7 @@ export const OrderSearchProductModal = () => {
               handleAddItemToOrder(
                 priceTable,
                 product,
-                product.quantity < 1 ? 1 : product.quantity
+                product.quantity < 1 ? 1 : product.quantity,
               );
             }}
           >
