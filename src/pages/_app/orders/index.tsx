@@ -59,7 +59,7 @@ function ListOrdersPage() {
   const { showAppDialog } = useAppDialog();
   const [tableToken, setTableToken] = useState(new Date().valueOf());
   const [createdAtFrom, setCreatedAtFrom] = useState<Date | undefined>(
-    new Date(add(new Date(), { days: -30 }))
+    new Date(add(new Date(), { days: -30 })),
   );
   const [createdAtTo, setCreatedAtTo] = useState<Date | undefined>(new Date());
   const [selectedReps, setSelectedReps] = useState<number[]>([]);
@@ -145,7 +145,7 @@ function ListOrdersPage() {
             staticItems={convertArrayToSearchComboItem(
               representativesData ?? [],
               "id",
-              "abbreviation"
+              "abbreviation",
             )}
             showSelectButtons
           />

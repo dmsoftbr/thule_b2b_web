@@ -12,6 +12,7 @@ export type ProductModel = {
   productTypeId: string;
   isActive: number;
   referenceCode: string;
+  orderMessage: string;
   // nav props
   productGroup?: ProductGroupModel;
   productFamily?: ProductFamilyModel;

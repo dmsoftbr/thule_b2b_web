@@ -34,6 +34,14 @@ export const MENU_MOCK: MenuModel[] = [
     children: [],
   },
   {
+    id: "10",
+    title: "Confirmação Pedido",
+    url: "/order-confirmation",
+    icon: "CheckIcon",
+    isActive: false,
+    children: [],
+  },
+  {
     id: "4",
     title: "Consultas",
     url: "",

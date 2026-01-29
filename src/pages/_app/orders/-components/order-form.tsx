@@ -12,13 +12,6 @@ import { handleError } from "@/lib/api";
 import { ExportOrder } from "./export-order";
 import { useOrder } from "../-context/order-context";
 
-// interface Props {
-//   //orderId: string;
-//   //action: "NEW" | "VIEW" | "APPROVAL" | "CANCEL" | "EDIT";
-//   //orderType: "ORDER" | "BUDGET";
-// }
-
-//export const OrderForm = ({ orderId, orderType, action }: Props) => {
 export const OrderForm = () => {
   const navigate = useNavigate();
 

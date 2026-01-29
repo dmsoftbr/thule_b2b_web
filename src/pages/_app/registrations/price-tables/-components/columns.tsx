@@ -1,5 +1,6 @@
 import type { ServerTableColumn } from "@/components/server-table/server-table";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { PriceTableModel } from "@/models/registrations/price-table.model";
 import { format } from "date-fns";
 import { EditIcon } from "lucide-react";
@@ -25,6 +26,12 @@ export const columns = ({ fnEdit }: Props): ServerTableColumn[] => [
     sortable: true,
   },
   {
+    title: "Nome no Portal",
+    dataIndex: "portalName",
+    key: "portalName",
+    sortable: true,
+  },
+  {
     title: "Validade",
     dataIndex: "validFrom",
     key: "validity",
@@ -45,6 +52,26 @@ export const columns = ({ fnEdit }: Props): ServerTableColumn[] => [
     sortable: false,
     renderItem: (row: PriceTableModel) => (
       <span>{row.zeroDiscount ? "Sim" : "Não"}</span>
+    ),
+  },
+  {
+    title: "Ativa?",
+    dataIndex: "isActive",
+    key: "isActive",
+    sortable: false,
+    renderItem: (row: PriceTableModel) => (
+      <span>{row.isActive ? "Sim" : "Não"}</span>
+    ),
+  },
+  {
+    title: "É Tab. Excessão?",
+    dataIndex: "isException",
+    key: "isException",
+    sortable: false,
+    renderItem: (row: PriceTableModel) => (
+      <span className={cn(row.isException && "bg-red-300 text-white")}>
+        {row.isException ? "Sim" : "Não"}
+      </span>
     ),
   },
   {

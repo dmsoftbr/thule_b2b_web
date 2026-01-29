@@ -44,6 +44,7 @@ interface SearchComboProps {
   valueProp?: string;
   labelProp?: string;
   deSelectOnClick?: boolean;
+  selectFirstOptionOnLoad?: boolean;
 }
 
 export const SearchCombo: React.FC<SearchComboProps> = ({
@@ -64,6 +65,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
   valueProp,
   labelProp,
   deSelectOnClick = false,
+  selectFirstOptionOnLoad = false,
 }) => {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<SearchComboItem[]>(staticItems);
@@ -94,10 +96,14 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
           data,
           valueProp,
           labelProp,
-          false
+          false,
         );
-
         setItems(convertedData);
+        if (selectFirstOptionOnLoad && convertedData.length > 0) {
+          //
+          const firstOpt = convertedData[0];
+          handleSelect(firstOpt.value);
+        }
       } catch (error) {
         console.error("Erro ao buscar itens:", error);
         setItems([]);
@@ -105,7 +111,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
         setLoading(false);
       }
     },
-    [apiEndpoint, queryStringName, valueProp, labelProp]
+    [apiEndpoint, queryStringName, valueProp, labelProp],
   );
 
   // Load initial items from API
@@ -134,7 +140,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
         // Se é array de strings
         if (typeof value[0] === "string") {
           return items.filter((item) =>
-            (value as string[]).includes(item.value)
+            (value as string[]).includes(item.value),
           );
         }
 
@@ -155,7 +161,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
 
       return [];
     },
-    [items]
+    [items],
   );
 
   // Handle defaultValue changes
@@ -174,7 +180,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
         fetchItems(search);
       }
     },
-    [apiEndpoint, fetchItems]
+    [apiEndpoint, fetchItems],
   );
 
   // Filter items locally if not using API
@@ -187,8 +193,8 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
         item.label.toLowerCase().includes(lowerSearch) ||
         item.value.toLowerCase().includes(lowerSearch) ||
         item.keywords?.some((keyword) =>
-          keyword.toLowerCase().includes(lowerSearch)
-        )
+          keyword.toLowerCase().includes(lowerSearch),
+        ),
     );
   }, [apiEndpoint, items, searchTerm]);
 
@@ -197,7 +203,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
     (value: string): boolean => {
       return selectedItems.some((item) => item.value === value);
     },
-    [selectedItems]
+    [selectedItems],
   );
 
   // Handle item selection
@@ -211,7 +217,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
       if (!multipleSelect) {
         // Single select mode
         const isAlreadySelected = selectedItems.some(
-          (item) => item.value === currentValue
+          (item) => item.value === currentValue,
         );
 
         if (deSelectOnClick && isAlreadySelected) {
@@ -225,12 +231,12 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
       } else {
         // Multiple select mode
         const isAlreadySelected = selectedItems.some(
-          (item) => item.value === currentValue
+          (item) => item.value === currentValue,
         );
 
         if (isAlreadySelected) {
           newItems = selectedItems.filter(
-            (item) => item.value !== currentValue
+            (item) => item.value !== currentValue,
           );
         } else {
           newItems = [...selectedItems, itemSelected];
@@ -249,7 +255,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
       deSelectOnClick,
       onChange,
       onSelectOption,
-    ]
+    ],
   );
 
   // Render selected items label
@@ -308,7 +314,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
             "w-full justify-between",
             "disabled:bg-neutral-200 disabled:cursor-not-allowed disabled:border-neutral-300",
             "overflow-hidden",
-            className
+            className,
           )}
         >
           <span className="truncate">{renderSelectedItem}</span>
@@ -342,22 +348,20 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
                         className={cn(
                           "cursor-pointer",
                           selected &&
-                            "bg-white  hover:bg-blue-600 hover:!text-white"
+                            "bg-white  hover:bg-blue-600 hover:!text-white group",
                         )}
                       >
                         <div
                           className={cn(
-                            "mr-2 flex h-4 w-4 items-center justify-center rounded",
+                            "mr-2 flex h-4 w-4 items-center justify-center rounded ",
                             multipleSelect && "border border-primary",
-                            selected && multipleSelect && "bg-black"
+                            selected && multipleSelect && "bg-black",
                           )}
                         >
                           <Check
                             className={cn(
-                              "h-3 w-3",
-                              selected
-                                ? "opacity-100 stroke-white"
-                                : "opacity-0"
+                              "h-3 w-3 group-hover:!stroke-white",
+                              selected ? "opacity-100 " : "opacity-0 ",
                             )}
                           />
                         </div>

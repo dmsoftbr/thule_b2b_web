@@ -8,6 +8,7 @@ import {
   ChevronRightIcon,
   ChevronUpIcon,
   FilterIcon,
+  Loader2Icon,
   RefreshCwIcon,
   SearchIcon,
   SortAscIcon,
@@ -48,7 +49,7 @@ export type ServerTableGroupConfig = {
   renderGroupHeader?: (
     groupValue: any,
     items: any[],
-    groupId?: any
+    groupId?: any,
   ) => React.ReactNode;
   defaultExpanded?: boolean;
   orderBy?: string;
@@ -88,6 +89,7 @@ interface ServerTableProps<T> {
   onAfterGetData?: (data: any) => void;
   rowCss?: (row: T) => string;
   onSelectRow?: (row: T) => void;
+  onRowDblClick?: (row: T) => void;
 }
 
 type GroupedData<T> = {
@@ -125,6 +127,7 @@ export const ServerTable = <T,>({
   onAdd,
   onAfterGetData,
   onSelectRow,
+  onRowDblClick,
 }: ServerTableProps<T>) => {
   const [searchText, setSearchText] = useDebounceValue("", 300);
   const [pageSize, setPageSize] = useState(defaultPageSize);
@@ -352,7 +355,7 @@ export const ServerTable = <T,>({
             sortAsc,
             customWhere,
             ...additionalInfo,
-          }
+          },
         );
         if (serverData.result == null) serverData.result = [];
         setData(serverData);
@@ -451,19 +454,19 @@ export const ServerTable = <T,>({
                                         const pgValue =
                                           getNestedProperty(
                                             pg,
-                                            groupConfig.field
+                                            groupConfig.field,
                                           ) || "Sem Categoria";
                                         return String(pgValue) === groupKey;
-                                      }
+                                      },
                                     );
                                   return possibleGroup
                                     ? getNestedProperty(
                                         possibleGroup,
-                                        groupConfig.idField!
+                                        groupConfig.idField!,
                                       )
                                     : undefined;
                                 })()
-                              : undefined
+                              : undefined,
                           )
                         : `${
                             groupConfig.label || groupConfig.field
@@ -494,8 +497,13 @@ export const ServerTable = <T,>({
           className={cn(
             "even:bg-neutral-100 hover:bg-neutral-50 cursor-pointer",
             selectedItem == row ? "!bg-primary/30 " : "",
-            rowCss?.(row)
+            rowCss?.(row),
           )}
+          onDoubleClick={(e) => {
+            setSelectedItem(row);
+            onRowDblClick?.(row);
+            e.preventDefault();
+          }}
           onClick={(e) => {
             setSelectedItem(row);
             onSelectRow?.(row);
@@ -506,7 +514,7 @@ export const ServerTable = <T,>({
             <td
               className={cn(
                 "border px-1.5 py-2 text-sm break-words break-all",
-                column.cellClassName
+                column.cellClassName,
               )}
               key={index}
             >
@@ -553,7 +561,7 @@ export const ServerTable = <T,>({
                           ? groupConfig.idField
                             ? getNestedProperty(
                                 groupItems[0],
-                                groupConfig.idField
+                                groupConfig.idField,
                               )
                             : undefined
                           : groupConfig.allPossibleGroups && groupConfig.idField
@@ -563,18 +571,18 @@ export const ServerTable = <T,>({
                                     const pgValue =
                                       getNestedProperty(
                                         pg,
-                                        groupConfig.field
+                                        groupConfig.field,
                                       ) || "Sem Categoria";
                                     return String(pgValue) === groupKey;
                                   });
                                 return possibleGroup
                                   ? getNestedProperty(
                                       possibleGroup,
-                                      groupConfig.idField!
+                                      groupConfig.idField!,
                                     )
                                   : undefined;
                               })()
-                            : undefined
+                            : undefined,
                       )
                     : `${
                         groupConfig.label || groupConfig.field
@@ -592,7 +600,7 @@ export const ServerTable = <T,>({
                 className={cn(
                   "even:bg-neutral-50 odd:bg-white hover:bg-neutral-100 cursor-pointer",
                   selectedItem == row ? "!bg-primary/30" : "",
-                  rowCss?.(row)
+                  rowCss?.(row),
                 )}
                 onClick={(e) => {
                   setSelectedItem(row);
@@ -604,7 +612,7 @@ export const ServerTable = <T,>({
                     className={cn(
                       "border px-1.5 py-2 text-sm break-words break-all",
                       column.cellClassName,
-                      index === 0 && "pl-8" // Indentação para mostrar hierarquia
+                      index === 0 && "pl-8", // Indentação para mostrar hierarquia
                     )}
                     key={index}
                   >
@@ -735,6 +743,9 @@ export const ServerTable = <T,>({
         <div className="absolute inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-neutral-800 opacity-30"></div>
           <div className="p-8 w-52 h-20 flex items-center justify-center rounded-md bg-white z-50">
+            <span>
+              <Loader2Icon className="size-4 animate-spin mr-1" />
+            </span>
             Aguarde...
           </div>
         </div>
@@ -750,7 +761,7 @@ export const ServerTable = <T,>({
                 <th
                   className={cn(
                     "border border-neutral-300 text-sm h-8 text-left font-semibold bg-neutral-200",
-                    column.className
+                    column.className,
                   )}
                   key={column.key}
                 >
@@ -762,7 +773,7 @@ export const ServerTable = <T,>({
                       className={cn(
                         "flex items-center justify-between p-1 h-full w-full cursor-pointer",
                         column.dataIndex == sortField && "bg-neutral-300",
-                        column.sortable && "hover:bg-neutral-400/45"
+                        column.sortable && "hover:bg-neutral-400/45",
                       )}
                     >
                       <div

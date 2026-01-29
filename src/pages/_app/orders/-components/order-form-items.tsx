@@ -19,10 +19,12 @@ import { SearchCombo } from "@/components/ui/search-combo";
 import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 import { type PriceTableModel } from "@/models/registrations/price-table.model";
 import { ProductCostsService } from "@/services/registrations/product-costs.service";
+import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 
 export const OrderFormItems = () => {
   const { order, addItem, mode } = useOrder();
   const [showCard, setShowCard] = useState(true);
+  const { showAppDialog } = useAppDialog();
   const [priceTable, setPriceTable] = useState<PriceTableModel>(
     order.customer?.priceTables[0] ?? {
       id: "PrBase",
@@ -31,6 +33,9 @@ export const OrderFormItems = () => {
       validFrom: new Date(2000, 1, 1),
       validTo: new Date(2072, 12, 31),
       zeroDiscount: false,
+      isActive: true,
+      isException: false,
+      portalName: "",
     },
   );
   const isEditing = mode == "NEW" || mode == "EDIT";
@@ -53,6 +58,28 @@ export const OrderFormItems = () => {
       return;
     }
     if (!product) return;
+
+    if (product.orderMessage) {
+      await showAppDialog({
+        message: product.orderMessage,
+        title: "ATENÇÃO",
+        type: "warning",
+        buttons: [
+          {
+            text: "OK",
+            autoClose: true,
+          },
+        ],
+        onClose: async () => {
+          continueAddItem(product);
+        },
+      });
+    } else {
+      continueAddItem(product);
+    }
+  };
+
+  async function continueAddItem(product: ProductModel) {
     if (
       order.items &&
       order.items?.findIndex(
@@ -91,7 +118,7 @@ export const OrderFormItems = () => {
       availability: deliveryData.availbility,
       inputPrice: product.unitPriceInTable,
       suggestPrice: product.suggestUnitPrice,
-      priceTablePrice: product.suggestUnitPrice,
+      priceTablePrice: product.unitPriceInTable,
       grossItemValue: product.unitPriceInTable * 1,
       orderQuantity: 1,
       sequence: order.items.length + 10,
@@ -105,12 +132,14 @@ export const OrderFormItems = () => {
     toast.success("Produto adicionado ao pedido", {
       duration: 1000,
     });
-  };
+  }
 
   const orderTotal = order.items.reduce(
     (acc, b) => acc + b.inputPrice * b.orderQuantity,
     0,
   );
+
+  const sortedItems = order.items.sort((a, b) => a.sequence - b.sequence);
 
   return (
     <div className="w-full p-2 container flex flex-col items-center">
@@ -127,7 +156,7 @@ export const OrderFormItems = () => {
                     staticItems={convertArrayToSearchComboItem(
                       order.customer?.priceTables ?? [],
                       "id",
-                      "id",
+                      "portalName",
                     )}
                     onSelectOption={(opt) => setPriceTable(opt[0].extra)}
                   />
@@ -141,7 +170,7 @@ export const OrderFormItems = () => {
                     closeOnSelect
                   />
                 </div>
-                <OrderSearchProductModal />
+                <OrderSearchProductModal initialPriceTable={priceTable} />
               </>
             ) : (
               <div></div>
@@ -170,7 +199,7 @@ export const OrderFormItems = () => {
             type="always"
           >
             {!order.items?.length && <EmptyOrder />}
-            {order.items?.map((item: OrderItemModel, index) => (
+            {sortedItems.map((item: OrderItemModel, index) => (
               <OrderItemCard
                 key={`${item.productId}_${index}`}
                 data={item}
@@ -178,7 +207,7 @@ export const OrderFormItems = () => {
               />
             ))}
           </ScrollArea>
-          {order.items && (
+          {sortedItems && (
             <div className="border-x  flex items-center justify-center flex-col">
               <div className="flex items-center text-lg font-semibold">
                 Total {order.isBudget ? "da Simulação" : "do Pedido"}: R${" "}

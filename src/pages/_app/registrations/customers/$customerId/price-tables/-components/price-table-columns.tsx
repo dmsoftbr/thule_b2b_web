@@ -7,7 +7,7 @@ interface Props {
   fnDelete: (data: CustomerPriceTableModel) => void;
 }
 
-export const columns = ({ fnDelete }: Props): ServerTableColumn[] => [
+export const priceTableColumns = ({ fnDelete }: Props): ServerTableColumn[] => [
   {
     key: "priceTableId",
     dataIndex: "priceTableId",

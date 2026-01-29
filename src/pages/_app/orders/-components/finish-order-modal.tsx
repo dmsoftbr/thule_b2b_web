@@ -60,16 +60,16 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   const { showAppDialog } = useAppDialog();
 
   const isEditing = mode == "NEW" || mode == "EDIT";
-
+  const [isSaving, setIsSaving] = useState(false);
   const [orderValidationMessage, setOrderValidationMessage] = useState("");
   const [paymentConditionsData, setPaymentConditionsData] = useState<
     SearchComboItem[]
   >([]);
   const [userPermissions, setUserPermissions] = useState<UserPermissionModel[]>(
-    []
+    [],
   );
   const [freightsData, setFreightsData] = useState<CalcFreightsResposeDto[]>(
-    []
+    [],
   );
 
   const [selectedPaymentCondition, setSelectedPaymentCondition] = useState<
@@ -83,6 +83,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
     //save the order / budget
     let savedOrderId = "";
     const orderData = { ...order, history: [] };
+    setIsSaving(true);
 
     orderData.items.map((item) => (item.taxes = []));
 
@@ -104,7 +105,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
         type: "info",
       });
     }
-
+    setIsSaving(false);
     onClose();
     await showAppDialog({
       type: "success",
@@ -125,20 +126,20 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   const getSubTotal = () => {
     return order.items.reduce(
       (accum, b) => (accum += b.orderQuantity * b.inputPrice),
-      0
+      0,
     );
   };
 
   const getTotal = () => {
     let grossValue = order.items.reduce(
       (accum, b) => (accum += b.orderQuantity * b.inputPrice),
-      0
+      0,
     );
 
     if (order.additionalDiscount > 0) {
       grossValue = roundNumber(
         grossValue - (grossValue * (order?.additionalDiscount ?? 0)) / 100,
-        2
+        2,
       );
     }
 
@@ -146,7 +147,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
       grossValue -
         (grossValue * (order?.discountPercentual ?? 0)) / 100 +
         (order?.freightValue ?? 0),
-      2
+      2,
     );
 
     return grossValue;
@@ -155,21 +156,21 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   const getSelectedDeliveryLocation = () => {
     if (!order.customer) return undefined;
     const deliveryLocation = order.customer.deliveryLocations.filter(
-      (f) => f.id == order.deliveryLocationId
+      (f) => f.id == order.deliveryLocationId,
     );
 
     if (!deliveryLocation) return undefined;
     const dlArray = convertArrayToSearchComboItem(
       deliveryLocation,
       "id",
-      (item) => `${item.id} - ${item.address} - ${item.city} - ${item.state}`
+      (item) => `${item.id} - ${item.address} - ${item.city} - ${item.state}`,
     );
     return [dlArray[0]];
   };
 
   const getPaymentConditions = async () => {
     const { data } = await api.get<PaymentConditionModel[]>(
-      `/registrations/payment-conditions/all?onlyActives=true`
+      `/registrations/payment-conditions/all?onlyActives=true`,
     );
 
     const newData = data.map((item) => {
@@ -181,11 +182,12 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
     });
 
     setPaymentConditionsData(newData);
+    setSelectedPaymentCondition(order.paymentCondition);
   };
 
   const getOrderPaymentCondition = () => {
     const orderPaymentCondition = paymentConditionsData.find(
-      (f) => f.value == order.paymentConditionId.toString()
+      (f) => f.value == order.paymentConditionId.toString(),
     );
 
     if (!orderPaymentCondition) return undefined;
@@ -247,7 +249,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
 
       const { data } = await api.post<CalcFreightsResposeDto[]>(
         `/orders/calculate-freights`,
-        { ttParam: ttParam, ttItems: ttItems }
+        { ttParam: ttParam, ttItems: ttItems },
       );
 
       if (data && data.length > 0) {
@@ -280,26 +282,38 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
 
   const getTaxes = async () => {
     try {
-      if (!isEditing) return;
-      if (order.items.length == 0) return;
-      const params: any[] = [];
-      order.items.map((item) => {
-        params.push({
-          siteCode: order.branchId,
-          customerCode: order.customerId,
-          itemCode: item.productId,
-          quantity: item.orderQuantity,
-          negotiatedPrice: item.inputPrice,
-        });
-      });
-
-      const { data } = await api.post(`/order-items/calc-item-taxes`, params);
-      if (data) {
-        console.log(data);
-      }
+      // if (!isEditing) return;
+      // if (order.items.length == 0) return;
+      // const params: any[] = [];
+      // order.items.map((item) => {
+      //   params.push({
+      //     siteCode: order.branchId,
+      //     customerCode: order.customerId,
+      //     itemCode: item.productId,
+      //     quantity: item.orderQuantity,
+      //     negotiatedPrice: item.inputPrice,
+      //   });
+      // });
+      // const { data } = await api.post(`/order-items/calc-item-taxes`, params);
+      // if (data) {
+      //   console.log(data);
+      // }
     } catch (error) {
       toast.error(handleError(error));
     }
+  };
+
+  const handleChangePaymentCondition = (value: string) => {
+    const newOrder = { ...order };
+    const pc = paymentConditionsData.find((f) => f.value == value);
+    if (!pc) return;
+
+    newOrder.paymentConditionId = Number(value);
+    if (pc && pc.extra?.additionalDiscountPercent > 0)
+      newOrder.additionalDiscount = pc.extra.additionalDiscountPercent;
+
+    setOrder(newOrder);
+    setSelectedPaymentCondition(pc.extra);
   };
 
   useEffect(() => {
@@ -313,6 +327,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
 
   useEffect(() => {
     setOrderValidationMessage("");
+
     const orderTotal = getTotal();
     if (selectedPaymentCondition) {
       if (
@@ -320,11 +335,10 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
         orderTotal < selectedPaymentCondition.minOrderValue
       ) {
         setOrderValidationMessage(
-          `Para comprar com a condição de pagamento selecionada, seu pedido deve ser de no mínimo R$ ${formatNumber(selectedPaymentCondition.minOrderValue, 2)}`
+          `Para comprar com a condição de pagamento selecionada, seu pedido deve ser de no mínimo R$ ${formatNumber(selectedPaymentCondition.minOrderValue, 2)}`,
         );
       }
     }
-
     if (order.customer) {
       if (
         order.customer.minValuePayedFreight > 0 &&
@@ -397,7 +411,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                   order.customer?.deliveryLocations ?? [],
                   "id",
                   (item) =>
-                    `${item.id} - ${item.address} - ${item.city} - ${item.state}`
+                    `${item.id} - ${item.address} - ${item.city} - ${item.state}`,
                 )}
                 defaultValue={getSelectedDeliveryLocation()}
               />
@@ -415,18 +429,8 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                   placeholder="Selecione a Condição de Pagamento"
                   staticItems={paymentConditionsData}
                   defaultValue={getOrderPaymentCondition()}
-                  onChange={function (value: string): void {
-                    const newOrder = { ...order };
-                    const pc = paymentConditionsData.find(
-                      (f) => f.value == value
-                    )?.extra as PaymentConditionModel;
-                    newOrder.paymentConditionId = Number(value);
-                    if (pc && pc.additionalDiscountPercent > 0)
-                      newOrder.additionalDiscount =
-                        pc.additionalDiscountPercent;
-
-                    setOrder(newOrder);
-                    setSelectedPaymentCondition(pc);
+                  onChange={(value: string) => {
+                    handleChangePaymentCondition(value);
                   }}
                 />
               )}
@@ -565,6 +569,11 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                     <FreightTable
                       data={freightsData}
                       onRefreshCalc={() => getFreights()}
+                      onValueChange={(carrierId, value) => {
+                        order.carrierId = carrierId;
+                        order.freightValue = value;
+                        setOrder({ ...order });
+                      }}
                     />
                   )}
                 </div>
@@ -594,7 +603,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                       "file:text-foreground text-right placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-8 w-[90px] min-w-0 rounded-md border bg-white px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-100 disabled:border-none disabled:shadow-none",
                       "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
                       "read-only:bg-neutral-100",
-                      "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
+                      "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
                     )}
                     onValueChange={(value) =>
                       handleChangeDiscountPercentual(value.floatValue ?? 0)
@@ -606,7 +615,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                         className="hover:bg-neutral-200 bg-neutral-50 p-1 rounded border border-neutral-300"
                         onClick={() => {
                           handleChangeDiscountPercentual(
-                            order.customer?.discountPercent ?? 0
+                            order.customer?.discountPercent ?? 0,
                           );
                         }}
                       >
@@ -616,21 +625,38 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                   )}
                 </div>
               </div>
-              {selectedPaymentCondition &&
-                selectedPaymentCondition.additionalDiscountPercent > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <Label className="text-orange-500">
-                      % Desconto Adicional:
-                    </Label>
-                    <div className="flex gap-x-1.5 items-center">
-                      <Input
-                        value={formatNumber(order.additionalDiscount, 2)}
-                        readOnly
-                        className="max-w-[120px] text-right text-orange-600 font-semibold"
-                      />
-                    </div>
+              {(selectedPaymentCondition?.additionalDiscountPercent ??
+                0 > 0) && (
+                <div className="flex justify-between text-sm bg-orange-100 p-1 rounded">
+                  <Label className="text-orange-600">
+                    % Desconto Adicional:
+                  </Label>
+                  <div className="flex gap-x-1.5 items-center">
+                    <span>{formatNumber(order.additionalDiscount, 2)}%</span>
+                    {/* <Input
+                      value={}
+                      readOnly
+                      className="max-w-[120px] text-right text-orange-600 font-semibold !opacity-100"
+                    /> */}
+                    <Checkbox
+                      defaultChecked={
+                        (selectedPaymentCondition?.additionalDiscountPercent ??
+                          0) > 0
+                      }
+                      onCheckedChange={(checked) => {
+                        if (!!checked) {
+                          order.additionalDiscount =
+                            selectedPaymentCondition?.additionalDiscountPercent ??
+                            0;
+                        } else {
+                          order.additionalDiscount = 0;
+                        }
+                        setOrder({ ...order });
+                      }}
+                    />
                   </div>
-                )}
+                </div>
+              )}
               <div className="flex justify-between pr-2 text-sm">
                 <span>Frete:</span>
                 <span>R$ {formatNumber(order.freightValue, 2)}</span>
@@ -671,13 +697,28 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               onClick={handleSendOrder}
               className="text-emerald-900"
             >
-              Gravar Simulação
+              {isSaving ? (
+                <div>
+                  <Loader2Icon className="size-4" />
+                </div>
+              ) : (
+                "Gravar Simulação"
+              )}
             </Button>
           )}
 
           {isEditing && (
-            <Button onClick={handleSendOrder} disabled={isCalculatingFreight}>
-              {order.isBudget ? "Gerar" : "Enviar"} Pedido
+            <Button
+              onClick={handleSendOrder}
+              disabled={isCalculatingFreight || isSaving}
+            >
+              {isSaving ? (
+                <div>
+                  <Loader2Icon className="size-4" />
+                </div>
+              ) : (
+                <span>{order.isBudget ? "Gerar" : "Enviar"} Pedido</span>
+              )}
             </Button>
           )}
         </DialogFooter>

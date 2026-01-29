@@ -8,7 +8,7 @@ import { formatDate } from "@/lib/datetime-utils";
 import { formatNumber } from "@/lib/number-utils";
 import type { ProductPriceEstimatedDateModel } from "@/models/stock/product-price-estimated-date.model";
 import { StockService } from "@/services/stock/stock.service";
-import { Loader2Icon, SearchIcon } from "lucide-react";
+import { CheckIcon, Loader2Icon, SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -23,7 +23,7 @@ export const ProductStockForm = () => {
     setIsLoading(true);
     try {
       const stockData = await StockService.getStockByPriceAndEstimatedDate(
-        itemId ? itemId : productId
+        itemId ? itemId : productId,
       );
       setStockData(stockData);
     } catch (error) {
@@ -57,13 +57,17 @@ export const ProductStockForm = () => {
             onSelect={(product) => {
               if (product) {
                 setProductId(product.id);
-                getData();
+                getData(product.id);
               }
             }}
           />
-          <Button disabled={isLoading} onClick={() => getData()}>
+          <Button
+            disabled={isLoading}
+            onClick={() => getData()}
+            variant="secondary"
+          >
             {isLoading && <Loader2Icon className="size-4 animate-spin" />}
-            {!isLoading && <SearchIcon />}
+            {!isLoading && <CheckIcon />}
           </Button>
         </div>
       </div>

@@ -16,6 +16,7 @@ export interface TreeNode {
   id: string;
   label: string;
   checked?: boolean; // true = checked, false = unchecked, undefined = indeterminate
+  state?: string;
   children?: TreeNode[];
   data?: any;
 }
@@ -33,6 +34,7 @@ interface TreeViewProps {
   searchPlaceholder?: string;
   showSelectAllButtons?: boolean;
   isReadOnly?: boolean;
+  isLoading?: boolean;
 }
 
 interface TreeNodeProps {
@@ -75,7 +77,6 @@ const OptimizedCheckbox = memo(
               : "bg-white border-gray-300 hover:border-gray-400"
         }`}
       >
-        {isReadOnly}
         {checked && (
           <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
             <path
@@ -90,7 +91,7 @@ const OptimizedCheckbox = memo(
         {indeterminate && !checked && <div className="w-2 h-0.5 bg-white" />}
       </button>
     );
-  }
+  },
 );
 
 // Componente do nó - MEMOIZADO
@@ -130,7 +131,7 @@ const TreeNodeComponent = memo<TreeNodeProps>(
               </span>
             ) : (
               part
-            )
+            ),
           )}
         </>
       );
@@ -147,7 +148,7 @@ const TreeNodeComponent = memo<TreeNodeProps>(
           onToggleExpand(node.id);
         }
       },
-      [hasChildren, node.id, onToggleExpand]
+      [hasChildren, node.id, onToggleExpand],
     );
 
     if (!shouldShow) return null;
@@ -212,6 +213,7 @@ const TreeNodeComponent = memo<TreeNodeProps>(
                 onToggleCheck={onToggleCheck}
                 searchTerm={searchTerm}
                 filteredNodeIds={filteredNodeIds}
+                isReadOnly={isReadOnly}
               />
             ))}
           </div>
@@ -227,15 +229,16 @@ const TreeNodeComponent = memo<TreeNodeProps>(
       prevProps.expandedNodes === nextProps.expandedNodes &&
       prevProps.checkedStates === nextProps.checkedStates &&
       prevProps.searchTerm === nextProps.searchTerm &&
-      prevProps.filteredNodeIds === nextProps.filteredNodeIds
+      prevProps.filteredNodeIds === nextProps.filteredNodeIds &&
+      prevProps.isReadOnly === nextProps.isReadOnly
     );
-  }
+  },
 );
 
 // Funções auxiliares otimizadas
 const getAllNodeIds = (
   node: TreeNode,
-  result: Set<string> = new Set()
+  result: Set<string> = new Set(),
 ): Set<string> => {
   result.add(node.id);
   if (node.children) {
@@ -252,12 +255,17 @@ const getInitialCheckedIds = (nodes: TreeNode[]): Set<string> => {
 
   const traverse = (nodeList: TreeNode[]) => {
     for (const node of nodeList) {
-      // Se o nó está explicitamente marcado como checked
-      if (node.checked === true) {
-        checkedIds.add(node.id);
-      }
+      // Verifica se está marcado (considerando propriedade checked, data.checked ou state="checked")
+      const isChecked =
+        (node.checked || node.data?.checked || node.state === "checked") &&
+        String(node.checked) !== "false" &&
+        String(node.data?.checked) !== "false";
 
-      if (node.children) {
+      if (isChecked) {
+        // Adiciona o nó atual e todos os seus descendentes
+        getAllNodeIds(node, checkedIds);
+      } else if (node.children) {
+        // Se não estiver marcado, verifica os filhos recursivamente
         traverse(node.children);
       }
     }
@@ -276,6 +284,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
   isReadOnly = false,
   searchPlaceholder = "Buscar...",
   showSelectAllButtons = true,
+  isLoading = false,
 }) => {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -314,7 +323,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
 
     const searchInTree = (
       nodeList: TreeNode[],
-      parentPath: string[] = []
+      parentPath: string[] = [],
     ): boolean => {
       let hasMatch = false;
 
@@ -373,13 +382,16 @@ export const TreeView: React.FC<TreeViewProps> = ({
         if (childState.indeterminate) indeterminateCount++;
       }
 
+      // Verifica se o próprio nó está marcado explicitamente
+      const isSelfChecked = checkedNodes.has(node.id);
+
       // Se a propriedade checked do nó está definida explicitamente, usa ela
       // Caso contrário, calcula baseado nos filhos
       let state: CheckboxState;
 
       if (checkedCount === total) {
         state = { checked: true, indeterminate: false };
-      } else if (checkedCount > 0 || indeterminateCount > 0) {
+      } else if (checkedCount > 0 || indeterminateCount > 0 || isSelfChecked) {
         state = { checked: false, indeterminate: true };
       } else {
         state = { checked: false, indeterminate: false };
@@ -417,16 +429,33 @@ export const TreeView: React.FC<TreeViewProps> = ({
         if (!node) return prev;
 
         const next = new Set(prev);
-        const isCurrentlyChecked = next.has(nodeId);
 
-        // Coletar IDs de forma otimizada
+        // Funções auxiliares locais para determinar o estado ATUAL antes do toggle
+
+        // Verifica se está TOTALMENTE checado (todos os descendentes estão no set)
+        const checkFullyChecked = (n: TreeNode): boolean => {
+          if (!n.children || n.children.length === 0) return next.has(n.id);
+          return n.children.every(checkFullyChecked);
+        };
+
+        // Verifica se tem ALGUMA coisa checada (ele mesmo ou algum descendente)
+        const checkSomeChecked = (n: TreeNode): boolean => {
+          if (next.has(n.id)) return true;
+          if (n.children) return n.children.some(checkSomeChecked);
+          return false;
+        };
+
+        const isFully = checkFullyChecked(node);
+        // const isSome = checkSomeChecked(node);
         const allIds = getAllNodeIds(node);
 
-        if (isCurrentlyChecked) {
+        if (isFully) {
+          // Estado: Checked (Todos marcados) -> Próximo: Unchecked
           for (const id of allIds) {
             next.delete(id);
           }
         } else {
+          // Estado: Indeterminado ou Unchecked -> Próximo: Checked (Marcar tudo)
           for (const id of allIds) {
             next.add(id);
           }
@@ -435,7 +464,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
         return next;
       });
     },
-    [allNodesMap]
+    [allNodesMap],
   );
 
   // Notificar mudanças
@@ -496,7 +525,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
           <div className="p-3 flex gap-2">
             <button
               onClick={selectAll}
-              disabled={allSelected}
+              disabled={allSelected || isLoading || isReadOnly}
               className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <CheckSquare className="w-4 h-4" />
@@ -504,7 +533,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
             </button>
             <button
               onClick={selectNone}
-              disabled={noneSelected}
+              disabled={noneSelected || isLoading || isReadOnly}
               className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Square className="w-4 h-4" />
@@ -518,22 +547,34 @@ export const TreeView: React.FC<TreeViewProps> = ({
       </div>
 
       <div className="p-2">
-        <div className="max-h-96 overflow-y-auto">
-          {data.map((node) => (
-            <TreeNodeComponent
-              key={node.id}
-              node={node}
-              level={0}
-              isReadOnly={isReadOnly}
-              expandedNodes={expandedNodes}
-              checkedStates={checkedStates}
-              onToggleExpand={handleToggleExpand}
-              onToggleCheck={handleToggleCheck}
-              searchTerm={searchTerm}
-              filteredNodeIds={searchTerm ? filteredNodeIds : undefined}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <span className="ml-2 text-sm text-gray-500">Carregando...</span>
+          </div>
+        ) : (
+          <div className="max-h-96 overflow-y-auto">
+            {data.map((node) => (
+              <TreeNodeComponent
+                key={node.id}
+                node={node}
+                level={0}
+                isReadOnly={isReadOnly}
+                expandedNodes={expandedNodes}
+                checkedStates={checkedStates}
+                onToggleExpand={handleToggleExpand}
+                onToggleCheck={handleToggleCheck}
+                searchTerm={searchTerm}
+                filteredNodeIds={searchTerm ? filteredNodeIds : undefined}
+              />
+            ))}
+            {data.length === 0 && (
+              <div className="py-8 text-center text-gray-500 text-sm">
+                Nenhum item encontrado
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

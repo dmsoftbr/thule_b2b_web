@@ -13,9 +13,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { api } from "@/lib/api";
+import { api, handleError } from "@/lib/api";
 import type { SalesGroupModel } from "@/models/registrations/sales-group.model";
 import { useQuery } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
+
+const EMPTY_DATA: TreeNode[] = [];
 
 interface Props {
   isOpen: boolean;
@@ -23,11 +27,14 @@ interface Props {
   groupData: SalesGroupModel;
 }
 export const DetailsModal = ({ groupData, isOpen, onClose }: Props) => {
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+
   const { data: treeData } = useQuery({
     queryKey: ["sales-group-tree-data", groupData.id],
     queryFn: async () => {
       const { data } = await api.get<TreeNode[]>(
-        `/registrations/sales-groups/grid/${groupData.id}`
+        `/registrations/sales-groups/grid/${groupData.id}`,
       );
 
       return data;
@@ -35,69 +42,28 @@ export const DetailsModal = ({ groupData, isOpen, onClose }: Props) => {
     enabled: !!groupData,
   });
 
-  // const treeData: TreeNode[] = [
-  //   {
-  //     id: "12",
-  //     label: "Bike Carriers",
-  //     children: [
-  //       {
-  //         id: "1.1",
-  //         label: "AWN",
-  //         children: [
-  //           { id: "1.1.1", label: "Boxes & Baskets" },
-  //           { id: "1.1.2", label: "Luggage&Duffels" },
-  //           { id: "1.1.3", label: "Other RV" },
-  //         ],
-  //       },
-  //       {
-  //         id: "1.2",
-  //         label: "WIN",
-  //         children: [
-  //           { id: "1.2.1", label: "Boxes & Baskets" },
-  //           { id: "1.2.2", label: "Luggage&Duffels" },
-  //           { id: "1.2.3", label: "Other RV" },
-  //         ],
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     id: "14",
-  //     label: "Adventure Camping",
-  //     children: [
-  //       { id: "2.1", label: "PROF" },
-  //       { id: "2.2", label: "BIKECAR" },
-  //       {
-  //         id: "2.3",
-  //         label: "Screenshots",
-  //         children: [
-  //           { id: "2.3.1", label: "Boxes & Baskets" },
-  //           { id: "2.3.2", label: "Luggage&Duffels" },
-  //           { id: "2.3.3", label: "Other RV" },
-  //         ],
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     id: "60",
-  //     label: "Bags",
-  //     children: [
-  //       { id: "60.73", label: "CBS" },
-  //       { id: "60.79", label: "OTHAWK" },
-  //     ],
-  //   },
-  // ];
-
   async function handleSave() {
-    //
+    try {
+      setIsSaving(true);
+      await api.post(`/registrations/sales-groups/grid/${groupData.id}`, [
+        ...selectedIds,
+      ]);
+      toast.success("Detalhamento gravado com sucesso!");
+      onClose();
+    } catch (error) {
+      toast.error(handleError(error));
+    } finally {
+      setIsSaving(false);
+    }
   }
 
-  const handleSelectionChange = (selectedIds: string[]) => {
-    console.log("Itens selecionados:", selectedIds);
-  };
+  const handleSelectionChange = useCallback((ids: string[]) => {
+    setSelectedIds(ids);
+  }, []);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="min-w-7/12">
+      <DialogContent className="md:min-w-fit min-w-fit">
         <DialogHeader>
           <DialogTitle>Detalhamento do Grupo de Vendas</DialogTitle>
           <DialogDescription></DialogDescription>
@@ -110,7 +76,7 @@ export const DetailsModal = ({ groupData, isOpen, onClose }: Props) => {
           </div>
           <div>
             <TreeView
-              data={treeData ?? []}
+              data={treeData ?? EMPTY_DATA}
               onSelectionChange={handleSelectionChange}
               className="shadow-sm"
               searchable={true}
@@ -120,7 +86,9 @@ export const DetailsModal = ({ groupData, isOpen, onClose }: Props) => {
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={() => handleSave()}>Gravar</Button>
+          <Button disabled={isSaving} onClick={() => handleSave()}>
+            Gravar
+          </Button>
           <Button onClick={onClose} variant="secondary">
             Fechar
           </Button>

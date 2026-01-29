@@ -131,7 +131,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
   const getTotalOrderWithDiscount = () => {
     return order.items.reduce(
       (acc, b) => acc + b.orderQuantity * b.inputPrice,
-      0
+      0,
     );
   };
 

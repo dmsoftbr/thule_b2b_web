@@ -22,24 +22,42 @@ import { useOrder } from "../-context/order-context";
 import type { PriceTableModel } from "@/models/registrations/price-table.model";
 import { SearchCombo } from "@/components/ui/search-combo";
 import { AppTooltip } from "@/components/layout/app-tooltip";
+import * as uuid from "uuid";
+import { toast } from "sonner";
+import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
+import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 
-export const OrderSearchProductModal = () => {
+interface Props {
+  initialPriceTable: PriceTableModel;
+}
+
+export const OrderSearchProductModal = ({ initialPriceTable }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const { order, setOrder } = useOrder();
-  const [priceTable, setPriceTable] = useState<PriceTableModel | null>(null);
+  const [priceTable, setPriceTable] =
+    useState<PriceTableModel>(initialPriceTable);
   const [tableToken, setTableToken] = useState(new Date().valueOf());
-
+  const { showAppDialog } = useAppDialog();
   function handleAddItemToOrder(
     priceTable: PriceTableModel,
     product: ProductModel,
     orderQuantity: number,
   ) {
+    if (!priceTable) {
+      toast.warning("Selecione a tabela de preço");
+      return;
+    }
+    if (!orderQuantity) orderQuantity = 1;
+    if (orderQuantity == 0) orderQuantity = 1;
+
     const newOrder = { ...order };
     const existingItemIndex = newOrder.items.findIndex(
       (f) => f.productId == product.id,
     );
+
     if (existingItemIndex >= 0) {
       newOrder.items[existingItemIndex].orderQuantity = orderQuantity;
+      toast.success("Quantidade atualizada!");
     } else {
       newOrder.items.push({
         availability: "C",
@@ -57,7 +75,7 @@ export const OrderSearchProductModal = () => {
         customerAbbreviation: order.customerAbbreviation,
         deliveredQuantity: 0,
         fiscalClassificationId: "",
-        id: "",
+        id: uuid.v4(),
         ncm: "",
         netItemValue: 0,
         originalDeliveryDate: new Date(),
@@ -69,6 +87,7 @@ export const OrderSearchProductModal = () => {
         taxes: [],
         costValue: 0,
       });
+      toast.success("Produto adicionado no pedido!");
     }
     setOrder(newOrder);
   }
@@ -161,6 +180,7 @@ export const OrderSearchProductModal = () => {
           step={1}
           minusSlot={<MinusIcon className="size-3" />}
           plusSlot={<PlusIcon className="size-3" />}
+          value={product.quantity ?? 1}
           onValueChange={(value) => (product.quantity = value ?? 0)}
         />
       ),
@@ -170,16 +190,41 @@ export const OrderSearchProductModal = () => {
       key: "actions",
       dataIndex: "id",
       title: "Ações",
-      renderItem: (product) => (
+      renderItem: (product: ProductModel) => (
         <div>
           <Button
-            onClick={() => {
-              if (!priceTable) return;
-              handleAddItemToOrder(
-                priceTable,
-                product,
-                product.quantity < 1 ? 1 : product.quantity,
-              );
+            onClick={async () => {
+              if (!priceTable) {
+                toast.warning("Selecione a Tabela de Preço");
+                return;
+              }
+
+              if (product.orderMessage) {
+                await showAppDialog({
+                  message: product.orderMessage,
+                  title: "ATENÇÃO",
+                  type: "warning",
+                  buttons: [
+                    {
+                      text: "OK",
+                      autoClose: true,
+                    },
+                  ],
+                  onClose: () => {
+                    handleAddItemToOrder(
+                      priceTable,
+                      product,
+                      product.quantity < 1 ? 1 : product.quantity,
+                    );
+                  },
+                });
+              } else {
+                handleAddItemToOrder(
+                  priceTable,
+                  product,
+                  product.quantity < 1 ? 1 : product.quantity,
+                );
+              }
             }}
           >
             <PlusIcon className="size-4" />
@@ -210,13 +255,13 @@ export const OrderSearchProductModal = () => {
             searchSlot={
               <AppTooltip message="Tabela de Preço">
                 <SearchCombo
-                  className="min-w-[250px]"
-                  apiEndpoint={`/registrations/customer-price-tables/customer/${order.customerId}`}
-                  valueProp="priceTableId"
-                  labelProp="priceTableId"
-                  placeholder="Selecione uma Tabela de Preço"
-                  searchPlaceholder="Procurar Tabela de Preço"
-                  defaultValue={priceTable?.id ?? ""}
+                  className="h-9.5 min-w-[200px]"
+                  defaultValue={order.customer?.priceTables[0].id}
+                  staticItems={convertArrayToSearchComboItem(
+                    order.customer?.priceTables ?? [],
+                    "id",
+                    "portalName",
+                  )}
                   onSelectOption={(opt) => {
                     setPriceTable(opt[0].extra?.priceTable);
                     setTableToken(new Date().valueOf());
@@ -225,11 +270,16 @@ export const OrderSearchProductModal = () => {
               </AppTooltip>
             }
             columns={columns}
-            dataUrl="/registrations/products/list-paged"
+            dataUrl="/registrations/products/list-paged-price-table"
             searchFields={[]}
             defaultPageSize={8}
             defaultSearchField="all"
-            additionalInfo={{ priceTableId: priceTable?.id ?? "" }}
+            defaultSortFieldDataIndex="suggestUnitPrice"
+            defaultSortDesc={true}
+            additionalInfo={{
+              priceTableId: priceTable?.id ?? "",
+              customerId: order.customerId ?? 0,
+            }}
           />
         </div>
         <DialogFooter>

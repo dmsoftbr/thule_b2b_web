@@ -14,6 +14,7 @@ import { Route as AppIndexRouteImport } from './pages/_app/index'
 import { Route as AuthLoginRouteImport } from './pages/auth/login'
 import { Route as AppOutletIndexRouteImport } from './pages/_app/outlet/index'
 import { Route as AppOrdersIndexRouteImport } from './pages/_app/orders/index'
+import { Route as AppOrderConfirmationIndexRouteImport } from './pages/_app/order-confirmation/index'
 import { Route as AppDashboardIndexRouteImport } from './pages/_app/dashboard/index'
 import { Route as AppBudgetsIndexRouteImport } from './pages/_app/budgets/index'
 import { Route as AppApprovalsIndexRouteImport } from './pages/_app/approvals/index'
@@ -61,6 +62,7 @@ import { Route as AppBudgetsEditOrderIdIndexRouteImport } from './pages/_app/bud
 import { Route as AppAdminUsersUserIdIndexRouteImport } from './pages/_app/admin/users/$userId/index'
 import { Route as AppAdminUserGroupsGroupIdIndexRouteImport } from './pages/_app/admin/user-groups/$groupId/index'
 import { Route as AppAdminSettingsSettingIdIndexRouteImport } from './pages/_app/admin/settings/$settingId/index'
+import { Route as AppRegistrationsCustomersCustomerIdSalesGroupIndexRouteImport } from './pages/_app/registrations/customers/$customerId/sales-group/index'
 import { Route as AppRegistrationsCustomersCustomerIdPriceTablesIndexRouteImport } from './pages/_app/registrations/customers/$customerId/price-tables/index'
 
 const AppLayoutRoute = AppLayoutRouteImport.update({
@@ -87,6 +89,12 @@ const AppOrdersIndexRoute = AppOrdersIndexRouteImport.update({
   path: '/orders/',
   getParentRoute: () => AppLayoutRoute,
 } as any)
+const AppOrderConfirmationIndexRoute =
+  AppOrderConfirmationIndexRouteImport.update({
+    id: '/order-confirmation/',
+    path: '/order-confirmation/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 const AppDashboardIndexRoute = AppDashboardIndexRouteImport.update({
   id: '/dashboard/',
   path: '/dashboard/',
@@ -355,6 +363,12 @@ const AppAdminSettingsSettingIdIndexRoute =
     path: '/admin/settings/$settingId/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
+const AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute =
+  AppRegistrationsCustomersCustomerIdSalesGroupIndexRouteImport.update({
+    id: '/registrations/customers/$customerId/sales-group/',
+    path: '/registrations/customers/$customerId/sales-group/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 const AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute =
   AppRegistrationsCustomersCustomerIdPriceTablesIndexRouteImport.update({
     id: '/registrations/customers/$customerId/price-tables/',
@@ -370,6 +384,7 @@ export interface FileRoutesByFullPath {
   '/approvals': typeof AppApprovalsIndexRoute
   '/budgets': typeof AppBudgetsIndexRoute
   '/dashboard': typeof AppDashboardIndexRoute
+  '/order-confirmation': typeof AppOrderConfirmationIndexRoute
   '/orders': typeof AppOrdersIndexRoute
   '/outlet': typeof AppOutletIndexRoute
   '/admin/user-groups/new-user-group': typeof AppAdminUserGroupsNewUserGroupRoute
@@ -415,6 +430,7 @@ export interface FileRoutesByFullPath {
   '/registrations/products/$productId': typeof AppRegistrationsProductsProductIdIndexRoute
   '/registrations/sales-group/$groupId': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   '/registrations/customers/$customerId/price-tables': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
+  '/registrations/customers/$customerId/sales-group': typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute
 }
 export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
@@ -424,6 +440,7 @@ export interface FileRoutesByTo {
   '/approvals': typeof AppApprovalsIndexRoute
   '/budgets': typeof AppBudgetsIndexRoute
   '/dashboard': typeof AppDashboardIndexRoute
+  '/order-confirmation': typeof AppOrderConfirmationIndexRoute
   '/orders': typeof AppOrdersIndexRoute
   '/outlet': typeof AppOutletIndexRoute
   '/admin/user-groups/new-user-group': typeof AppAdminUserGroupsNewUserGroupRoute
@@ -469,6 +486,7 @@ export interface FileRoutesByTo {
   '/registrations/products/$productId': typeof AppRegistrationsProductsProductIdIndexRoute
   '/registrations/sales-group/$groupId': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   '/registrations/customers/$customerId/price-tables': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
+  '/registrations/customers/$customerId/sales-group': typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -480,6 +498,7 @@ export interface FileRoutesById {
   '/_app/approvals/': typeof AppApprovalsIndexRoute
   '/_app/budgets/': typeof AppBudgetsIndexRoute
   '/_app/dashboard/': typeof AppDashboardIndexRoute
+  '/_app/order-confirmation/': typeof AppOrderConfirmationIndexRoute
   '/_app/orders/': typeof AppOrdersIndexRoute
   '/_app/outlet/': typeof AppOutletIndexRoute
   '/_app/admin/user-groups/new-user-group': typeof AppAdminUserGroupsNewUserGroupRoute
@@ -525,6 +544,7 @@ export interface FileRoutesById {
   '/_app/registrations/products/$productId/': typeof AppRegistrationsProductsProductIdIndexRoute
   '/_app/registrations/sales-group/$groupId/': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   '/_app/registrations/customers/$customerId/price-tables/': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
+  '/_app/registrations/customers/$customerId/sales-group/': typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -536,6 +556,7 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/budgets'
     | '/dashboard'
+    | '/order-confirmation'
     | '/orders'
     | '/outlet'
     | '/admin/user-groups/new-user-group'
@@ -581,6 +602,7 @@ export interface FileRouteTypes {
     | '/registrations/products/$productId'
     | '/registrations/sales-group/$groupId'
     | '/registrations/customers/$customerId/price-tables'
+    | '/registrations/customers/$customerId/sales-group'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth/login'
@@ -590,6 +612,7 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/budgets'
     | '/dashboard'
+    | '/order-confirmation'
     | '/orders'
     | '/outlet'
     | '/admin/user-groups/new-user-group'
@@ -635,6 +658,7 @@ export interface FileRouteTypes {
     | '/registrations/products/$productId'
     | '/registrations/sales-group/$groupId'
     | '/registrations/customers/$customerId/price-tables'
+    | '/registrations/customers/$customerId/sales-group'
   id:
     | '__root__'
     | '/_app'
@@ -645,6 +669,7 @@ export interface FileRouteTypes {
     | '/_app/approvals/'
     | '/_app/budgets/'
     | '/_app/dashboard/'
+    | '/_app/order-confirmation/'
     | '/_app/orders/'
     | '/_app/outlet/'
     | '/_app/admin/user-groups/new-user-group'
@@ -690,6 +715,7 @@ export interface FileRouteTypes {
     | '/_app/registrations/products/$productId/'
     | '/_app/registrations/sales-group/$groupId/'
     | '/_app/registrations/customers/$customerId/price-tables/'
+    | '/_app/registrations/customers/$customerId/sales-group/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -732,6 +758,13 @@ declare module '@tanstack/react-router' {
       path: '/orders'
       fullPath: '/orders'
       preLoaderRoute: typeof AppOrdersIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/order-confirmation/': {
+      id: '/_app/order-confirmation/'
+      path: '/order-confirmation'
+      fullPath: '/order-confirmation'
+      preLoaderRoute: typeof AppOrderConfirmationIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/dashboard/': {
@@ -1063,6 +1096,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminSettingsSettingIdIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/registrations/customers/$customerId/sales-group/': {
+      id: '/_app/registrations/customers/$customerId/sales-group/'
+      path: '/registrations/customers/$customerId/sales-group'
+      fullPath: '/registrations/customers/$customerId/sales-group'
+      preLoaderRoute: typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/registrations/customers/$customerId/price-tables/': {
       id: '/_app/registrations/customers/$customerId/price-tables/'
       path: '/registrations/customers/$customerId/price-tables'
@@ -1080,6 +1120,7 @@ interface AppLayoutRouteChildren {
   AppApprovalsIndexRoute: typeof AppApprovalsIndexRoute
   AppBudgetsIndexRoute: typeof AppBudgetsIndexRoute
   AppDashboardIndexRoute: typeof AppDashboardIndexRoute
+  AppOrderConfirmationIndexRoute: typeof AppOrderConfirmationIndexRoute
   AppOrdersIndexRoute: typeof AppOrdersIndexRoute
   AppOutletIndexRoute: typeof AppOutletIndexRoute
   AppAdminUserGroupsNewUserGroupRoute: typeof AppAdminUserGroupsNewUserGroupRoute
@@ -1125,6 +1166,7 @@ interface AppLayoutRouteChildren {
   AppRegistrationsProductsProductIdIndexRoute: typeof AppRegistrationsProductsProductIdIndexRoute
   AppRegistrationsSalesGroupGroupIdIndexRoute: typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute: typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
+  AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute: typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute
 }
 
 const AppLayoutRouteChildren: AppLayoutRouteChildren = {
@@ -1134,6 +1176,7 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppApprovalsIndexRoute: AppApprovalsIndexRoute,
   AppBudgetsIndexRoute: AppBudgetsIndexRoute,
   AppDashboardIndexRoute: AppDashboardIndexRoute,
+  AppOrderConfirmationIndexRoute: AppOrderConfirmationIndexRoute,
   AppOrdersIndexRoute: AppOrdersIndexRoute,
   AppOutletIndexRoute: AppOutletIndexRoute,
   AppAdminUserGroupsNewUserGroupRoute: AppAdminUserGroupsNewUserGroupRoute,
@@ -1195,6 +1238,8 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
     AppRegistrationsSalesGroupGroupIdIndexRoute,
   AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute:
     AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute,
+  AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute:
+    AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute,
 }
 
 const AppLayoutRouteWithChildren = AppLayoutRoute._addFileChildren(

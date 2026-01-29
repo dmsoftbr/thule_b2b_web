@@ -4,7 +4,7 @@ import { ProductImage } from "@/components/app/product-image";
 import { FormInputQty } from "@/components/form/form-qty-input";
 import { formatNumber } from "@/lib/number-utils";
 import { Badge } from "@/components/ui/badge";
-import { TrashIcon } from "lucide-react";
+import { MinusIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -69,6 +69,8 @@ export const OrderItemTableRow = ({ item }: Props) => {
       </TableCell>
       <TableCell className="border-r text-right w-[160px]">
         <FormInputQty
+          plusSlot={<PlusIcon className="size-3" />}
+          minusSlot={<MinusIcon className="size-3" />}
           disabled={!isEditing}
           value={item.orderQuantity}
           onValueChange={(value) => handleUpdateQuantity(value ?? 0)}
@@ -104,8 +106,8 @@ export const OrderItemTableRow = ({ item }: Props) => {
 
       <TableCell className="w-[120px] border-r text-right">
         {formatNumber(
-          ((item.inputPrice - item.costValue) /
-            (item.costValue == 0 ? 1 : item.costValue)) *
+          ((item.suggestPrice - item.priceTablePrice) /
+            (item.suggestPrice == 0 ? 1 : item.suggestPrice)) *
             100,
           2,
         )}
@@ -113,7 +115,9 @@ export const OrderItemTableRow = ({ item }: Props) => {
       </TableCell>
       <TableCell className="w-[120px] border-r text-right">
         {formatNumber(
-          ((item.inputPrice - item.costValue) / item.inputPrice) * 100,
+          ((item.suggestPrice - item.priceTablePrice) /
+            (item.priceTablePrice == 0 ? 1 : item.priceTablePrice)) *
+            100,
           2,
         )}
         %

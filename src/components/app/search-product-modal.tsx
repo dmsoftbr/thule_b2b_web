@@ -13,10 +13,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import type { ProductModel } from "@/models/product.model";
-import { FilterIcon } from "lucide-react";
+import { FilterIcon, SearchIcon } from "lucide-react";
 import { useState } from "react";
 import { ProductImage } from "@/components/app/product-image";
-import { formatNumber } from "@/lib/number-utils";
+
 import { PRODUCT_ACTIVE_STATES } from "@/constants";
 import { cn } from "@/lib/utils";
 
@@ -89,43 +89,43 @@ export const SearchProductModal = ({ onSelect }: Props) => {
       ),
       sortable: true,
     },
-    {
-      key: "PreçoSug",
-      dataIndex: "suggestUnitPrice",
-      title: "Preço Sugerido",
-      className: "w-[128px] border",
+    // {
+    //   key: "PreçoSug",
+    //   dataIndex: "suggestUnitPrice",
+    //   title: "Preço Sugerido",
+    //   className: "w-[128px] border",
 
-      renderItem: (item: ProductModel) => (
-        <div className="font-semibold text-blue-600 w-full text-right">
-          {formatNumber(item.suggestUnitPrice, 2)}
-        </div>
-      ),
-      sortable: true,
-    },
-    {
-      key: "stock",
-      dataIndex: "stock",
-      title: "Estoque",
-      className: "w-[128px] border",
-      renderItem: (item: ProductModel) => (
-        <div className="font-semibold text-blue-600 w-full text-right">
-          {formatNumber(item.suggestUnitPrice, 2)}
-        </div>
-      ),
-      sortable: true,
-    },
-    {
-      key: "estimatedDate",
-      dataIndex: "estimatedDate",
-      title: "Prev. Chegada",
-      className: "w-[128px] border",
-      renderItem: (item: ProductModel) => (
-        <div className="font-semibold text-blue-600 w-full text-right">
-          {formatNumber(item.suggestUnitPrice, 2)}
-        </div>
-      ),
-      sortable: true,
-    },
+    //   renderItem: (item: ProductModel) => (
+    //     <div className="font-semibold text-blue-600 w-full text-right">
+    //       {formatNumber(item.suggestUnitPrice, 2)}
+    //     </div>
+    //   ),
+    //   sortable: true,
+    // },
+    // {
+    //   key: "stock",
+    //   dataIndex: "stock",
+    //   title: "Estoque",
+    //   className: "w-[128px] border",
+    //   renderItem: (item: ProductModel) => (
+    //     <div className="font-semibold text-blue-600 w-full text-right">
+    //       {formatNumber(item.suggestUnitPrice, 2)}
+    //     </div>
+    //   ),
+    //   sortable: true,
+    // },
+    // {
+    //   key: "estimatedDate",
+    //   dataIndex: "estimatedDate",
+    //   title: "Prev. Chegada",
+    //   className: "w-[128px] border",
+    //   renderItem: (item: ProductModel) => (
+    //     <div className="font-semibold text-blue-600 w-full text-right">
+    //       {formatNumber(item.suggestUnitPrice, 2)}
+    //     </div>
+    //   ),
+    //   sortable: true,
+    // },
     {
       key: "isActive",
       dataIndex: "isActive",
@@ -139,7 +139,7 @@ export const SearchProductModal = ({ onSelect }: Props) => {
                 item.isActive == 2 && "bg-purple-300  p-1 rounded-md",
 
                 item.isActive == 3 && "bg-orange-300  p-1 rounded-md",
-                item.isActive == 4 && "bg-red-400 text-white p-1 rounded-md"
+                item.isActive == 4 && "bg-red-400 text-white p-1 rounded-md",
               )}
             >
               {PRODUCT_ACTIVE_STATES[item.isActive]}
@@ -151,7 +151,12 @@ export const SearchProductModal = ({ onSelect }: Props) => {
     },
   ];
 
-  const handleSelect = () => {
+  const handleSelect = (row: ProductModel | null) => {
+    if (row) {
+      onSelect(row);
+      setIsOpen(false);
+      return;
+    }
     onSelect(selectedItem);
     setIsOpen(false);
   };
@@ -160,7 +165,8 @@ export const SearchProductModal = ({ onSelect }: Props) => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button type="button" onClick={() => setIsOpen(true)}>
-          <FilterIcon className="w-4 h-4" />
+          {/* <FilterIcon className="w-4 h-4" /> */}
+          <SearchIcon className="size-4" />
         </Button>
       </DialogTrigger>
       <DialogContent
@@ -179,13 +185,20 @@ export const SearchProductModal = ({ onSelect }: Props) => {
             showAddButton={false}
             defaultPageSize={6}
             dataUrl="/registrations/products/list-paged"
-            searchFields={[{ id: "id", label: "Código/Descrição/Cód.Curto" }]}
-            defaultSearchField="id"
-            onSelectRow={(row) => setSelectedItem(row)}
+            searchFields={[]}
+            defaultSearchField="all"
+            onSelectRow={(row) => {
+              setSelectedItem(row);
+              handleSelect(row);
+            }}
+            onRowDblClick={(row) => {
+              setSelectedItem(row);
+              handleSelect(row);
+            }}
           />
         </div>
         <DialogFooter>
-          <Button disabled={!selectedItem} onClick={() => handleSelect()}>
+          <Button disabled={!selectedItem} onClick={() => handleSelect(null)}>
             Selecionar
           </Button>
 

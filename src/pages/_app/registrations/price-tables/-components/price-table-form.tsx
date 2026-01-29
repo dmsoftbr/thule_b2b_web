@@ -12,9 +12,7 @@ import { Form } from "@/components/ui/form";
 import { FormInput } from "@/components/form/form-input";
 import { FormCheckBox } from "@/components/form/form-checkbox";
 import { Button } from "@/components/ui/button";
-import { parseDate } from "@/lib/datetime-utils";
-import { FormInputMask } from "@/components/form/form-input-mask";
-import { format } from "date-fns";
+import { FormDatePicker } from "@/components/form/form-datepicker";
 
 interface Props {
   initialData: PriceTableModel | null;
@@ -34,6 +32,8 @@ export const PriceTableForm = ({ initialData, mode, onClose }: Props) => {
       validFrom: new Date(),
       validTo: new Date(),
       zeroDiscount: false,
+      isActive: true,
+      portalName: "",
     },
   });
 
@@ -55,9 +55,17 @@ export const PriceTableForm = ({ initialData, mode, onClose }: Props) => {
   };
 
   useEffect(() => {
-    if (initialData) form.reset(initialData);
-    console.log(initialData);
-    console.log(parseDate(form.getValues("validTo")));
+    if (initialData) {
+      form.reset({
+        ...initialData,
+        validFrom: initialData.validFrom
+          ? new Date(initialData.validFrom)
+          : new Date(),
+        validTo: initialData.validTo
+          ? new Date(initialData.validTo)
+          : new Date(),
+      });
+    }
   }, [initialData]);
 
   const isInputsDisabled = mode == "VIEW";
@@ -70,29 +78,29 @@ export const PriceTableForm = ({ initialData, mode, onClose }: Props) => {
       >
         <FormInput readOnly control={form.control} name="id" label="Código" />
         <FormInput control={form.control} name="name" label="Descrição" />
-        <FormInputMask
+        <FormInput
           control={form.control}
+          name="portalName"
+          label="Nome no Portal"
+        />
+        <FormDatePicker
+          control={form.control}
+          label="Válido de"
           name="validFrom"
-          mask="00/00/0000"
-          label={"Valido De"}
-          outputType="date"
-          defaultValue={format(form.getValues("validFrom"), "dd/MM/yyyy")}
         />
-
-        <FormInputMask
+        <FormDatePicker
           control={form.control}
+          label="Válido Ate"
           name="validTo"
-          mask="00/00/0000"
-          outputType="date"
-          label={"Valido Até"}
-          defaultValue={format(form.getValues("validTo"), "dd/MM/yyyy")}
         />
-        <FormCheckBox
-          control={form.control}
-          name="zeroDiscount"
-          label="Zera Desconto?"
-        />
-
+        <div className="flex items-center justify-between gap-x-4">
+          <FormCheckBox control={form.control} name="isActive" label="Ativa?" />
+          <FormCheckBox
+            control={form.control}
+            name="zeroDiscount"
+            label="Zera Desconto?"
+          />
+        </div>
         <div className="flex items-end justify-end gap-x-2">
           {!isInputsDisabled && (
             <Button disabled={isLoading} type="submit" variant="green">

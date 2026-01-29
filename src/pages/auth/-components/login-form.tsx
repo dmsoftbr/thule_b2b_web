@@ -74,7 +74,7 @@ export const LoginForm = ({ onGotoForgotPassword }: Props) => {
               src="assets/images/thule_group.png"
               width={200}
               height={200}
-              alt="Thule Group"
+              alt="THULE"
             />
           </div>
         </CardTitle>

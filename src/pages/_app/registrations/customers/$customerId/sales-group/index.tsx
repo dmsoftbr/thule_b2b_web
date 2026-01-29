@@ -2,29 +2,29 @@ import { AppPageHeader } from "@/components/layout/app-page-header";
 import { ServerTable } from "@/components/server-table/server-table";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
-import type { CustomerPriceTableModel } from "@/models/registrations/customer-price-table.model";
 import { useQuery } from "@tanstack/react-query";
 import {
   createFileRoute,
   useNavigate,
   useParams,
 } from "@tanstack/react-router";
-import { priceTableColumns } from "./-components/price-table-columns";
 import { useState } from "react";
-import { AddPriceTableModal } from "./-components/add-price-table-modal";
 import type { CustomerModel } from "@/models/registrations/customer.model";
+import type { CustomerSalesGroupModel } from "@/models/registrations/customer-sales-group-model";
+import { salesGroupColumns } from "./-components/sales-group-columns";
+import { AddSalesGroupModal } from "./-components/add-sales-group-modal";
 
 export const Route = createFileRoute(
-  "/_app/registrations/customers/$customerId/price-tables/",
+  "/_app/registrations/customers/$customerId/sales-group/",
 )({
-  component: CustomerIdPageComponent,
+  component: CustomerIdSalesGroupPageComponent,
 });
 
-function CustomerIdPageComponent() {
+function CustomerIdSalesGroupPageComponent() {
   const [tableToken, setTableToken] = useState(new Date().valueOf());
   const [showAddModal, setShowAddModal] = useState(false);
   const { customerId } = useParams({
-    from: "/_app/registrations/customers/$customerId/price-tables/",
+    from: "/_app/registrations/customers/$customerId/sales-group/",
   });
   const navigate = useNavigate();
 
@@ -43,9 +43,9 @@ function CustomerIdPageComponent() {
     setShowAddModal(true);
   };
 
-  const handleDelete = async (data: CustomerPriceTableModel) => {
+  const handleDelete = async (data: CustomerSalesGroupModel) => {
     await api.delete(
-      `/registrations/customer-price-tables/${data.customerId}/${data.priceTableId}`,
+      `/registrations/customer-sales-group/${data.customerId}/${data.groupId}`,
     );
 
     setTableToken(new Date().valueOf());
@@ -53,16 +53,16 @@ function CustomerIdPageComponent() {
 
   return (
     <AppPageHeader
-      titleSlot={`Tabelas de Preço do Cliente: ${customerId} - ${customerData?.abbreviation}`}
+      titleSlot={`Grupos de Venda do Cliente: ${customerId} - ${customerData?.abbreviation}`}
     >
       <div className="max-w-lg ml-auto mr-auto mt-2">
-        <ServerTable<CustomerPriceTableModel>
+        <ServerTable<CustomerSalesGroupModel>
           key={tableToken}
           onAdd={() => handleAdd()}
-          columns={priceTableColumns({ fnDelete: handleDelete })}
-          defaultSearchField="priceTableId"
-          searchFields={[{ id: "priceTableId", label: "Tabela de Preço" }]}
-          dataUrl="/registrations/customer-price-tables/list-paged"
+          columns={salesGroupColumns({ fnDelete: handleDelete })}
+          defaultSearchField="groupId"
+          searchFields={[{ id: "groupId", label: "Grupo de Venda" }]}
+          dataUrl="/registrations/customer-sales-group/list-paged"
           additionalInfo={{ customerId }}
         />
       </div>
@@ -72,7 +72,7 @@ function CustomerIdPageComponent() {
         </Button>
       </div>
       {showAddModal && (
-        <AddPriceTableModal
+        <AddSalesGroupModal
           isOpen={showAddModal}
           onClose={(refresh) => {
             if (refresh) setTableToken(new Date().valueOf());

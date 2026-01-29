@@ -4,6 +4,7 @@ import type { PaymentConditionModel } from "./payment-condition.model";
 import type { PriceTableModel } from "./price-table.model";
 import type { RepresentativeModel } from "../representative.model";
 import type { CustomerGroupModel } from "./customer-group.model";
+import type { CustomerSalesGroupModel } from "./customer-sales-group-model";
 
 export type CustomerModel = {
   id: number;
@@ -45,6 +46,7 @@ export type CustomerModel = {
   deliveryLocations: DeliveryLocationModel[];
   paymentConditions: PaymentConditionModel[];
   group?: CustomerGroupModel;
+  salesGroup: CustomerSalesGroupModel[];
 
   contactName: string;
   contactPhone: string;

@@ -15,7 +15,7 @@ import { formatNumber } from "@/lib/number-utils";
 import { cn } from "@/lib/utils";
 import { type Esli011Model } from "@/models/stock/esli011.model";
 import { StockService } from "@/services/stock/stock.service";
-import { Loader2Icon, SearchIcon } from "lucide-react";
+import { CheckIcon, Loader2Icon, SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { SearchProductModal } from "@/components/app/search-product-modal";
@@ -32,7 +32,7 @@ export const Esli011Form = () => {
     setEsli11Data(undefined);
     try {
       const stockData = await StockService.getEsli011(
-        itemId ? itemId : productId
+        itemId ? itemId : productId,
       );
       setEsli11Data(stockData);
     } catch (error) {
@@ -75,7 +75,7 @@ export const Esli011Form = () => {
               variant="secondary"
             >
               {isLoading && <Loader2Icon className="size-4 animate-spin" />}
-              {!isLoading && <SearchIcon />}
+              {!isLoading && <CheckIcon />}
             </Button>
           </div>
         </div>
@@ -92,7 +92,7 @@ export const Esli011Form = () => {
               esli11Data
                 ? esli11Data.productStatus == "Totalmente Obsoleto" &&
                     "bg-red-300"
-                : ""
+                : "",
             )}
           />
         </div>
@@ -256,7 +256,7 @@ export const Esli011Form = () => {
                       item.qtAlocPed -
                       item.qtAlocProd -
                       item.qtAlocada,
-                    0
+                    0,
                   )}
                 </TableCell>
                 <TableCell className="border border-neutral-200">
@@ -286,7 +286,7 @@ export const Esli011Form = () => {
                 {esli11Data?.stock.reduce(
                   (a, b) =>
                     (a += b.qtAtu - b.qtAlocPed - b.qtAlocProd - b.qtAlocada),
-                  0
+                  0,
                 )}
               </TableHead>
               <TableHead className="text-neutral-100 border border-neutral-100">

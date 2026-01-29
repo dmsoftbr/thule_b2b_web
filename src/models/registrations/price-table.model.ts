@@ -5,4 +5,7 @@ export type PriceTableModel = {
   validTo: Date;
   isOutlet: boolean;
   zeroDiscount: boolean;
+  isException: boolean;
+  isActive: boolean;
+  portalName: string;
 };

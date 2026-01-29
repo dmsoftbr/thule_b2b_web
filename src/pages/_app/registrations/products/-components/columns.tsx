@@ -12,9 +12,13 @@ import { MenuIcon } from "lucide-react";
 
 interface Props {
   fnDetails: (data: ProductModel) => void;
+  fnMessage: (data: ProductModel) => void;
 }
 
-export const columns = ({ fnDetails }: Props): ServerTableColumn[] => [
+export const columns = ({
+  fnDetails,
+  fnMessage,
+}: Props): ServerTableColumn[] => [
   {
     key: "imageUrl",
     dataIndex: "imageUrl",
@@ -76,6 +80,11 @@ export const columns = ({ fnDetails }: Props): ServerTableColumn[] => [
     sortable: true,
   },
   {
+    key: "orderMessage",
+    dataIndex: "orderMessage",
+    title: "Mensagem Ped/Simul.",
+  },
+  {
     key: "actions",
     dataIndex: "id",
     title: "Ações",
@@ -90,6 +99,9 @@ export const columns = ({ fnDetails }: Props): ServerTableColumn[] => [
           <DropdownMenuContent align="end" className="">
             <DropdownMenuItem onClick={() => fnDetails(product)}>
               Fotos
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => fnMessage(product)}>
+              Mensagem p/Pedidos e Simulações
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

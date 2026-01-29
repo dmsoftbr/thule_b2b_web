@@ -17,11 +17,11 @@ export class ProductsService {
   }
 
   static async listPaged(
-    request: PagedRequestModel
+    request: PagedRequestModel,
   ): Promise<PagedResponseModel<ProductModel>> {
     const response = await api.post<PagedResponseModel<ProductModel>>(
       `/${this.basePath}/list`,
-      request
+      request,
     );
     return response.data;
   }
@@ -31,14 +31,8 @@ export class ProductsService {
     return response.data;
   }
 
-  static async update(
-    id: number,
-    data: Partial<ProductModel>
-  ): Promise<ProductModel> {
-    const response = await api.patch<ProductModel>(
-      `/${this.basePath}/${id}`,
-      data
-    );
+  static async update(data: Partial<ProductModel>): Promise<ProductModel> {
+    const response = await api.patch<ProductModel>(`/${this.basePath}`, data);
     return response.data;
   }
 

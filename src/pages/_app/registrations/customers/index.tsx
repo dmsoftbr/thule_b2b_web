@@ -33,6 +33,10 @@ function CustomersPageComponent() {
     navigate({ to: `/registrations/customers/${data.id}/price-tables` });
   };
 
+  const handleSalesGroup = async (data: CustomerModel) => {
+    navigate({ to: `/registrations/customers/${data.id}/sales-group` });
+  };
+
   return (
     <AppPageHeader titleSlot="Clientes">
       <div className="p-2">
@@ -42,6 +46,7 @@ function CustomersPageComponent() {
           searchFields={searchFieldsList}
           columns={columns({
             fnPriceTables: handlePriceTables,
+            fnSalesGroup: handleSalesGroup,
           })}
           showAddButton={false}
           dataUrl="/registrations/customers/list-paged"
