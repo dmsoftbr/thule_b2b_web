@@ -99,16 +99,10 @@ export const MENU_MOCK: MenuModel[] = [
     children: [
       {
         id: "71",
-        title: "Metas de Representantes",
+        title: "Metas Representantes",
         url: "/registrations/representative-goals",
         icon: "UsersIcon",
       },
-      // {
-      //   id: "72",
-      //   title: "Avisos",
-      //   url: "/avisos",
-      //   icon: "BellIcon",
-      // },
       {
         id: "73",
         title: "Alçadas de Aprovação",
@@ -118,8 +112,14 @@ export const MENU_MOCK: MenuModel[] = [
       {
         id: "74",
         title: "Produtos",
-        url: "/registrations/products",
         icon: "BoxIcon",
+        url: "/registrations/products",
+      },
+      {
+        id: "740",
+        title: "Tipo Item",
+        icon: "BoxIcon",
+        url: "/registrations/item-types",
       },
       {
         id: "76",

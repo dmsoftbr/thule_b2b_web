@@ -29,6 +29,22 @@ function PriceTablesPageComponent() {
     navigate({ to: `/registrations/price-tables/${data.id}` });
   };
 
+  const handlePrices = (data: PriceTableModel) => {
+    navigate({ to: `/registrations/price-tables/${data.id}/prices` });
+  };
+
+  const handleProductsException = (data: PriceTableModel) => {
+    navigate({
+      to: `/registrations/price-tables/${data.id}/products-exception`,
+    });
+  };
+
+  const handleBranchesException = (data: PriceTableModel) => {
+    navigate({
+      to: `/registrations/price-tables/${data.id}/branches-exception`,
+    });
+  };
+
   return (
     <AppPageHeader titleSlot="Manutenção de Tabelas de Preço">
       <div className="p-2">
@@ -38,6 +54,9 @@ function PriceTablesPageComponent() {
           searchFields={searchFieldsList}
           columns={columns({
             fnEdit: handleEdit,
+            fnShowPrices: handlePrices,
+            fnShowProductsException: handleProductsException,
+            fnShowBranchesException: handleBranchesException,
           })}
           showAddButton={false}
           dataUrl="/registrations/price-tables/list-paged"

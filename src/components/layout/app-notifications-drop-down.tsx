@@ -14,6 +14,7 @@ import { subMinutes } from "date-fns";
 import * as uuid from "uuid";
 import { getTimeAgo } from "@/lib/datetime-utils";
 import Alink from "@/components/ui/alink";
+import { Link } from "@tanstack/react-router";
 
 const notifications = [
   {
@@ -88,7 +89,7 @@ export const AppNotificationsDropDown = () => {
           className="text-center flex items-center justify-center"
           asChild
         >
-          <Alink href="/notifications">Todas as Notificações</Alink>
+          <Link to={"/notifications"}>Todas as Notificações</Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

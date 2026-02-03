@@ -12,7 +12,7 @@ export type ProductPriceEstimatedDateModel = {
       id: string;
       name: string;
     };
-    productType: {
+    itemType: {
       id: string;
       name: string;
     };
@@ -24,7 +24,7 @@ export type ProductPriceEstimatedDateModel = {
     groupId: number;
     familyId: string;
     commercialFamilyId: string;
-    productTypeId: string;
+    itemTypeId: string;
     isActive: number;
     referenceCode: string;
   };

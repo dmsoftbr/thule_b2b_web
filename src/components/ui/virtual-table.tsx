@@ -210,7 +210,7 @@ export const VirtualTable = <T,>({
   );
 
   return (
-    <div className="w-full space-y-4 relative">
+    <div className="w-full space-y-4 relative overflow-auto">
       {/* Informações e busca */}
       <div className="flex items-center justify-between gap-4">
         <div className="text-sm text-gray-600">

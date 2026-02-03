@@ -63,7 +63,7 @@ export const DetailsModal = ({ groupData, isOpen, onClose }: Props) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="md:min-w-fit min-w-fit">
+      <DialogContent className="min-w-fit md:min-w-[70%]">
         <DialogHeader>
           <DialogTitle>Detalhamento do Grupo de Vendas</DialogTitle>
           <DialogDescription></DialogDescription>
@@ -85,13 +85,19 @@ export const DetailsModal = ({ groupData, isOpen, onClose }: Props) => {
             />
           </div>
         </div>
-        <DialogFooter>
-          <Button disabled={isSaving} onClick={() => handleSave()}>
-            Gravar
-          </Button>
-          <Button onClick={onClose} variant="secondary">
-            Fechar
-          </Button>
+        <DialogFooter className="!justify-between">
+          <div className="text-xs bg-amber-200 rounded py-1 px-2 w-fit h-fit items-center">
+            Tipo Item / Família Comercial / Grupo de Estoque / Família Material
+            / Características / Tipo Produto / Grupo de Item
+          </div>
+          <div>
+            <Button disabled={isSaving} onClick={() => handleSave()}>
+              Gravar
+            </Button>
+            <Button onClick={onClose} variant="secondary">
+              Fechar
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

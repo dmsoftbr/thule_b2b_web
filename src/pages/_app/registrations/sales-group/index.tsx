@@ -8,6 +8,8 @@ import type { SalesGroupModel } from "@/models/registrations/sales-group.model";
 import { columns } from "./-components/columns";
 import { useState } from "react";
 import { DetailsModal } from "./-components/details-modal";
+import { api } from "@/lib/api";
+import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 
 export const Route = createFileRoute("/_app/registrations/sales-group/")({
   component: SalesGroupPageComponent,
@@ -25,6 +27,8 @@ const searchFieldsList: ServerTableSearchField[] = [
 ];
 
 function SalesGroupPageComponent() {
+  const { showAppDialog } = useAppDialog();
+  const [tableToken, setTableToken] = useState(new Date().valueOf());
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [currentData, setCurrentData] = useState<SalesGroupModel | null>(null);
   const navigate = useNavigate();
@@ -38,7 +42,25 @@ function SalesGroupPageComponent() {
   };
 
   const handleDelete = async (data: SalesGroupModel) => {
-    console.log(data);
+    const continueDelete = await showAppDialog({
+      title: "Atenção",
+      message:
+        "Ao excluir este Grupo, a configuração dele e o vínculo com clientes também serão eliminados. Continua?",
+      type: "confirm",
+      buttons: [
+        { text: "Excluir", value: true, variant: "danger" },
+        {
+          text: "Cancelar",
+          value: false,
+          variant: "secondary",
+        },
+      ],
+    });
+
+    if (continueDelete) {
+      await api.delete(`/registrations/sales-groups/${data.id}`);
+      setTableToken(new Date().valueOf());
+    }
   };
 
   const handleDetails = async (data: SalesGroupModel) => {
@@ -50,6 +72,7 @@ function SalesGroupPageComponent() {
     <AppPageHeader titleSlot="Grupos de Venda">
       <div className="p-2">
         <ServerTable<SalesGroupModel>
+          key={tableToken}
           onAdd={() => handleAdd()}
           defaultSearchField="name"
           defaultSortFieldDataIndex="name"

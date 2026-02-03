@@ -9,7 +9,7 @@ export type ProductModel = {
   groupId: number;
   familyId: string;
   commercialFamilyId: string;
-  productTypeId: string;
+  itemTypeId: string;
   isActive: number;
   referenceCode: string;
   orderMessage: string;

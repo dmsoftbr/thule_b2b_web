@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useEffect, useState, useCallback, useMemo, memo } from "react";
+import { useEffect, useState, useCallback, useMemo, memo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronsUpDownIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -27,7 +27,7 @@ interface Props {
     newCustomer: CustomerModel,
     currentCustomer: CustomerModel | undefined,
     confirm: () => void,
-    cancel: () => void
+    cancel: () => void,
   ) => void;
   defaultValue?: number;
   disabled?: boolean;
@@ -57,13 +57,24 @@ const CustomerItem = memo(
         ...item.name.trim().split(" "),
         item.documentNumber,
       ],
-      [item.id, item.abbreviation, item.name, item.documentNumber]
+      [item.id, item.abbreviation, item.name, item.documentNumber],
     );
 
     const handleSelect = useCallback(() => {
       onSelect?.(item);
       if (closeOnSelect) setIsOpen(false);
     }, [item, onSelect, closeOnSelect, setIsOpen]);
+
+    // Memoiza o CPF/CNPJ formatado
+    const formattedDocument = useMemo(
+      () => formatCpfCnpj(item.documentNumber),
+      [item.documentNumber],
+    );
+
+    // Memoiza o nome em maiúsculas
+    const upperName = useMemo(() => item.name.toUpperCase(), [item.name]);
+
+    const isSelected = value === item.id;
 
     return (
       <CommandItem
@@ -74,7 +85,7 @@ const CustomerItem = memo(
         keywords={keywords}
         className={cn(
           "even:bg-neutral-50 border-t rounded-none cursor-pointer",
-          value === item.id && "!bg-blue-100"
+          isSelected && "!bg-blue-100",
         )}
       >
         <div className="flex flex-col w-full">
@@ -84,13 +95,12 @@ const CustomerItem = memo(
             </span>
           </div>
           <p className="text-xs text-muted-foreground">
-            {item.name.toUpperCase()} - CPF/CNPJ:{" "}
-            {formatCpfCnpj(item.documentNumber)}
+            {upperName} - CPF/CNPJ: {formattedDocument}
           </p>
         </div>
       </CommandItem>
     );
-  }
+  },
 );
 
 CustomerItem.displayName = "CustomerItem";
@@ -109,10 +119,22 @@ export const CustomersCombo = ({
   const [isLoading, setIsLoading] = useState(false);
   const { session } = useAuth();
 
+  // Usa ref para evitar chamadas duplicadas
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const isInitialLoadRef = useRef(true);
+
   // useCallback para evitar recriar a função a cada render
   const onSearch = useCallback(
     async (searchText: string) => {
       if (!session?.user.id) return;
+
+      // Cancela requisição anterior se existir
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      // Cria novo AbortController
+      abortControllerRef.current = new AbortController();
 
       try {
         setIsLoading(true);
@@ -120,26 +142,38 @@ export const CustomersCombo = ({
           `/registrations/customers/search/${session.user.id}`,
           {
             search: searchText,
-          }
+          },
+          {
+            signal: abortControllerRef.current.signal,
+          },
         );
         setData(data);
-      } catch (error) {
-        console.error("Erro ao buscar clientes:", error);
-        setData([]);
+      } catch (error: any) {
+        // Ignora erros de cancelamento
+        if (error.name !== "CanceledError" && error.name !== "AbortError") {
+          console.error("Erro ao buscar clientes:", error);
+          setData([]);
+        }
       } finally {
         setIsLoading(false);
       }
     },
-    [session?.user.id]
+    [session?.user.id],
   );
 
-  // Debounce da busca
-  const debouncedSearch = useDebounceCallback(onSearch, 500);
+  // Debounce da busca com tempo reduzido
+  const debouncedSearch = useDebounceCallback(onSearch, 300);
 
   // Memoiza o item selecionado
   const selectedItem = useMemo(() => {
     return data.find((item) => item.id === value);
   }, [data, value]);
+
+  // Memoiza o documento formatado do item selecionado
+  const selectedFormattedDocument = useMemo(
+    () => (selectedItem ? formatCpfCnpj(selectedItem.documentNumber) : ""),
+    [selectedItem],
+  );
 
   // Memoiza o conteúdo do botão
   const buttonContent = useMemo(() => {
@@ -149,11 +183,11 @@ export const CustomersCombo = ({
       <div>
         {`${selectedItem.id} - ${selectedItem.abbreviation}`} -{" "}
         <span className="text-xs text-muted-foreground">
-          CPF/CNPJ: {formatCpfCnpj(selectedItem.documentNumber)}
+          CPF/CNPJ: {selectedFormattedDocument}
         </span>
       </div>
     );
-  }, [selectedItem]);
+  }, [selectedItem, selectedFormattedDocument]);
 
   // Função para aplicar a seleção
   const applySelection = useCallback(
@@ -161,7 +195,7 @@ export const CustomersCombo = ({
       setValue(customer.id);
       onSelect?.(customer);
     },
-    [onSelect]
+    [onSelect],
   );
 
   // Callback para o onSelect interno que atualiza o value
@@ -189,7 +223,7 @@ export const CustomersCombo = ({
       // Se não tem onPreSelect, aplica diretamente
       applySelection(customer);
     },
-    [value, onPreSelect, selectedItem, applySelection]
+    [value, onPreSelect, selectedItem, applySelection],
   );
 
   // Efeito para buscar quando o texto de busca muda
@@ -197,16 +231,35 @@ export const CustomersCombo = ({
     debouncedSearch(searchText);
   }, [searchText, debouncedSearch]);
 
-  // Efeito para carregar o valor padrão
+  // Efeito para carregar o valor padrão (executado apenas uma vez)
   useEffect(() => {
-    if (defaultValue && defaultValue !== value) {
+    if (defaultValue && isInitialLoadRef.current) {
+      isInitialLoadRef.current = false;
       setValue(defaultValue);
       onSearch(defaultValue.toString());
     }
-  }, [defaultValue]); // Removido onSearch e value das dependências para evitar loop
+  }, [defaultValue, onSearch]);
+
+  // Cleanup do AbortController
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  // Callback para abrir/fechar o popover
+  const handleOpenChange = useCallback((open: boolean) => {
+    setIsOpen(open);
+    // Limpa o texto de busca ao fechar
+    if (!open) {
+      setSearchText("");
+    }
+  }, []);
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           disabled={disabled}

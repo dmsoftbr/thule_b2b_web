@@ -10,6 +10,7 @@ import {
   Folder,
   File,
 } from "lucide-react";
+import { Input } from "../ui/input";
 
 // Tipos
 export interface TreeNode {
@@ -261,9 +262,24 @@ const getInitialCheckedIds = (nodes: TreeNode[]): Set<string> => {
         String(node.checked) !== "false" &&
         String(node.data?.checked) !== "false";
 
+      // Verifica se está indeterminado
+      const isIndeterminate =
+        (node.state === "indeterminate" ||
+          node.data?.state === "indeterminate") &&
+        !isChecked;
+
       if (isChecked) {
         // Adiciona o nó atual e todos os seus descendentes
         getAllNodeIds(node, checkedIds);
+      } else if (isIndeterminate) {
+        // Adiciona apenas o nó atual para permitir que o calculateState o identifique como indeterminado
+        // (pois terá isSelfChecked=true mas checkedCount < total se os filhos não estiverem marcados)
+        checkedIds.add(node.id);
+
+        // Continua verificando os filhos individualmente
+        if (node.children) {
+          traverse(node.children);
+        }
       } else if (node.children) {
         // Se não estiver marcado, verifica os filhos recursivamente
         traverse(node.children);
@@ -495,12 +511,12 @@ export const TreeView: React.FC<TreeViewProps> = ({
           <div className="p-3 border-b border-gray-100">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
+              <Input
                 type="text"
                 placeholder={searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                className="w-full pl-10 pr-10"
               />
               {searchTerm && (
                 <button

@@ -108,7 +108,7 @@ export const columns = ({
         <span
           className={cn(
             "px-2 py-1 text-xs font-medium rounded-full",
-            getOrderStatusColor(order)
+            getOrderStatusColor(order),
           )}
         >
           {getOrderStatusName(order)}
@@ -123,11 +123,13 @@ export const columns = ({
     title: "Ações",
     renderItem: (order: OrderModel) => (
       <div className="flex justify-end">
-        <AppTooltip message="Alterar Pedido">
-          <Button onClick={() => fnEdit(order)} variant="secondary" size="sm">
-            <EditIcon className="size-4" />
-          </Button>
-        </AppTooltip>
+        {order.statusId != 6 && (
+          <AppTooltip message="Alterar Pedido">
+            <Button onClick={() => fnEdit(order)} variant="secondary" size="sm">
+              <EditIcon className="size-4" />
+            </Button>
+          </AppTooltip>
+        )}
         <AppTooltip message="Visualizar Pedido">
           <Button onClick={() => fnView(order)} variant="secondary" size="sm">
             <SearchIcon className="size-4" />
@@ -150,7 +152,10 @@ export const columns = ({
               Duplicar
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => fnCancel(order)}>
+            <DropdownMenuItem
+              onClick={() => fnCancel(order)}
+              disabled={order.statusId == 6}
+            >
               <XSquareIcon className="size-4 text-red-500" />
               Cancelar Pedido
             </DropdownMenuItem>

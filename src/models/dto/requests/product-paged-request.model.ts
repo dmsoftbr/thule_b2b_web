@@ -4,5 +4,5 @@ export type ProductPagedRequestModel = PagedRequestModel & {
   familyIds?: string[];
   groupIds?: number[];
   commercialFamilyIds?: string[];
-  productTypeIds?: string[];
+  itemTypeIds?: string[];
 };
