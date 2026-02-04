@@ -20,6 +20,8 @@ import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 import { type PriceTableModel } from "@/models/registrations/price-table.model";
 import { ProductCostsService } from "@/services/registrations/product-costs.service";
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
+import { StretchHorizontalIcon, Table2Icon } from "lucide-react";
+import { AppTooltip } from "@/components/layout/app-tooltip";
 
 export const OrderFormItems = () => {
   const { order, addItem, mode } = useOrder();
@@ -175,13 +177,47 @@ export const OrderFormItems = () => {
             ) : (
               <div></div>
             )}
-            <Label>
+            <div className="flex items-center gap-x-1">
+              <AppTooltip
+                message="Ver em Cards"
+                className="bg-emerald-700"
+                indicatorClassName="!bg-emerald-700 fill-emerald-700"
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowCard(true)}
+                  className={cn(
+                    "flex items-center justify-center p-1 bg-neutral-50 rounded-md size-9 border-neutral-200 border cursor-pointer hover:bg-emerald-600 hover:text-white transition-colors",
+                    showCard && "bg-emerald-500 border-0 text-white",
+                  )}
+                >
+                  <StretchHorizontalIcon className="size-4" />
+                </button>
+              </AppTooltip>
+              <AppTooltip
+                message="Ver em Tabela"
+                className="bg-emerald-700"
+                indicatorClassName="!bg-emerald-700 fill-emerald-700"
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowCard(false)}
+                  className={cn(
+                    "flex items-center justify-center p-1 bg-neutral-50 rounded-md size-9 border-neutral-200 border cursor-pointer hover:bg-emerald-600 hover:text-white transition-colors",
+                    !showCard && "bg-emerald-500 border-0 text-white",
+                  )}
+                >
+                  <Table2Icon className="size-4" />
+                </button>
+              </AppTooltip>
+            </div>
+            {/* <Label>
               <Checkbox
                 checked={showCard}
                 onCheckedChange={(e) => setShowCard(e ? true : false)}
               />{" "}
               Ver em Cards
-            </Label>
+            </Label> */}
           </div>
         </div>
       </div>

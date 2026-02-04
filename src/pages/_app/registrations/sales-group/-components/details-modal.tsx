@@ -16,7 +16,8 @@ import { Label } from "@/components/ui/label";
 import { api, handleError } from "@/lib/api";
 import type { SalesGroupModel } from "@/models/registrations/sales-group.model";
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
+import { Loader2Icon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const EMPTY_DATA: TreeNode[] = [];
@@ -26,30 +27,40 @@ interface Props {
   onClose: () => void;
   groupData: SalesGroupModel;
 }
+
+export interface SaveRulesRequest {
+  salesGroupId: string;
+  selectedPathIds: string[];
+}
+
+export const saveCommercialRules = async (
+  salesGroupId: string,
+  selectedPathIds: string[],
+): Promise<void> => {
+  try {
+    const payload: SaveRulesRequest = {
+      salesGroupId,
+      selectedPathIds,
+    };
+
+    await api.post(`/registrations/sales-groups/grid/${salesGroupId}`, payload);
+  } catch (error) {
+    console.log(error);
+    toast.error(handleError(error));
+  }
+};
+
 export const DetailsModal = ({ groupData, isOpen, onClose }: Props) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
-
-  const { data: treeData } = useQuery({
-    queryKey: ["sales-group-tree-data", groupData.id],
-    queryFn: async () => {
-      const { data } = await api.get<TreeNode[]>(
-        `/registrations/sales-groups/grid/${groupData.id}`,
-      );
-
-      return data;
-    },
-    enabled: !!groupData,
-  });
+  const [treeData, setTreeData] = useState<TreeNode[]>([]);
 
   async function handleSave() {
     try {
       setIsSaving(true);
-      await api.post(`/registrations/sales-groups/grid/${groupData.id}`, [
-        ...selectedIds,
-      ]);
+      await saveCommercialRules(groupData.id, selectedIds);
       toast.success("Detalhamento gravado com sucesso!");
-      onClose();
+      //onClose();
     } catch (error) {
       toast.error(handleError(error));
     } finally {
@@ -57,9 +68,23 @@ export const DetailsModal = ({ groupData, isOpen, onClose }: Props) => {
     }
   }
 
+  const getTreeData = async () => {
+    const { data } = await api.get<TreeNode[]>(
+      `/registrations/sales-groups/grid/${groupData.id}`,
+    );
+    setTreeData(data);
+  };
+
   const handleSelectionChange = useCallback((ids: string[]) => {
+    console.log("SELCT", ids);
     setSelectedIds(ids);
   }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      getTreeData();
+    }
+  }, [isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -90,9 +115,16 @@ export const DetailsModal = ({ groupData, isOpen, onClose }: Props) => {
             Tipo Item / Família Comercial / Grupo de Estoque / Família Material
             / Características / Tipo Produto / Grupo de Item
           </div>
-          <div>
+          <div className="flex items-center justify-center gap-x-2">
             <Button disabled={isSaving} onClick={() => handleSave()}>
-              Gravar
+              {isSaving ? (
+                <div>
+                  <Loader2Icon className="size-3 animate-spin" />
+                  Gravando...
+                </div>
+              ) : (
+                <span>Gravar</span>
+              )}
             </Button>
             <Button onClick={onClose} variant="secondary">
               Fechar

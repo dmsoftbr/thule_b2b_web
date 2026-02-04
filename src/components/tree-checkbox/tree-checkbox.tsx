@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useMemo, memo, useEffect } from "react";
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  useRef,
+} from "react";
 import {
   ChevronRight,
   ChevronDown,
@@ -10,14 +16,14 @@ import {
   Folder,
   File,
 } from "lucide-react";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 
-// Tipos
+// --- TIPOS ---
+
 export interface TreeNode {
   id: string;
   label: string;
-  checked?: boolean; // true = checked, false = unchecked, undefined = indeterminate
-  state?: string;
+  checked?: boolean;
   children?: TreeNode[];
   data?: any;
 }
@@ -50,248 +56,205 @@ interface TreeNodeProps {
   isReadOnly?: boolean;
 }
 
-// Componente de Checkbox customizado e otimizado
-const OptimizedCheckbox = memo(
-  ({
-    checked,
-    indeterminate,
-    onChange,
-    isReadOnly,
-  }: {
-    checked: boolean;
-    indeterminate: boolean;
-    isReadOnly: boolean;
-    onChange: () => void;
-  }) => {
-    return (
-      <button
-        disabled={isReadOnly}
-        onClick={(e) => {
-          e.stopPropagation();
-          onChange();
-        }}
-        className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-          checked
-            ? "bg-blue-600 border-blue-600"
-            : indeterminate
-              ? "bg-blue-600 border-blue-600"
-              : "bg-white border-gray-300 hover:border-gray-400"
-        }`}
-      >
-        {checked && (
-          <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
-            <path
-              d="M10 3L4.5 8.5L2 6"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
-        {indeterminate && !checked && <div className="w-2 h-0.5 bg-white" />}
-      </button>
-    );
-  },
-);
+// --- UTILITÁRIOS ---
 
-// Componente do nó - MEMOIZADO
-const TreeNodeComponent = memo<TreeNodeProps>(
-  ({
-    node,
-    level,
-    expandedNodes,
-    checkedStates,
-    onToggleExpand,
-    onToggleCheck,
-    searchTerm,
-    filteredNodeIds,
-    isReadOnly = false,
-  }) => {
-    const hasChildren = node.children && node.children.length > 0;
-    const isExpanded = expandedNodes.has(node.id);
-    const checkboxState = checkedStates.get(node.id) || {
-      checked: false,
-      indeterminate: false,
-    };
-    const paddingLeft = level * 20;
+const toStr = (id: string | number): string => String(id);
 
-    const shouldShow = !filteredNodeIds || filteredNodeIds.has(node.id);
-
-    // Memoizar função de highlight
-    const highlightedLabel = useMemo(() => {
-      if (!searchTerm) return node.label;
-
-      const parts = node.label.split(new RegExp(`(${searchTerm})`, "gi"));
-      return (
-        <>
-          {parts.map((part, i) =>
-            part.toLowerCase() === searchTerm.toLowerCase() ? (
-              <span key={i} className="bg-yellow-200 font-semibold">
-                {part}
-              </span>
-            ) : (
-              part
-            ),
-          )}
-        </>
-      );
-    }, [node.label, searchTerm]);
-
-    const handleCheckboxChange = useCallback(() => {
-      onToggleCheck(node.id);
-    }, [node.id, onToggleCheck]);
-
-    const handleExpandToggle = useCallback(
-      (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (hasChildren) {
-          onToggleExpand(node.id);
-        }
-      },
-      [hasChildren, node.id, onToggleExpand],
-    );
-
-    if (!shouldShow) return null;
-
-    return (
-      <div className="select-none">
-        <div
-          className="flex items-center py-1 px-2 hover:bg-gray-50 rounded-sm group"
-          style={{ paddingLeft: `${paddingLeft + 8}px` }}
-        >
-          <button
-            onClick={handleExpandToggle}
-            className={`w-4 h-4 flex items-center justify-center mr-1 rounded-sm hover:bg-gray-200 ${
-              !hasChildren ? "invisible" : ""
-            }`}
-            disabled={!hasChildren}
-          >
-            {hasChildren &&
-              (isExpanded ? (
-                <ChevronDown className="w-3 h-3 text-gray-600" />
-              ) : (
-                <ChevronRight className="w-3 h-3 text-gray-600" />
-              ))}
-          </button>
-
-          <div className="mr-2">
-            <OptimizedCheckbox
-              checked={checkboxState.checked}
-              indeterminate={checkboxState.indeterminate}
-              onChange={handleCheckboxChange}
-              isReadOnly={isReadOnly}
-            />
-          </div>
-
-          <div className="mr-2">
-            {hasChildren ? (
-              isExpanded ? (
-                <FolderOpen className="w-4 h-4 text-yellow-500" />
-              ) : (
-                <Folder className="w-4 h-4 text-yellow-500" />
-              )
-            ) : (
-              <File className="w-4 h-4 text-gray-500" />
-            )}
-          </div>
-
-          <span className="text-sm text-gray-700 flex-1 truncate">
-            {highlightedLabel}
-          </span>
-        </div>
-
-        {hasChildren && isExpanded && (
-          <div>
-            {node.children!.map((childNode) => (
-              <TreeNodeComponent
-                key={childNode.id}
-                node={childNode}
-                level={level + 1}
-                expandedNodes={expandedNodes}
-                checkedStates={checkedStates}
-                onToggleExpand={onToggleExpand}
-                onToggleCheck={onToggleCheck}
-                searchTerm={searchTerm}
-                filteredNodeIds={filteredNodeIds}
-                isReadOnly={isReadOnly}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  },
-  (prevProps, nextProps) => {
-    // Comparação customizada para evitar re-renders
-    return (
-      prevProps.node.id === nextProps.node.id &&
-      prevProps.level === nextProps.level &&
-      prevProps.expandedNodes === nextProps.expandedNodes &&
-      prevProps.checkedStates === nextProps.checkedStates &&
-      prevProps.searchTerm === nextProps.searchTerm &&
-      prevProps.filteredNodeIds === nextProps.filteredNodeIds &&
-      prevProps.isReadOnly === nextProps.isReadOnly
-    );
-  },
-);
-
-// Funções auxiliares otimizadas
-const getAllNodeIds = (
-  node: TreeNode,
-  result: Set<string> = new Set(),
-): Set<string> => {
-  result.add(node.id);
-  if (node.children) {
-    for (const child of node.children) {
-      getAllNodeIds(child, result);
-    }
-  }
-  return result;
-};
-
-// Função para extrair IDs marcados inicialmente da árvore
 const getInitialCheckedIds = (nodes: TreeNode[]): Set<string> => {
   const checkedIds = new Set<string>();
-
+  // Carregamento ESTRITO: Respeita exatamente o que vem da API.
+  // Se o pai vier checked=true e o filho checked=false (ou undefined),
+  // apenas o pai entra no Set.
   const traverse = (nodeList: TreeNode[]) => {
     for (const node of nodeList) {
-      // Verifica se está marcado (considerando propriedade checked, data.checked ou state="checked")
-      const isChecked =
-        (node.checked || node.data?.checked || node.state === "checked") &&
-        String(node.checked) !== "false" &&
-        String(node.data?.checked) !== "false";
-
-      // Verifica se está indeterminado
-      const isIndeterminate =
-        (node.state === "indeterminate" ||
-          node.data?.state === "indeterminate") &&
-        !isChecked;
-
-      if (isChecked) {
-        // Adiciona o nó atual e todos os seus descendentes
-        getAllNodeIds(node, checkedIds);
-      } else if (isIndeterminate) {
-        // Adiciona apenas o nó atual para permitir que o calculateState o identifique como indeterminado
-        // (pois terá isSelfChecked=true mas checkedCount < total se os filhos não estiverem marcados)
-        checkedIds.add(node.id);
-
-        // Continua verificando os filhos individualmente
-        if (node.children) {
-          traverse(node.children);
-        }
-      } else if (node.children) {
-        // Se não estiver marcado, verifica os filhos recursivamente
+      if (node.checked) {
+        checkedIds.add(toStr(node.id));
+      }
+      if (node.children) {
         traverse(node.children);
       }
     }
   };
-
   traverse(nodes);
   return checkedIds;
 };
 
-// Componente principal
+// --- COMPONENTES FILHOS ---
+
+const OptimizedCheckbox = ({
+  checked,
+  indeterminate,
+  onChange,
+  isReadOnly,
+}: {
+  checked: boolean;
+  indeterminate: boolean;
+  isReadOnly: boolean;
+  onChange: () => void;
+}) => {
+  return (
+    <button
+      type="button"
+      disabled={isReadOnly}
+      onClick={(e) => {
+        e.stopPropagation();
+        onChange();
+      }}
+      className={`w-4 h-4 rounded border flex items-center justify-center transition-colors focus:outline-none ${
+        checked
+          ? "bg-blue-600 border-blue-600"
+          : indeterminate
+            ? "bg-blue-600 border-blue-600"
+            : "bg-white border-gray-300 hover:border-gray-400"
+      } ${isReadOnly ? "opacity-50 cursor-not-allowed" : ""}`}
+    >
+      {checked && (
+        <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+          <path
+            d="M10 3L4.5 8.5L2 6"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
+      {indeterminate && !checked && <div className="w-2 h-0.5 bg-white" />}
+    </button>
+  );
+};
+
+// Removido React.memo para garantir atualizações visuais consistentes
+const TreeNodeComponent = ({
+  node,
+  level,
+  expandedNodes,
+  checkedStates,
+  onToggleExpand,
+  onToggleCheck,
+  searchTerm,
+  filteredNodeIds,
+  isReadOnly = false,
+}: TreeNodeProps) => {
+  const nodeIdStr = toStr(node.id);
+  const hasChildren = node.children && node.children.length > 0;
+  const isExpanded = expandedNodes.has(nodeIdStr);
+  const checkboxState = checkedStates.get(nodeIdStr) || {
+    checked: false,
+    indeterminate: false,
+  };
+  const paddingLeft = level * 20;
+  const shouldShow = !filteredNodeIds || filteredNodeIds.has(nodeIdStr);
+
+  const highlightedLabel = useMemo(() => {
+    if (!searchTerm) return node.label;
+    const parts = node.label.split(new RegExp(`(${searchTerm})`, "gi"));
+    return (
+      <>
+        {parts.map((part, i) =>
+          part.toLowerCase() === searchTerm.toLowerCase() ? (
+            <span key={i} className="bg-yellow-200 font-semibold text-black">
+              {part}
+            </span>
+          ) : (
+            part
+          ),
+        )}
+      </>
+    );
+  }, [node.label, searchTerm]);
+
+  const handleCheckboxChange = useCallback(() => {
+    onToggleCheck(nodeIdStr);
+  }, [nodeIdStr, onToggleCheck]);
+
+  const handleExpandToggle = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (hasChildren) {
+        onToggleExpand(nodeIdStr);
+      }
+    },
+    [hasChildren, nodeIdStr, onToggleExpand],
+  );
+
+  if (!shouldShow) return null;
+
+  return (
+    <div className="select-none" id={node.id}>
+      <div
+        className="flex items-center py-1 px-2 hover:bg-gray-50 rounded-sm group transition-colors"
+        style={{ paddingLeft: `${paddingLeft + 8}px` }}
+      >
+        <button
+          type="button"
+          onClick={handleExpandToggle}
+          className={`w-4 h-4 flex items-center justify-center mr-1 rounded-sm hover:bg-gray-200 transition-colors focus:outline-none ${
+            !hasChildren ? "invisible" : ""
+          }`}
+          disabled={!hasChildren}
+        >
+          {hasChildren &&
+            (isExpanded ? (
+              <ChevronDown className="w-3 h-3 text-gray-600" />
+            ) : (
+              <ChevronRight className="w-3 h-3 text-gray-600" />
+            ))}
+        </button>
+
+        <div className="mr-2">
+          <OptimizedCheckbox
+            checked={checkboxState.checked}
+            indeterminate={checkboxState.indeterminate}
+            onChange={handleCheckboxChange}
+            isReadOnly={isReadOnly}
+          />
+        </div>
+
+        <div className="mr-2">
+          {hasChildren ? (
+            isExpanded ? (
+              <FolderOpen className="w-4 h-4 text-yellow-500" />
+            ) : (
+              <Folder className="w-4 h-4 text-yellow-500" />
+            )
+          ) : (
+            <File className="w-4 h-4 text-gray-500" />
+          )}
+        </div>
+
+        <span
+          className="text-sm text-gray-700 flex-1 truncate cursor-pointer"
+          onClick={handleExpandToggle}
+        >
+          {highlightedLabel}
+        </span>
+      </div>
+
+      {hasChildren && isExpanded && (
+        <div>
+          {node.children!.map((childNode) => (
+            <TreeNodeComponent
+              key={toStr(childNode.id)}
+              node={childNode}
+              level={level + 1}
+              expandedNodes={expandedNodes}
+              checkedStates={checkedStates}
+              onToggleExpand={onToggleExpand}
+              onToggleCheck={onToggleCheck}
+              searchTerm={searchTerm}
+              filteredNodeIds={filteredNodeIds}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- COMPONENTE PRINCIPAL ---
+
 export const TreeView: React.FC<TreeViewProps> = ({
   data,
   onSelectionChange,
@@ -304,36 +267,65 @@ export const TreeView: React.FC<TreeViewProps> = ({
 }) => {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [checkedNodes, setCheckedNodes] = useState<Set<string>>(() =>
+    getInitialCheckedIds(data),
+  );
 
-  // Inicializar checkedNodes com base na propriedade 'checked' dos nós
-  const [checkedNodes, setCheckedNodes] = useState<Set<string>>(() => {
-    return getInitialCheckedIds(data);
-  });
-
-  // Atualizar checkedNodes quando data mudar
-  useEffect(() => {
-    setCheckedNodes(getInitialCheckedIds(data));
+  // Assinatura da estrutura dos dados (IDs concatenados).
+  // Usada para detectar se 'data' representa uma NOVA árvore ou apenas um re-render da mesma.
+  const dataSignature = useMemo(() => {
+    const ids: string[] = [];
+    const traverse = (nodes: TreeNode[]) => {
+      for (const node of nodes) {
+        ids.push(toStr(node.id));
+        if (node.children) traverse(node.children);
+      }
+    };
+    traverse(data);
+    return ids.join("|");
   }, [data]);
 
-  // Memoizar mapa de todos os nós
+  const lastSignatureRef = useRef(dataSignature);
+
+  useEffect(() => {
+    // Se a assinatura mudou, significa que carregamos uma nova árvore (ou novos dados relevantes).
+    // Nesse caso, reinicializamos a seleção com o que vem na prop 'data'.
+    if (dataSignature !== lastSignatureRef.current) {
+      const initial = getInitialCheckedIds(data);
+      setCheckedNodes(initial);
+      lastSignatureRef.current = dataSignature;
+    }
+    // Se a assinatura for igual, ignoramos a prop 'checked' para preservar a seleção local do usuário
+    // durante re-renders do pai (que poderiam resetar o estado).
+  }, [dataSignature, data]);
+
   const allNodesMap = useMemo(() => {
     const nodes = new Map<string, TreeNode>();
     const traverse = (nodeList: TreeNode[]) => {
       for (const node of nodeList) {
-        nodes.set(node.id, node);
-        if (node.children) {
-          traverse(node.children);
-        }
+        nodes.set(toStr(node.id), node);
+        if (node.children) traverse(node.children);
       }
     };
     traverse(data);
     return nodes;
   }, [data]);
 
-  // Busca otimizada com debounce implícito via useMemo
+  const nodeParentMap = useMemo(() => {
+    const map = new Map<string, TreeNode>();
+    const traverse = (nodes: TreeNode[], parent?: TreeNode) => {
+      for (const node of nodes) {
+        if (parent) map.set(toStr(node.id), parent);
+        if (node.children) traverse(node.children, node);
+      }
+    };
+    traverse(data);
+    return map;
+  }, [data]);
+
+  // Busca
   const filteredNodeIds = useMemo(() => {
     if (!searchTerm.trim()) return new Set<string>();
-
     const filteredIds = new Set<string>();
     const normalizedTerm = searchTerm.toLowerCase();
 
@@ -342,250 +334,269 @@ export const TreeView: React.FC<TreeViewProps> = ({
       parentPath: string[] = [],
     ): boolean => {
       let hasMatch = false;
-
       for (const node of nodeList) {
-        const currentPath = [...parentPath, node.id];
+        const nodeId = toStr(node.id);
+        const currentPath = [...parentPath, nodeId];
         const nodeMatches = node.label.toLowerCase().includes(normalizedTerm);
         let childMatches = false;
-
-        if (node.children) {
+        if (node.children)
           childMatches = searchInTree(node.children, currentPath);
-        }
 
         if (nodeMatches || childMatches) {
-          for (const id of currentPath) {
-            filteredIds.add(id);
-          }
+          currentPath.forEach((id) => filteredIds.add(id));
           hasMatch = true;
         }
       }
-
       return hasMatch;
     };
-
     searchInTree(data);
     return filteredIds;
   }, [data, searchTerm]);
 
-  // Auto-expandir resultados de busca
-  React.useEffect(() => {
+  useEffect(() => {
     if (searchTerm.trim() && filteredNodeIds.size > 0) {
       setExpandedNodes(new Set(filteredNodeIds));
     }
   }, [searchTerm, filteredNodeIds]);
 
-  // Calcular estados dos checkboxes - OTIMIZADO
+  // --- CÁLCULO VISUAL ---
   const checkedStates = useMemo(() => {
     const states = new Map<string, CheckboxState>();
 
-    const calculateState = (node: TreeNode): CheckboxState => {
-      if (!node.children || node.children.length === 0) {
-        // Nó folha - verifica no Set de checkedNodes
-        const isChecked = checkedNodes.has(node.id);
-        const state = { checked: isChecked, indeterminate: false };
-        states.set(node.id, state);
-        return state;
-      }
+    // Lógica Visual:
+    // - Checkbox Marcado (Tick): Se nó está no Set E (é folha OU todos os filhos estão check/indeterminate).
+    // - Checkbox Indeterminado (Traço):
+    //   1. Nó está no Set mas filhos incompletos (Sticky Parent).
+    //   2. Nó não está no Set mas tem descendentes marcados.
+    const computeVisuals = (node: TreeNode) => {
+      const nodeId = toStr(node.id);
+      const isSelfChecked = checkedNodes.has(nodeId);
 
-      // Nó com filhos
-      let checkedCount = 0;
-      let indeterminateCount = 0;
-      const total = node.children.length;
+      let allChildrenChecked = true;
+      let someChildrenChecked = false;
+      let hasIndeterminateChild = false;
 
-      for (const child of node.children) {
-        const childState = calculateState(child);
-        if (childState.checked) checkedCount++;
-        if (childState.indeterminate) indeterminateCount++;
-      }
-
-      // Verifica se o próprio nó está marcado explicitamente
-      const isSelfChecked = checkedNodes.has(node.id);
-
-      // Se a propriedade checked do nó está definida explicitamente, usa ela
-      // Caso contrário, calcula baseado nos filhos
-      let state: CheckboxState;
-
-      if (checkedCount === total) {
-        state = { checked: true, indeterminate: false };
-      } else if (checkedCount > 0 || indeterminateCount > 0 || isSelfChecked) {
-        state = { checked: false, indeterminate: true };
+      if (node.children && node.children.length > 0) {
+        for (const child of node.children) {
+          const childVisual = computeVisuals(child);
+          if (!childVisual.checked) allChildrenChecked = false;
+          if (childVisual.checked) someChildrenChecked = true;
+          if (childVisual.indeterminate) hasIndeterminateChild = true;
+        }
       } else {
-        state = { checked: false, indeterminate: false };
+        // Folha
+        allChildrenChecked = isSelfChecked;
+        someChildrenChecked = isSelfChecked;
       }
 
-      states.set(node.id, state);
+      const finalChecked =
+        node.children && node.children.length > 0
+          ? allChildrenChecked
+          : isSelfChecked;
+
+      // Se o próprio nó foi marcado (isSelfChecked), mas não atende aos critérios de 'checked' visual (todos os filhos),
+      // então ele deve ser mostrado como Indeterminate. Isso representa a seleção da categoria.
+      const isStickySelection = isSelfChecked && !finalChecked;
+
+      const finalIndeterminate =
+        !finalChecked &&
+        (someChildrenChecked || hasIndeterminateChild || isStickySelection);
+
+      const state = {
+        checked: finalChecked,
+        indeterminate: finalIndeterminate,
+      };
+      states.set(nodeId, state);
       return state;
     };
 
-    for (const node of data) {
-      calculateState(node);
-    }
-
+    data.forEach((node) => computeVisuals(node));
     return states;
   }, [checkedNodes, data]);
 
-  // Toggle expand otimizado
+  // --- TOGGLE CHECK ---
+  const handleToggleCheck = useCallback(
+    (nodeId: string) => {
+      if (isReadOnly) return;
+
+      const next = new Set(checkedNodes);
+      const targetNode = allNodesMap.get(nodeId);
+      if (!targetNode) return;
+
+      const currentState = checkedStates.get(nodeId);
+      const isCurrentlyChecked = currentState?.checked ?? false;
+
+      const addSubtreeToSet = (n: TreeNode) => {
+        next.add(toStr(n.id));
+        if (n.children) n.children.forEach(addSubtreeToSet);
+      };
+
+      const removeSubtreeFromSet = (n: TreeNode) => {
+        next.delete(toStr(n.id));
+        if (n.children) n.children.forEach(removeSubtreeFromSet);
+      };
+
+      if (isCurrentlyChecked) {
+        // --- DESMARCAR ---
+        removeSubtreeFromSet(targetNode);
+
+        // Sticky Logic: Ao desmarcar um nó, adiciona explicitamente todos os ancestrais
+        // ao Set. Isso garante que a hierarquia superior permaneça "Selecionada" (Indeterminada)
+        // mesmo que o último filho seja removido.
+        let curr: TreeNode | undefined = targetNode;
+        while (curr) {
+          const parent = nodeParentMap.get(toStr(curr.id));
+          if (parent) {
+            next.add(toStr(parent.id));
+          }
+          curr = parent;
+        }
+      } else {
+        // --- MARCAR ---
+        addSubtreeToSet(targetNode);
+      }
+
+      setCheckedNodes(next);
+      if (onSelectionChange) {
+        onSelectionChange(Array.from(next));
+      }
+    },
+    [
+      checkedNodes,
+      allNodesMap,
+      nodeParentMap,
+      isReadOnly,
+      checkedStates,
+      onSelectionChange,
+    ],
+  );
+
+  // --- CONTROLES ---
+  const clearSearch = useCallback(() => setSearchTerm(""), []);
+
+  const selectAll = useCallback(() => {
+    const allIds = new Set<string>();
+    const traverse = (nodes: TreeNode[]) => {
+      for (const node of nodes) {
+        allIds.add(toStr(node.id));
+        if (node.children) traverse(node.children);
+      }
+    };
+    traverse(data);
+    setCheckedNodes(allIds);
+    if (onSelectionChange) {
+      onSelectionChange(Array.from(allIds));
+    }
+  }, [data, onSelectionChange]);
+
+  const selectNone = useCallback(() => {
+    const empty = new Set<string>();
+    setCheckedNodes(empty);
+    if (onSelectionChange) {
+      onSelectionChange([]);
+    }
+  }, [onSelectionChange]);
+
   const handleToggleExpand = useCallback((nodeId: string) => {
     setExpandedNodes((prev) => {
       const next = new Set(prev);
-      if (next.has(nodeId)) {
-        next.delete(nodeId);
-      } else {
-        next.add(nodeId);
-      }
+      if (next.has(nodeId)) next.delete(nodeId);
+      else next.add(nodeId);
       return next;
     });
   }, []);
 
-  // Toggle check MUITO otimizado
-  const handleToggleCheck = useCallback(
-    (nodeId: string) => {
-      setCheckedNodes((prev) => {
-        const node = allNodesMap.get(nodeId);
-        if (!node) return prev;
-
-        const next = new Set(prev);
-
-        // Funções auxiliares locais para determinar o estado ATUAL antes do toggle
-
-        // Verifica se está TOTALMENTE checado (todos os descendentes estão no set)
-        const checkFullyChecked = (n: TreeNode): boolean => {
-          if (!n.children || n.children.length === 0) return next.has(n.id);
-          return n.children.every(checkFullyChecked);
-        };
-
-        // Verifica se tem ALGUMA coisa checada (ele mesmo ou algum descendente)
-        const checkSomeChecked = (n: TreeNode): boolean => {
-          if (next.has(n.id)) return true;
-          if (n.children) return n.children.some(checkSomeChecked);
-          return false;
-        };
-
-        const isFully = checkFullyChecked(node);
-        // const isSome = checkSomeChecked(node);
-        const allIds = getAllNodeIds(node);
-
-        if (isFully) {
-          // Estado: Checked (Todos marcados) -> Próximo: Unchecked
-          for (const id of allIds) {
-            next.delete(id);
-          }
-        } else {
-          // Estado: Indeterminado ou Unchecked -> Próximo: Checked (Marcar tudo)
-          for (const id of allIds) {
-            next.add(id);
-          }
-        }
-
-        return next;
-      });
-    },
-    [allNodesMap],
-  );
-
-  // Notificar mudanças
-  React.useEffect(() => {
-    if (onSelectionChange) {
-      onSelectionChange(Array.from(checkedNodes));
-    }
-  }, [checkedNodes, onSelectionChange]);
-
-  const clearSearch = useCallback(() => setSearchTerm(""), []);
-
-  const selectAll = useCallback(() => {
-    setCheckedNodes(new Set(allNodesMap.keys()));
-  }, [allNodesMap]);
-
-  const selectNone = useCallback(() => {
-    setCheckedNodes(new Set());
-  }, []);
-
   const allSelected =
-    allNodesMap.size > 0 && checkedNodes.size === allNodesMap.size;
-  const noneSelected = checkedNodes.size === 0;
+    data.length > 0 &&
+    data.every((n) => checkedStates.get(toStr(n.id))?.checked);
+  const noneSelected =
+    checkedNodes.size === 0 &&
+    !data.some((n) => checkedStates.get(toStr(n.id))?.indeterminate);
 
   return (
-    <div className={`bg-white border border-gray-200 rounded-md ${className}`}>
-      <div className="border-b border-gray-200">
+    <div
+      className={`bg-white border border-gray-200 rounded-md flex flex-col h-full ${className}`}
+    >
+      {/* Header */}
+      <div className="flex-none border-b border-gray-200 bg-gray-50/50">
         {searchable && (
-          <div className="p-3 border-b border-gray-100">
+          <div className="p-2 border-b border-gray-100">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 type="text"
                 placeholder={searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-10"
+                className="w-full pl-9 pr-8 h-9 text-sm"
               />
               {searchTerm && (
                 <button
+                  type="button"
                   onClick={clearSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3 h-3" />
                 </button>
               )}
             </div>
-            {searchTerm && (
-              <div className="mt-2 text-xs text-gray-500">
-                {filteredNodeIds.size > 0
-                  ? `${filteredNodeIds.size} resultado(s)`
-                  : "Nenhum resultado"}
-              </div>
-            )}
           </div>
         )}
 
-        {showSelectAllButtons && (
-          <div className="p-3 flex gap-2">
-            <button
-              onClick={selectAll}
-              disabled={allSelected || isLoading || isReadOnly}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <CheckSquare className="w-4 h-4" />
-              Marcar Tudo
-            </button>
-            <button
-              onClick={selectNone}
-              disabled={noneSelected || isLoading || isReadOnly}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Square className="w-4 h-4" />
-              Desmarcar Tudo
-            </button>
-            <div className="flex items-center ml-auto text-xs text-gray-500">
-              {checkedNodes.size} de {allNodesMap.size} selecionados
+        {showSelectAllButtons && !isReadOnly && (
+          <div className="p-2 flex gap-2 justify-between items-center bg-white">
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={selectAll}
+                disabled={allSelected || isLoading}
+                className="text-xs flex items-center gap-1 px-2 py-1 text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 disabled:opacity-50 transition-colors"
+              >
+                <CheckSquare className="w-3 h-3" />
+                Todos
+              </button>
+              <button
+                type="button"
+                onClick={selectNone}
+                disabled={noneSelected || isLoading}
+                className="text-xs flex items-center gap-1 px-2 py-1 text-gray-700 bg-gray-50 border border-gray-200 rounded hover:bg-gray-100 disabled:opacity-50 transition-colors"
+              >
+                <Square className="w-3 h-3" />
+                Nenhum
+              </button>
             </div>
           </div>
         )}
       </div>
 
-      <div className="p-2">
+      {/* Lista */}
+      <div className="flex-1 p-2 relative overflow-hidden min-h-[200px]">
         {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="ml-2 text-sm text-gray-500">Carregando...</span>
+          <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10">
+            <div className="flex flex-col items-center">
+              <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-2"></div>
+              <span className="text-xs text-gray-500">Carregando...</span>
+            </div>
           </div>
         ) : (
-          <div className="max-h-96 overflow-y-auto">
-            {data.map((node) => (
-              <TreeNodeComponent
-                key={node.id}
-                node={node}
-                level={0}
-                isReadOnly={isReadOnly}
-                expandedNodes={expandedNodes}
-                checkedStates={checkedStates}
-                onToggleExpand={handleToggleExpand}
-                onToggleCheck={handleToggleCheck}
-                searchTerm={searchTerm}
-                filteredNodeIds={searchTerm ? filteredNodeIds : undefined}
-              />
-            ))}
-            {data.length === 0 && (
-              <div className="py-8 text-center text-gray-500 text-sm">
+          <div className="h-full overflow-y-auto pr-1 custom-scrollbar">
+            {data.length > 0 ? (
+              data.map((node) => (
+                <TreeNodeComponent
+                  key={toStr(node.id)}
+                  node={node}
+                  level={0}
+                  isReadOnly={isReadOnly}
+                  expandedNodes={expandedNodes}
+                  checkedStates={checkedStates}
+                  onToggleExpand={handleToggleExpand}
+                  onToggleCheck={handleToggleCheck}
+                  searchTerm={searchTerm}
+                  filteredNodeIds={searchTerm ? filteredNodeIds : undefined}
+                />
+              ))
+            ) : (
+              <div className="py-8 text-center text-gray-400 text-sm">
                 Nenhum item encontrado
               </div>
             )}

@@ -13,36 +13,40 @@ import { useOrder } from "../-context/order-context";
 import type { OrderItemTaxModel } from "@/models/orders/order-item-tax-model";
 import { formatNumber } from "@/lib/number-utils";
 
-export const TaxesModal = () => {
+interface Props {
+  data: any;
+}
+
+export const TaxesModal = ({ data }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const { order } = useOrder();
 
-  const getTaxes = () => {
-    const list: OrderItemTaxModel[] = [];
-    for (let item of order.items) {
-      if (item.taxes) {
-        for (let tax of item.taxes) {
-          let existingTax = list.findIndex((f) => f.taxName == tax.taxName);
-          if (existingTax >= 0) {
-            list[existingTax].taxValue += tax.taxValue;
-          } else {
-            list.push({
-              id: "",
-              itemId: "",
-              orderId: "",
-              taxBase: 0,
-              taxBaseReduction: 0,
-              taxName: tax.taxName,
-              taxPercentual: 0,
-              taxValue: tax.taxValue,
-            });
-          }
-        }
-      }
-    }
-    return list;
-  };
-
+  // const getTaxes = () => {
+  //   const list: OrderItemTaxModel[] = [];
+  //   for (let item of order.items) {
+  //     if (item.taxes) {
+  //       for (let tax of item.taxes) {
+  //         let existingTax = list.findIndex((f) => f.taxName == tax.taxName);
+  //         if (existingTax >= 0) {
+  //           list[existingTax].taxValue += tax.taxValue;
+  //         } else {
+  //           list.push({
+  //             id: "",
+  //             itemId: "",
+  //             orderId: "",
+  //             taxBase: 0,
+  //             taxBaseReduction: 0,
+  //             taxName: tax.taxName,
+  //             taxPercentual: 0,
+  //             taxValue: tax.taxValue,
+  //           });
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return list;
+  // };
+  console.log("IMPOSTS", data);
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -78,13 +82,17 @@ export const TaxesModal = () => {
           <DialogDescription></DialogDescription>
         </DialogHeader>
         <div>
-          <div className="grid grid-cols-2">
+          <div className="grid grid-cols-4">
             <div>Imposto</div>
             <div>Valor</div>
-            {getTaxes().map((item) => (
+            <div>Base de Cálculo</div>
+            <div>Alíquota</div>
+            {data?.TaxesDetail.map((item: any) => (
               <>
-                <div>{item.taxName}</div>
-                <div>{formatNumber(item.taxValue, 2)}</div>
+                <div>{item.descricao}</div>
+                <div>{formatNumber(item.valor, 2)}</div>
+                <div>{formatNumber(item.base_calculo, 2)}</div>
+                <div>{formatNumber(item.aliquota, 2)}</div>
               </>
             ))}
           </div>

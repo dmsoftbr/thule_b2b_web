@@ -71,6 +71,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   const [freightsData, setFreightsData] = useState<CalcFreightsResposeDto[]>(
     [],
   );
+  const [taxesData, setTaxesData] = useState<any>();
 
   const [selectedPaymentCondition, setSelectedPaymentCondition] = useState<
     PaymentConditionModel | undefined
@@ -282,24 +283,41 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
 
   const getTaxes = async () => {
     try {
-      // if (!isEditing) return;
-      // if (order.items.length == 0) return;
-      // const params: any[] = [];
-      // order.items.map((item) => {
-      //   params.push({
-      //     siteCode: order.branchId,
-      //     customerCode: order.customerId,
-      //     itemCode: item.productId,
-      //     quantity: item.orderQuantity,
-      //     negotiatedPrice: item.inputPrice,
-      //   });
-      // });
-      // const { data } = await api.post(`/order-items/calc-item-taxes`, params);
-      // if (data) {
-      //   console.log(data);
-      // }
+      if (!isEditing) return;
+      if (order.items.length == 0) return;
+      const payload = {
+        BranchId: order.branchId,
+        SalesType: "N",
+        CustomerId: String(order.customerId),
+        CustomerUnit: "",
+        CustomerIdDelivery: String(order.customerId), // Deve ser INT
+        CustomerUnitDelivery: "",
+        Currency: 0,
+        Payment: String(order.paymentConditionId),
+        Freight: order.freightValue,
+        ListofProducts: order.items.map((item) => ({
+          // Use exatamente o nome das propriedades do seu DTO C#
+          ItemId: `${item.sequence + 10}`,
+          ProductId: item.productId,
+          CodRefer: item.referenceCode,
+          Quantity: item.orderQuantity,
+          UnitaryValue:
+            item.inputPrice * (1 - order.discountPercentual / 100.0),
+          TotalValue: item.inputPrice * item.orderQuantity,
+          TES: "6403st",
+          ItemDiscountPercentage: 0,
+          PriceTableId: item.priceTableId,
+        })),
+      };
+
+      const { data } = await api.post(`/order-items/calc-item-taxes`, payload);
+      if (data) {
+        setTaxesData(data);
+        //console.log("IMPOSTOS", data);
+      }
     } catch (error) {
-      toast.error(handleError(error));
+      console.log(error);
+      //      toast.error(handleError(error));
     }
   };
 
@@ -321,7 +339,6 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
       getPaymentConditions();
       getPermissions();
       getFreights();
-      getTaxes();
     }
   }, [isOpen]);
 
@@ -348,6 +365,10 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
       }
     }
   }, [selectedPaymentCondition, order.grossTotalValue]);
+
+  useEffect(() => {
+    getTaxes();
+  }, [order]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -663,7 +684,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               </div>
               <div className="flex justify-between pr-2 text-sm">
                 <div className="flex">
-                  <TaxesModal />
+                  <TaxesModal data={taxesData} />
                   Impostos:
                 </div>
 
