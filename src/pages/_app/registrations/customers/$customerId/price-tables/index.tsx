@@ -51,6 +51,16 @@ function CustomerIdPageComponent() {
     setTableToken(new Date().valueOf());
   };
 
+  const handleReorder = async (
+    data: CustomerPriceTableModel,
+    direction: string,
+  ) => {
+    await api.patch(
+      `/registrations/customer-price-tables/reorder/${data.customerId}/${data.priceTableId}/${direction}`,
+    );
+    setTableToken(new Date().valueOf());
+  };
+
   return (
     <AppPageHeader
       titleSlot={`Tabelas de Preço do Cliente: ${customerId} - ${customerData?.abbreviation}`}
@@ -59,7 +69,10 @@ function CustomerIdPageComponent() {
         <ServerTable<CustomerPriceTableModel>
           key={tableToken}
           onAdd={() => handleAdd()}
-          columns={priceTableColumns({ fnDelete: handleDelete })}
+          columns={priceTableColumns({
+            fnDelete: handleDelete,
+            fnReorder: handleReorder,
+          })}
           defaultSearchField="priceTableId"
           searchFields={[{ id: "priceTableId", label: "Tabela de Preço" }]}
           dataUrl="/registrations/customer-price-tables/list-paged"

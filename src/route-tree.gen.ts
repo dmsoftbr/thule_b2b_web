@@ -19,6 +19,7 @@ import { Route as AppNotificationsIndexRouteImport } from './pages/_app/notifica
 import { Route as AppDashboardIndexRouteImport } from './pages/_app/dashboard/index'
 import { Route as AppBudgetsIndexRouteImport } from './pages/_app/budgets/index'
 import { Route as AppApprovalsIndexRouteImport } from './pages/_app/approvals/index'
+import { Route as AppOrdersNewOutletOrderRouteImport } from './pages/_app/orders/new-outlet-order'
 import { Route as AppOrdersNewOrderRouteImport } from './pages/_app/orders/new-order'
 import { Route as AppBudgetsNewBudgetRouteImport } from './pages/_app/budgets/new-budget'
 import { Route as AppSystemSyncStatusIndexRouteImport } from './pages/_app/system/sync-status/index'
@@ -27,6 +28,7 @@ import { Route as AppStockEsli011IndexRouteImport } from './pages/_app/stock/esl
 import { Route as AppReportsDashboardProductGroupsIndexRouteImport } from './pages/_app/reports/dashboard-product-groups/index'
 import { Route as AppReportsCustomersListIndexRouteImport } from './pages/_app/reports/customers-list/index'
 import { Route as AppReportsComissaoIndexRouteImport } from './pages/_app/reports/comissao/index'
+import { Route as AppRegistrationsSkuMessagesIndexRouteImport } from './pages/_app/registrations/sku-messages/index'
 import { Route as AppRegistrationsSalesGroupIndexRouteImport } from './pages/_app/registrations/sales-group/index'
 import { Route as AppRegistrationsRepresentativeGoalsIndexRouteImport } from './pages/_app/registrations/representative-goals/index'
 import { Route as AppRegistrationsProductsIndexRouteImport } from './pages/_app/registrations/products/index'
@@ -42,6 +44,7 @@ import { Route as AppMobileCommunicationsIndexRouteImport } from './pages/_app/m
 import { Route as AppAdminUsersIndexRouteImport } from './pages/_app/admin/users/index'
 import { Route as AppAdminUserGroupsIndexRouteImport } from './pages/_app/admin/user-groups/index'
 import { Route as AppAdminSettingsIndexRouteImport } from './pages/_app/admin/settings/index'
+import { Route as AppRegistrationsSkuMessagesNewSkuMessageRouteImport } from './pages/_app/registrations/sku-messages/new-sku-message'
 import { Route as AppRegistrationsSalesGroupNewGroupRouteImport } from './pages/_app/registrations/sales-group/new-group'
 import { Route as AppRegistrationsItemTypesNewItemTypeRouteImport } from './pages/_app/registrations/item-types/new-item-type'
 import { Route as AppRegistrationsApprovalLevelsNewLevelRouteImport } from './pages/_app/registrations/approval-levels/new-level'
@@ -49,6 +52,7 @@ import { Route as AppMobileLinksNewLinkRouteImport } from './pages/_app/mobile/l
 import { Route as AppMobileCommunicationsNewCommunicateRouteImport } from './pages/_app/mobile/communications/new-communicate'
 import { Route as AppAdminUsersNewUserRouteImport } from './pages/_app/admin/users/new-user'
 import { Route as AppAdminUserGroupsNewUserGroupRouteImport } from './pages/_app/admin/user-groups/new-user-group'
+import { Route as AppRegistrationsSkuMessagesProductIdIndexRouteImport } from './pages/_app/registrations/sku-messages/$productId/index'
 import { Route as AppRegistrationsSalesGroupGroupIdIndexRouteImport } from './pages/_app/registrations/sales-group/$groupId/index'
 import { Route as AppRegistrationsProductsProductIdIndexRouteImport } from './pages/_app/registrations/products/$productId/index'
 import { Route as AppRegistrationsPriceTablesPriceTableIdIndexRouteImport } from './pages/_app/registrations/price-tables/$priceTableId/index'
@@ -122,6 +126,11 @@ const AppApprovalsIndexRoute = AppApprovalsIndexRouteImport.update({
   path: '/approvals/',
   getParentRoute: () => AppLayoutRoute,
 } as any)
+const AppOrdersNewOutletOrderRoute = AppOrdersNewOutletOrderRouteImport.update({
+  id: '/orders/new-outlet-order',
+  path: '/orders/new-outlet-order',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
 const AppOrdersNewOrderRoute = AppOrdersNewOrderRouteImport.update({
   id: '/orders/new-order',
   path: '/orders/new-order',
@@ -166,6 +175,12 @@ const AppReportsComissaoIndexRoute = AppReportsComissaoIndexRouteImport.update({
   path: '/reports/comissao/',
   getParentRoute: () => AppLayoutRoute,
 } as any)
+const AppRegistrationsSkuMessagesIndexRoute =
+  AppRegistrationsSkuMessagesIndexRouteImport.update({
+    id: '/registrations/sku-messages/',
+    path: '/registrations/sku-messages/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 const AppRegistrationsSalesGroupIndexRoute =
   AppRegistrationsSalesGroupIndexRouteImport.update({
     id: '/registrations/sales-group/',
@@ -251,6 +266,12 @@ const AppAdminSettingsIndexRoute = AppAdminSettingsIndexRouteImport.update({
   path: '/admin/settings/',
   getParentRoute: () => AppLayoutRoute,
 } as any)
+const AppRegistrationsSkuMessagesNewSkuMessageRoute =
+  AppRegistrationsSkuMessagesNewSkuMessageRouteImport.update({
+    id: '/registrations/sku-messages/new-sku-message',
+    path: '/registrations/sku-messages/new-sku-message',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 const AppRegistrationsSalesGroupNewGroupRoute =
   AppRegistrationsSalesGroupNewGroupRouteImport.update({
     id: '/registrations/sales-group/new-group',
@@ -289,6 +310,12 @@ const AppAdminUserGroupsNewUserGroupRoute =
   AppAdminUserGroupsNewUserGroupRouteImport.update({
     id: '/admin/user-groups/new-user-group',
     path: '/admin/user-groups/new-user-group',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppRegistrationsSkuMessagesProductIdIndexRoute =
+  AppRegistrationsSkuMessagesProductIdIndexRouteImport.update({
+    id: '/registrations/sku-messages/$productId/',
+    path: '/registrations/sku-messages/$productId/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
 const AppRegistrationsSalesGroupGroupIdIndexRoute =
@@ -433,6 +460,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
   '/orders/new-order': typeof AppOrdersNewOrderRoute
+  '/orders/new-outlet-order': typeof AppOrdersNewOutletOrderRoute
   '/approvals': typeof AppApprovalsIndexRoute
   '/budgets': typeof AppBudgetsIndexRoute
   '/dashboard': typeof AppDashboardIndexRoute
@@ -447,6 +475,7 @@ export interface FileRoutesByFullPath {
   '/registrations/approval-levels/new-level': typeof AppRegistrationsApprovalLevelsNewLevelRoute
   '/registrations/item-types/new-item-type': typeof AppRegistrationsItemTypesNewItemTypeRoute
   '/registrations/sales-group/new-group': typeof AppRegistrationsSalesGroupNewGroupRoute
+  '/registrations/sku-messages/new-sku-message': typeof AppRegistrationsSkuMessagesNewSkuMessageRoute
   '/admin/settings': typeof AppAdminSettingsIndexRoute
   '/admin/user-groups': typeof AppAdminUserGroupsIndexRoute
   '/admin/users': typeof AppAdminUsersIndexRoute
@@ -462,6 +491,7 @@ export interface FileRoutesByFullPath {
   '/registrations/products': typeof AppRegistrationsProductsIndexRoute
   '/registrations/representative-goals': typeof AppRegistrationsRepresentativeGoalsIndexRoute
   '/registrations/sales-group': typeof AppRegistrationsSalesGroupIndexRoute
+  '/registrations/sku-messages': typeof AppRegistrationsSkuMessagesIndexRoute
   '/reports/comissao': typeof AppReportsComissaoIndexRoute
   '/reports/customers-list': typeof AppReportsCustomersListIndexRoute
   '/reports/dashboard-product-groups': typeof AppReportsDashboardProductGroupsIndexRoute
@@ -485,6 +515,7 @@ export interface FileRoutesByFullPath {
   '/registrations/price-tables/$priceTableId': typeof AppRegistrationsPriceTablesPriceTableIdIndexRoute
   '/registrations/products/$productId': typeof AppRegistrationsProductsProductIdIndexRoute
   '/registrations/sales-group/$groupId': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
+  '/registrations/sku-messages/$productId': typeof AppRegistrationsSkuMessagesProductIdIndexRoute
   '/registrations/customers/$customerId/price-tables': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
   '/registrations/customers/$customerId/sales-group': typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute
   '/registrations/price-tables/$priceTableId/branches-exception': typeof AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRoute
@@ -496,6 +527,7 @@ export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
   '/orders/new-order': typeof AppOrdersNewOrderRoute
+  '/orders/new-outlet-order': typeof AppOrdersNewOutletOrderRoute
   '/approvals': typeof AppApprovalsIndexRoute
   '/budgets': typeof AppBudgetsIndexRoute
   '/dashboard': typeof AppDashboardIndexRoute
@@ -510,6 +542,7 @@ export interface FileRoutesByTo {
   '/registrations/approval-levels/new-level': typeof AppRegistrationsApprovalLevelsNewLevelRoute
   '/registrations/item-types/new-item-type': typeof AppRegistrationsItemTypesNewItemTypeRoute
   '/registrations/sales-group/new-group': typeof AppRegistrationsSalesGroupNewGroupRoute
+  '/registrations/sku-messages/new-sku-message': typeof AppRegistrationsSkuMessagesNewSkuMessageRoute
   '/admin/settings': typeof AppAdminSettingsIndexRoute
   '/admin/user-groups': typeof AppAdminUserGroupsIndexRoute
   '/admin/users': typeof AppAdminUsersIndexRoute
@@ -525,6 +558,7 @@ export interface FileRoutesByTo {
   '/registrations/products': typeof AppRegistrationsProductsIndexRoute
   '/registrations/representative-goals': typeof AppRegistrationsRepresentativeGoalsIndexRoute
   '/registrations/sales-group': typeof AppRegistrationsSalesGroupIndexRoute
+  '/registrations/sku-messages': typeof AppRegistrationsSkuMessagesIndexRoute
   '/reports/comissao': typeof AppReportsComissaoIndexRoute
   '/reports/customers-list': typeof AppReportsCustomersListIndexRoute
   '/reports/dashboard-product-groups': typeof AppReportsDashboardProductGroupsIndexRoute
@@ -548,6 +582,7 @@ export interface FileRoutesByTo {
   '/registrations/price-tables/$priceTableId': typeof AppRegistrationsPriceTablesPriceTableIdIndexRoute
   '/registrations/products/$productId': typeof AppRegistrationsProductsProductIdIndexRoute
   '/registrations/sales-group/$groupId': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
+  '/registrations/sku-messages/$productId': typeof AppRegistrationsSkuMessagesProductIdIndexRoute
   '/registrations/customers/$customerId/price-tables': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
   '/registrations/customers/$customerId/sales-group': typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute
   '/registrations/price-tables/$priceTableId/branches-exception': typeof AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRoute
@@ -561,6 +596,7 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
   '/_app/orders/new-order': typeof AppOrdersNewOrderRoute
+  '/_app/orders/new-outlet-order': typeof AppOrdersNewOutletOrderRoute
   '/_app/approvals/': typeof AppApprovalsIndexRoute
   '/_app/budgets/': typeof AppBudgetsIndexRoute
   '/_app/dashboard/': typeof AppDashboardIndexRoute
@@ -575,6 +611,7 @@ export interface FileRoutesById {
   '/_app/registrations/approval-levels/new-level': typeof AppRegistrationsApprovalLevelsNewLevelRoute
   '/_app/registrations/item-types/new-item-type': typeof AppRegistrationsItemTypesNewItemTypeRoute
   '/_app/registrations/sales-group/new-group': typeof AppRegistrationsSalesGroupNewGroupRoute
+  '/_app/registrations/sku-messages/new-sku-message': typeof AppRegistrationsSkuMessagesNewSkuMessageRoute
   '/_app/admin/settings/': typeof AppAdminSettingsIndexRoute
   '/_app/admin/user-groups/': typeof AppAdminUserGroupsIndexRoute
   '/_app/admin/users/': typeof AppAdminUsersIndexRoute
@@ -590,6 +627,7 @@ export interface FileRoutesById {
   '/_app/registrations/products/': typeof AppRegistrationsProductsIndexRoute
   '/_app/registrations/representative-goals/': typeof AppRegistrationsRepresentativeGoalsIndexRoute
   '/_app/registrations/sales-group/': typeof AppRegistrationsSalesGroupIndexRoute
+  '/_app/registrations/sku-messages/': typeof AppRegistrationsSkuMessagesIndexRoute
   '/_app/reports/comissao/': typeof AppReportsComissaoIndexRoute
   '/_app/reports/customers-list/': typeof AppReportsCustomersListIndexRoute
   '/_app/reports/dashboard-product-groups/': typeof AppReportsDashboardProductGroupsIndexRoute
@@ -613,6 +651,7 @@ export interface FileRoutesById {
   '/_app/registrations/price-tables/$priceTableId/': typeof AppRegistrationsPriceTablesPriceTableIdIndexRoute
   '/_app/registrations/products/$productId/': typeof AppRegistrationsProductsProductIdIndexRoute
   '/_app/registrations/sales-group/$groupId/': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
+  '/_app/registrations/sku-messages/$productId/': typeof AppRegistrationsSkuMessagesProductIdIndexRoute
   '/_app/registrations/customers/$customerId/price-tables/': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
   '/_app/registrations/customers/$customerId/sales-group/': typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute
   '/_app/registrations/price-tables/$priceTableId/branches-exception/': typeof AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRoute
@@ -626,6 +665,7 @@ export interface FileRouteTypes {
     | '/'
     | '/budgets/new-budget'
     | '/orders/new-order'
+    | '/orders/new-outlet-order'
     | '/approvals'
     | '/budgets'
     | '/dashboard'
@@ -640,6 +680,7 @@ export interface FileRouteTypes {
     | '/registrations/approval-levels/new-level'
     | '/registrations/item-types/new-item-type'
     | '/registrations/sales-group/new-group'
+    | '/registrations/sku-messages/new-sku-message'
     | '/admin/settings'
     | '/admin/user-groups'
     | '/admin/users'
@@ -655,6 +696,7 @@ export interface FileRouteTypes {
     | '/registrations/products'
     | '/registrations/representative-goals'
     | '/registrations/sales-group'
+    | '/registrations/sku-messages'
     | '/reports/comissao'
     | '/reports/customers-list'
     | '/reports/dashboard-product-groups'
@@ -678,6 +720,7 @@ export interface FileRouteTypes {
     | '/registrations/price-tables/$priceTableId'
     | '/registrations/products/$productId'
     | '/registrations/sales-group/$groupId'
+    | '/registrations/sku-messages/$productId'
     | '/registrations/customers/$customerId/price-tables'
     | '/registrations/customers/$customerId/sales-group'
     | '/registrations/price-tables/$priceTableId/branches-exception'
@@ -689,6 +732,7 @@ export interface FileRouteTypes {
     | '/'
     | '/budgets/new-budget'
     | '/orders/new-order'
+    | '/orders/new-outlet-order'
     | '/approvals'
     | '/budgets'
     | '/dashboard'
@@ -703,6 +747,7 @@ export interface FileRouteTypes {
     | '/registrations/approval-levels/new-level'
     | '/registrations/item-types/new-item-type'
     | '/registrations/sales-group/new-group'
+    | '/registrations/sku-messages/new-sku-message'
     | '/admin/settings'
     | '/admin/user-groups'
     | '/admin/users'
@@ -718,6 +763,7 @@ export interface FileRouteTypes {
     | '/registrations/products'
     | '/registrations/representative-goals'
     | '/registrations/sales-group'
+    | '/registrations/sku-messages'
     | '/reports/comissao'
     | '/reports/customers-list'
     | '/reports/dashboard-product-groups'
@@ -741,6 +787,7 @@ export interface FileRouteTypes {
     | '/registrations/price-tables/$priceTableId'
     | '/registrations/products/$productId'
     | '/registrations/sales-group/$groupId'
+    | '/registrations/sku-messages/$productId'
     | '/registrations/customers/$customerId/price-tables'
     | '/registrations/customers/$customerId/sales-group'
     | '/registrations/price-tables/$priceTableId/branches-exception'
@@ -753,6 +800,7 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/budgets/new-budget'
     | '/_app/orders/new-order'
+    | '/_app/orders/new-outlet-order'
     | '/_app/approvals/'
     | '/_app/budgets/'
     | '/_app/dashboard/'
@@ -767,6 +815,7 @@ export interface FileRouteTypes {
     | '/_app/registrations/approval-levels/new-level'
     | '/_app/registrations/item-types/new-item-type'
     | '/_app/registrations/sales-group/new-group'
+    | '/_app/registrations/sku-messages/new-sku-message'
     | '/_app/admin/settings/'
     | '/_app/admin/user-groups/'
     | '/_app/admin/users/'
@@ -782,6 +831,7 @@ export interface FileRouteTypes {
     | '/_app/registrations/products/'
     | '/_app/registrations/representative-goals/'
     | '/_app/registrations/sales-group/'
+    | '/_app/registrations/sku-messages/'
     | '/_app/reports/comissao/'
     | '/_app/reports/customers-list/'
     | '/_app/reports/dashboard-product-groups/'
@@ -805,6 +855,7 @@ export interface FileRouteTypes {
     | '/_app/registrations/price-tables/$priceTableId/'
     | '/_app/registrations/products/$productId/'
     | '/_app/registrations/sales-group/$groupId/'
+    | '/_app/registrations/sku-messages/$productId/'
     | '/_app/registrations/customers/$customerId/price-tables/'
     | '/_app/registrations/customers/$customerId/sales-group/'
     | '/_app/registrations/price-tables/$priceTableId/branches-exception/'
@@ -889,6 +940,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppApprovalsIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/orders/new-outlet-order': {
+      id: '/_app/orders/new-outlet-order'
+      path: '/orders/new-outlet-order'
+      fullPath: '/orders/new-outlet-order'
+      preLoaderRoute: typeof AppOrdersNewOutletOrderRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/orders/new-order': {
       id: '/_app/orders/new-order'
       path: '/orders/new-order'
@@ -943,6 +1001,13 @@ declare module '@tanstack/react-router' {
       path: '/reports/comissao'
       fullPath: '/reports/comissao'
       preLoaderRoute: typeof AppReportsComissaoIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/registrations/sku-messages/': {
+      id: '/_app/registrations/sku-messages/'
+      path: '/registrations/sku-messages'
+      fullPath: '/registrations/sku-messages'
+      preLoaderRoute: typeof AppRegistrationsSkuMessagesIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/registrations/sales-group/': {
@@ -1050,6 +1115,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminSettingsIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/registrations/sku-messages/new-sku-message': {
+      id: '/_app/registrations/sku-messages/new-sku-message'
+      path: '/registrations/sku-messages/new-sku-message'
+      fullPath: '/registrations/sku-messages/new-sku-message'
+      preLoaderRoute: typeof AppRegistrationsSkuMessagesNewSkuMessageRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/registrations/sales-group/new-group': {
       id: '/_app/registrations/sales-group/new-group'
       path: '/registrations/sales-group/new-group'
@@ -1097,6 +1169,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/user-groups/new-user-group'
       fullPath: '/admin/user-groups/new-user-group'
       preLoaderRoute: typeof AppAdminUserGroupsNewUserGroupRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/registrations/sku-messages/$productId/': {
+      id: '/_app/registrations/sku-messages/$productId/'
+      path: '/registrations/sku-messages/$productId'
+      fullPath: '/registrations/sku-messages/$productId'
+      preLoaderRoute: typeof AppRegistrationsSkuMessagesProductIdIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/registrations/sales-group/$groupId/': {
@@ -1260,6 +1339,7 @@ interface AppLayoutRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppBudgetsNewBudgetRoute: typeof AppBudgetsNewBudgetRoute
   AppOrdersNewOrderRoute: typeof AppOrdersNewOrderRoute
+  AppOrdersNewOutletOrderRoute: typeof AppOrdersNewOutletOrderRoute
   AppApprovalsIndexRoute: typeof AppApprovalsIndexRoute
   AppBudgetsIndexRoute: typeof AppBudgetsIndexRoute
   AppDashboardIndexRoute: typeof AppDashboardIndexRoute
@@ -1274,6 +1354,7 @@ interface AppLayoutRouteChildren {
   AppRegistrationsApprovalLevelsNewLevelRoute: typeof AppRegistrationsApprovalLevelsNewLevelRoute
   AppRegistrationsItemTypesNewItemTypeRoute: typeof AppRegistrationsItemTypesNewItemTypeRoute
   AppRegistrationsSalesGroupNewGroupRoute: typeof AppRegistrationsSalesGroupNewGroupRoute
+  AppRegistrationsSkuMessagesNewSkuMessageRoute: typeof AppRegistrationsSkuMessagesNewSkuMessageRoute
   AppAdminSettingsIndexRoute: typeof AppAdminSettingsIndexRoute
   AppAdminUserGroupsIndexRoute: typeof AppAdminUserGroupsIndexRoute
   AppAdminUsersIndexRoute: typeof AppAdminUsersIndexRoute
@@ -1289,6 +1370,7 @@ interface AppLayoutRouteChildren {
   AppRegistrationsProductsIndexRoute: typeof AppRegistrationsProductsIndexRoute
   AppRegistrationsRepresentativeGoalsIndexRoute: typeof AppRegistrationsRepresentativeGoalsIndexRoute
   AppRegistrationsSalesGroupIndexRoute: typeof AppRegistrationsSalesGroupIndexRoute
+  AppRegistrationsSkuMessagesIndexRoute: typeof AppRegistrationsSkuMessagesIndexRoute
   AppReportsComissaoIndexRoute: typeof AppReportsComissaoIndexRoute
   AppReportsCustomersListIndexRoute: typeof AppReportsCustomersListIndexRoute
   AppReportsDashboardProductGroupsIndexRoute: typeof AppReportsDashboardProductGroupsIndexRoute
@@ -1312,6 +1394,7 @@ interface AppLayoutRouteChildren {
   AppRegistrationsPriceTablesPriceTableIdIndexRoute: typeof AppRegistrationsPriceTablesPriceTableIdIndexRoute
   AppRegistrationsProductsProductIdIndexRoute: typeof AppRegistrationsProductsProductIdIndexRoute
   AppRegistrationsSalesGroupGroupIdIndexRoute: typeof AppRegistrationsSalesGroupGroupIdIndexRoute
+  AppRegistrationsSkuMessagesProductIdIndexRoute: typeof AppRegistrationsSkuMessagesProductIdIndexRoute
   AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute: typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
   AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute: typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute
   AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRoute: typeof AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRoute
@@ -1323,6 +1406,7 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppBudgetsNewBudgetRoute: AppBudgetsNewBudgetRoute,
   AppOrdersNewOrderRoute: AppOrdersNewOrderRoute,
+  AppOrdersNewOutletOrderRoute: AppOrdersNewOutletOrderRoute,
   AppApprovalsIndexRoute: AppApprovalsIndexRoute,
   AppBudgetsIndexRoute: AppBudgetsIndexRoute,
   AppDashboardIndexRoute: AppDashboardIndexRoute,
@@ -1341,6 +1425,8 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
     AppRegistrationsItemTypesNewItemTypeRoute,
   AppRegistrationsSalesGroupNewGroupRoute:
     AppRegistrationsSalesGroupNewGroupRoute,
+  AppRegistrationsSkuMessagesNewSkuMessageRoute:
+    AppRegistrationsSkuMessagesNewSkuMessageRoute,
   AppAdminSettingsIndexRoute: AppAdminSettingsIndexRoute,
   AppAdminUserGroupsIndexRoute: AppAdminUserGroupsIndexRoute,
   AppAdminUsersIndexRoute: AppAdminUsersIndexRoute,
@@ -1359,6 +1445,7 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppRegistrationsRepresentativeGoalsIndexRoute:
     AppRegistrationsRepresentativeGoalsIndexRoute,
   AppRegistrationsSalesGroupIndexRoute: AppRegistrationsSalesGroupIndexRoute,
+  AppRegistrationsSkuMessagesIndexRoute: AppRegistrationsSkuMessagesIndexRoute,
   AppReportsComissaoIndexRoute: AppReportsComissaoIndexRoute,
   AppReportsCustomersListIndexRoute: AppReportsCustomersListIndexRoute,
   AppReportsDashboardProductGroupsIndexRoute:
@@ -1392,6 +1479,8 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
     AppRegistrationsProductsProductIdIndexRoute,
   AppRegistrationsSalesGroupGroupIdIndexRoute:
     AppRegistrationsSalesGroupGroupIdIndexRoute,
+  AppRegistrationsSkuMessagesProductIdIndexRoute:
+    AppRegistrationsSkuMessagesProductIdIndexRoute,
   AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute:
     AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute,
   AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute:

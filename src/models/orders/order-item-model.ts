@@ -21,7 +21,7 @@ export type OrderItemModel = {
   statusId: number;
   comments: string;
   customerAbbreviation: string;
-  fiscalClassificationId: string;
+  fiscalOperationId: string;
   grossItemValue: number;
   netItemValue: number;
   suggestPrice: number;

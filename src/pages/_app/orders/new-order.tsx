@@ -9,7 +9,7 @@ export const Route = createFileRoute("/_app/orders/new-order")({
 
 function NewOrderPage() {
   return (
-    <AppPageHeader titleSlot="Novo Pedido de Venda">
+    <AppPageHeader titleSlot={`Novo Pedido de Venda`}>
       <OrderProvider formMode="NEW" initialOrder={undefined}>
         <OrderForm />
       </OrderProvider>

@@ -43,7 +43,7 @@ export type OrderModel = {
   //  priceTableId: string;
   priceTypeId: number;
   isCompleted: boolean;
-  fiscalClassificationId: string;
+  fiscalOperationId: string;
   orderRepId: string;
 
   // Navigation properties

@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -7,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import {
   SearchCombo,
   type SearchComboItem,
@@ -23,6 +25,7 @@ interface Props {
 }
 export const AddPriceTableModal = ({ isOpen, customerId, onClose }: Props) => {
   const [selectedPriceTableId, setSelectedPriceTableId] = useState("");
+  const [isException, setIsException] = useState(false);
   const [priceTablesData, setPriceTablesData] = useState<SearchComboItem[]>([]);
   const [comboKey, setComboKey] = useState(new Date().valueOf());
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +33,7 @@ export const AddPriceTableModal = ({ isOpen, customerId, onClose }: Props) => {
     const data = {
       customerId,
       priceTableId: selectedPriceTableId,
+      isException,
     };
     try {
       await api.post(`/registrations/customer-price-tables`, data);
@@ -72,6 +76,14 @@ export const AddPriceTableModal = ({ isOpen, customerId, onClose }: Props) => {
             staticItems={priceTablesData}
             disabled={isLoading}
           />
+        </div>
+        <div>
+          <Label>
+            <Checkbox
+              onCheckedChange={(checked) => setIsException(!!checked)}
+            />
+            Tabela de Excessão
+          </Label>
         </div>
         <DialogFooter>
           <Button variant="green" onClick={() => handleSave()}>

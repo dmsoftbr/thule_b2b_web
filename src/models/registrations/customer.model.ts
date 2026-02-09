@@ -51,4 +51,7 @@ export type CustomerModel = {
   contactName: string;
   contactPhone: string;
   contactEmail: string;
+
+  fiscalOperationId: string;
+  fiscalOperationExtId: string;
 };

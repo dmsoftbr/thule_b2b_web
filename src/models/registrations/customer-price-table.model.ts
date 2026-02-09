@@ -6,4 +6,6 @@ export type CustomerPriceTableModel = {
   priceTableId: string;
   customer?: CustomerModel;
   priceTable?: PriceTableModel;
+  isException: boolean;
+  order: number;
 };

@@ -25,7 +25,7 @@ export const NEW_ORDER_EMPTY: OrderModel = {
   branchId: "",
   items: [],
   isBudget: false,
-  fiscalClassificationId: "",
+  fiscalOperationId: "",
   isCompleted: false,
   isParcialBilling: true,
   comments: "",
@@ -65,7 +65,7 @@ export const NEW_ORDER_ITEM_EMPTY: Omit<
   comments: "",
   customerAbbreviation: "",
   deliveredQuantity: 0,
-  fiscalClassificationId: "",
+  fiscalOperationId: "",
   id: "",
   ncm: "",
   netItemValue: 0,
@@ -93,7 +93,7 @@ export const NEW_BUDGET_EMPTY: OrderModel = {
   branchId: "",
   items: [],
   isBudget: true,
-  fiscalClassificationId: "",
+  fiscalOperationId: "",
   isCompleted: false,
   comments: "",
   additionalDiscount: 0,
@@ -123,24 +123,27 @@ export const generateOrderFromOutlet = async (): Promise<OrderModel> => {
 
   if (outletJson) {
     sessionStorage.removeItem("b2b@outletOrderData");
+    localStorage.removeItem("outlet_cart_v1");
     newOrder.customerId = Number(outletJson.customerId);
-    newOrder.representativeId = 1;
-    newOrder.branchId = "1";
+    newOrder.representativeId = outletJson.customer.representativeId;
+    newOrder.branchId = outletJson.customer.branchId;
     newOrder.currencyId = 0;
     newOrder.statusId = 1;
     newOrder.discountPercentual = 0;
     newOrder.orderClassificationId = 6; // outlet
 
-    const repData = await new RepresentativesService().getById(1);
+    const repData = await new RepresentativesService().getById(
+      newOrder.representativeId,
+    );
     newOrder.representative = repData;
 
-    const customerData = await CustomersService.getById(newOrder.customerId);
-    newOrder.customer = customerData;
-    newOrder.carrierId = customerData.carrierId;
-    newOrder.customerAbbreviation = customerData.abbreviation;
+    //const customerData = await CustomersService.getById(newOrder.customerId);
+    newOrder.customer = outletJson.customer;
+    newOrder.carrierId = outletJson.customer.carrierId;
+    newOrder.customerAbbreviation = outletJson.customer.abbreviation;
     newOrder.deliveryLocationId =
-      customerData.deliveryLocations?.length > 0
-        ? customerData.deliveryLocations[0].id
+      outletJson.customer.deliveryLocations?.length > 0
+        ? outletJson.customer.deliveryLocations[0].id
         : "";
     for (const [index, item] of (outletJson.items ?? []).entries()) {
       const orderItem: OrderItemModel = {

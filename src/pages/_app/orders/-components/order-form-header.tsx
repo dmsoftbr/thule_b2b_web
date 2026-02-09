@@ -50,7 +50,7 @@ export const OrderFormHeader = () => {
     newCustomer: CustomerModel | undefined,
     currentCustomer: CustomerModel | undefined,
     confirm: () => void,
-    cancel: () => void
+    cancel: () => void,
   ) => {
     // Se não há cliente atual (primeira seleção), confirma direto
     if (!currentCustomer) {

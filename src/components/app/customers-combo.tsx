@@ -115,6 +115,9 @@ export const CustomersCombo = ({
   const [isOpen, setIsOpen] = useState(false);
   const [data, setData] = useState<CustomerModel[]>([]);
   const [value, setValue] = useState(defaultValue);
+  const [selectedCustomer, setSelectedCustomer] = useState<
+    CustomerModel | undefined
+  >(undefined);
   const [searchText, setSearchText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { session } = useAuth();
@@ -164,35 +167,31 @@ export const CustomersCombo = ({
   // Debounce da busca com tempo reduzido
   const debouncedSearch = useDebounceCallback(onSearch, 300);
 
-  // Memoiza o item selecionado
-  const selectedItem = useMemo(() => {
-    return data.find((item) => item.id === value);
-  }, [data, value]);
-
   // Memoiza o documento formatado do item selecionado
   const selectedFormattedDocument = useMemo(
-    () => (selectedItem ? formatCpfCnpj(selectedItem.documentNumber) : ""),
-    [selectedItem],
+    () => (selectedCustomer ? formatCpfCnpj(selectedCustomer.documentNumber) : ""),
+    [selectedCustomer],
   );
 
   // Memoiza o conteúdo do botão
   const buttonContent = useMemo(() => {
-    if (!selectedItem) return "Selecione o Cliente";
+    if (!selectedCustomer) return "Selecione o Cliente";
 
     return (
       <div>
-        {`${selectedItem.id} - ${selectedItem.abbreviation}`} -{" "}
+        {`${selectedCustomer.id} - ${selectedCustomer.abbreviation}`} -{" "}
         <span className="text-xs text-muted-foreground">
           CPF/CNPJ: {selectedFormattedDocument}
         </span>
       </div>
     );
-  }, [selectedItem, selectedFormattedDocument]);
+  }, [selectedCustomer, selectedFormattedDocument]);
 
   // Função para aplicar a seleção
   const applySelection = useCallback(
     (customer: CustomerModel) => {
       setValue(customer.id);
+      setSelectedCustomer(customer);
       onSelect?.(customer);
     },
     [onSelect],
@@ -216,14 +215,14 @@ export const CustomersCombo = ({
           // Não faz nada, mantém a seleção atual
         };
 
-        onPreSelect(customer, selectedItem, confirm, cancel);
+        onPreSelect(customer, selectedCustomer, confirm, cancel);
         return;
       }
 
       // Se não tem onPreSelect, aplica diretamente
       applySelection(customer);
     },
-    [value, onPreSelect, selectedItem, applySelection],
+    [value, onPreSelect, selectedCustomer, applySelection],
   );
 
   // Efeito para buscar quando o texto de busca muda
@@ -233,12 +232,34 @@ export const CustomersCombo = ({
 
   // Efeito para carregar o valor padrão (executado apenas uma vez)
   useEffect(() => {
-    if (defaultValue && isInitialLoadRef.current) {
+    if (defaultValue && isInitialLoadRef.current && session?.user.id) {
       isInitialLoadRef.current = false;
       setValue(defaultValue);
-      onSearch(defaultValue.toString());
+
+      // Busca específica para o valor padrão
+      const fetchDefault = async () => {
+        try {
+          const { data } = await api.post(
+            `/registrations/customers/search/${session.user.id}`,
+            {
+              search: defaultValue.toString(),
+            },
+          );
+          
+          if (Array.isArray(data)) {
+            const found = data.find((d: CustomerModel) => d.id === defaultValue);
+            if (found) {
+              setSelectedCustomer(found);
+            }
+          }
+        } catch (error) {
+          console.error("Erro ao buscar cliente padrão:", error);
+        }
+      };
+      
+      fetchDefault();
     }
-  }, [defaultValue, onSearch]);
+  }, [defaultValue, session?.user.id]);
 
   // Cleanup do AbortController
   useEffect(() => {

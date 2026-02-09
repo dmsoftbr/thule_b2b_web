@@ -74,7 +74,7 @@ export const OrderSearchProductModal = ({ initialPriceTable }: Props) => {
         comments: "",
         customerAbbreviation: order.customerAbbreviation,
         deliveredQuantity: 0,
-        fiscalClassificationId: "",
+        fiscalOperationId: "",
         id: uuid.v4(),
         ncm: "",
         netItemValue: 0,

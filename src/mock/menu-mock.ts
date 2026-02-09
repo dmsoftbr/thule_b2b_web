@@ -116,6 +116,12 @@ export const MENU_MOCK: MenuModel[] = [
         url: "/registrations/products",
       },
       {
+        id: "741",
+        title: "Mensagens SKU",
+        icon: "MessageCircleMoreIcon",
+        url: "/registrations/sku-messages",
+      },
+      {
         id: "740",
         title: "Tipo Item",
         icon: "BoxIcon",

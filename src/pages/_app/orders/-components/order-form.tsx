@@ -2,13 +2,10 @@ import { Button } from "@/components/ui/button";
 import { OrderFormItems } from "./order-form-items";
 import { OrderFormHeader } from "./order-form-header";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { generateOrderFromOutlet } from "../-utils/order-utils";
+import { useState } from "react";
 import { DiscountMatrizModal } from "./discount-matriz-modal";
 import { SalesChannelModal } from "./sales-channel-modal";
 import { FinishOrderModal } from "./finish-order-modal";
-import { toast } from "sonner";
-import { handleError } from "@/lib/api";
 import { ExportOrder } from "./export-order";
 import { useOrder } from "../-context/order-context";
 
@@ -16,41 +13,33 @@ export const OrderForm = () => {
   const navigate = useNavigate();
 
   const [showFinishOrderModal, setShowFinishOrderModal] = useState(false);
-  const {
-    order,
-    setOrder,
-    setCustomer,
-    setRepresentative,
-    setDiscountPercentual,
-    mode,
-    isBudget,
-  } = useOrder();
+  const { order, mode, isBudget } = useOrder();
 
   const isEditing = mode == "NEW" || mode == "EDIT";
 
-  const handleSetOrderFromOutlet = async () => {
-    try {
-      const outletOrderData =
-        sessionStorage.getItem("b2b@outletOrderData") ?? "";
-      if (outletOrderData) {
-        const orderGenerated = await generateOrderFromOutlet();
-        sessionStorage.removeItem("b2b@outletOrderData");
-        //        if (orderGenerated.priceTable) setPriceTable(orderGenerated.priceTable);
-        if (orderGenerated.customer) setCustomer(orderGenerated.customer);
-        if (orderGenerated.representative)
-          setRepresentative(orderGenerated.representative);
-        setDiscountPercentual(0);
-        setOrder(orderGenerated);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error(handleError(error));
-    }
-  };
+  // const handleSetOrderFromOutlet = async () => {
+  //   try {
+  //     const outletOrderData =
+  //       sessionStorage.getItem("b2b@outletOrderData") ?? "";
+  //     if (outletOrderData) {
+  //       const orderGenerated = await generateOrderFromOutlet();
+  //       sessionStorage.removeItem("b2b@outletOrderData");
+  //       //        if (orderGenerated.priceTable) setPriceTable(orderGenerated.priceTable);
+  //       if (orderGenerated.customer) setCustomer(orderGenerated.customer);
+  //       if (orderGenerated.representative)
+  //         setRepresentative(orderGenerated.representative);
+  //       setDiscountPercentual(0);
+  //       setOrder(orderGenerated);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     toast.error(handleError(error));
+  //   }
+  // };
 
-  useEffect(() => {
-    handleSetOrderFromOutlet();
-  }, []);
+  // useEffect(() => {
+  //   handleSetOrderFromOutlet();
+  // }, []);
 
   return (
     <>

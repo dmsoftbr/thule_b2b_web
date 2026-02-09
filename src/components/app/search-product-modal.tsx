@@ -13,7 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import type { ProductModel } from "@/models/product.model";
-import { FilterIcon, SearchIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { useState } from "react";
 import { ProductImage } from "@/components/app/product-image";
 

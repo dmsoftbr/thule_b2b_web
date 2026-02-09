@@ -304,7 +304,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
           UnitaryValue:
             item.inputPrice * (1 - order.discountPercentual / 100.0),
           TotalValue: item.inputPrice * item.orderQuantity,
-          TES: "6403st",
+          TES: order.customer?.fiscalOperationId ?? "",
           ItemDiscountPercentage: 0,
           PriceTableId: item.priceTableId,
         })),
@@ -389,7 +389,11 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                 </Label>
                 <Select
                   defaultValue={order.orderClassificationId.toString()}
-                  disabled={!isEditing || isItemPermissionDisabled("317")}
+                  disabled={
+                    !isEditing ||
+                    isItemPermissionDisabled("317") ||
+                    order.orderClassificationId == 6 // outlet
+                  }
                 >
                   <SelectTrigger className="w-full bg-white">
                     <SelectValue placeholder="Selecione uma opção" />
@@ -400,7 +404,9 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                     <SelectItem value="3">Bonificação</SelectItem>
                     <SelectItem value="4">Remessa Consignação</SelectItem>
                     <SelectItem value="5">Garantia</SelectItem>
-                    <SelectItem value="6">Outlet</SelectItem>
+                    <SelectItem value="6" disabled>
+                      Outlet
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -498,7 +504,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               <div className="form-group">
                 <Label>
                   <Checkbox
-                    disabled={!isEditing}
+                    disabled={!isEditing || order.orderClassificationId == 6}
                     checked={order.isParcialBilling}
                     onCheckedChange={(checked) => {
                       const newOrder = {
@@ -514,7 +520,11 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               <div className="form-group">
                 <Label>
                   <Checkbox
-                    disabled={!isEditing || isItemPermissionDisabled("314")}
+                    disabled={
+                      !isEditing ||
+                      isItemPermissionDisabled("314") ||
+                      order.orderClassificationId == 6
+                    }
                     checked={order.freightPaymentId == 3}
                     onCheckedChange={(checked) => {
                       const newOrder = {
@@ -630,7 +640,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                       handleChangeDiscountPercentual(value.floatValue ?? 0)
                     }
                   />
-                  {isEditing && (
+                  {isEditing && order.orderClassificationId != 6 && (
                     <AppTooltip message="Desfazer">
                       <button
                         className="hover:bg-neutral-200 bg-neutral-50 p-1 rounded border border-neutral-300"
@@ -646,7 +656,8 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                   )}
                 </div>
               </div>
-              {(selectedPaymentCondition?.additionalDiscountPercent ??
+              {((order.orderClassificationId != 6 &&
+                selectedPaymentCondition?.additionalDiscountPercent) ??
                 0 > 0) && (
                 <div className="flex justify-between text-sm bg-orange-100 p-1 rounded">
                   <Label className="text-orange-600">

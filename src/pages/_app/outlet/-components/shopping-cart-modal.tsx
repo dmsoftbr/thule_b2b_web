@@ -27,9 +27,12 @@ import { useOutletCart } from "./outlet-context";
 import { formatNumber } from "@/lib/number-utils";
 import { CustomersCombo } from "@/components/app/customers-combo";
 import { toast } from "sonner";
+import { type CustomerModel } from "@/models/registrations/customer.model";
 
 export const OutletShoppingCartModal = () => {
-  const [selectedCustomer, setSelectedCustomer] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState<
+    CustomerModel | undefined
+  >(undefined);
   const [isOpen, setIsOpen] = useState(false);
   const {
     totalItems,
@@ -57,11 +60,15 @@ export const OutletShoppingCartModal = () => {
       return;
     }
     const data = {
-      customerId: selectedCustomer,
+      customerId: selectedCustomer.id,
+      customer: selectedCustomer,
+      paymentConditionId: selectedCustomer.paymentConditionId,
+      deliveryLocationId: selectedCustomer.deliveryLocations[0].id,
+      branchId: selectedCustomer.branchId,
       items,
     };
     sessionStorage.setItem("b2b@outletOrderData", JSON.stringify(data));
-    navigate({ to: "/orders/new-order" });
+    navigate({ to: "/orders/new-outlet-order" });
   };
 
   return (
@@ -72,7 +79,7 @@ export const OutletShoppingCartModal = () => {
           {totalItems} Produtos
         </Button>
       </DialogTrigger>
-      <DialogContent className="min-w-6/12">
+      <DialogContent className="min-w-fit w-6/12">
         <DialogHeader>
           <DialogTitle>Produtos no Carrinho</DialogTitle>
           <DialogDescription hidden></DialogDescription>
@@ -99,9 +106,7 @@ export const OutletShoppingCartModal = () => {
             <div className="space-y-1">
               <Label>Cliente:</Label>
               <CustomersCombo
-                onSelect={(customer) =>
-                  setSelectedCustomer(customer?.id.toString() ?? "")
-                }
+                onSelect={(customer) => setSelectedCustomer(customer)}
               />
             </div>
             <div>
