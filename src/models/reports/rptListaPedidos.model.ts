@@ -1,0 +1,24 @@
+export type rptListaPedidosResponseDto = {
+  nrPedCli: string;
+  nomeAbrev: string;
+  noAbRepPri: string;
+  nrSequencia: number;
+  itCodigo: string;
+  descItem: string;
+  qtPedida: number;
+  qtAtendida: number;
+  vlPreuni: number;
+  codFamilia: string;
+  codModelo: string;
+  dtEntregaOrig: Date;
+  dtEntrega: Date;
+  prioridade: number;
+  situacao: string;
+  aliquotaIcm: number;
+  aliqPiscof: number;
+  aliqIpi: number;
+  totLiquido: number;
+  totBruto: number;
+  qtLogAloca: number;
+  observacao: string;
+};

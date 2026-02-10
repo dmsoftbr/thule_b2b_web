@@ -46,6 +46,8 @@ import type { PaymentConditionModel } from "@/models/registrations/payment-condi
 import { InputMask } from "@/components/ui/input-mask";
 import { useOrder } from "../-context/order-context";
 import { TaxesModal } from "./taxes-modal";
+import * as uuid from "uuid";
+import type { TaxResponseDto } from "@/models/dto/responses/tax-response.model";
 
 interface Props {
   isOpen: boolean;
@@ -56,7 +58,7 @@ interface Props {
 export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   const navigate = useNavigate();
   const { session } = useAuth();
-  const { order, mode, setOrder, getOrderTotalTaxes } = useOrder();
+  const { order, mode, setOrder } = useOrder();
   const { showAppDialog } = useAppDialog();
 
   const isEditing = mode == "NEW" || mode == "EDIT";
@@ -71,7 +73,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   const [freightsData, setFreightsData] = useState<CalcFreightsResposeDto[]>(
     [],
   );
-  const [taxesData, setTaxesData] = useState<any>();
+  const [taxesData, setTaxesData] = useState<TaxResponseDto>();
 
   const [selectedPaymentCondition, setSelectedPaymentCondition] = useState<
     PaymentConditionModel | undefined
@@ -79,6 +81,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
 
   const [isCalculatingFreight, setIsCalculatingFreight] = useState(false);
   const [isFreightError, setIsFreightError] = useState(false);
+  const [totalTaxes, setTotalTaxes] = useState(0);
 
   async function handleSendOrder() {
     //save the order / budget
@@ -87,6 +90,99 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
     setIsSaving(true);
 
     orderData.items.map((item) => (item.taxes = []));
+
+    orderData.items.map((orderItem) => {
+      orderItem.taxes = [];
+      taxesData?.itens.map((taxItem) => {
+        if (taxItem.produto.codigo_produto == orderItem.productId) {
+          //cofins
+          orderItem.taxes.push({
+            id: uuid.v4(),
+            itemId: orderItem.id,
+            orderId: orderItem.orderId,
+            taxBase: taxItem.produto.base_calculo_cofins,
+            taxBaseReduction: 0,
+            taxName: "COFINS",
+            taxPercentual: taxItem.produto.aliquota_cofins,
+            taxValue: taxItem.produto.valor_cofins,
+          });
+
+          //pis
+          orderItem.taxes.push({
+            id: uuid.v4(),
+            itemId: orderItem.id,
+            orderId: orderItem.orderId,
+            taxBase: taxItem.produto.base_calculo_pis,
+            taxBaseReduction: 0,
+            taxName: "PIS",
+            taxPercentual: taxItem.produto.aliquota_pis,
+            taxValue: taxItem.produto.valor_pis,
+          });
+
+          // ipi
+          orderItem.taxes.push({
+            id: uuid.v4(),
+            itemId: orderItem.id,
+            orderId: orderItem.orderId,
+            taxBase: taxItem.produto.base_calculo_ipi,
+            taxBaseReduction: 0,
+            taxName: "IPI",
+            taxPercentual: taxItem.produto.aliquota_ipi,
+            taxValue: taxItem.produto.valor_ipi,
+          });
+
+          // csll
+          orderItem.taxes.push({
+            id: uuid.v4(),
+            itemId: orderItem.id,
+            orderId: orderItem.orderId,
+            taxBase: 0,
+            taxBaseReduction: 0,
+            taxName: "CSLL",
+            taxPercentual: taxItem.produto.aliquota_csll,
+            taxValue: taxItem.produto.valor_csll,
+          });
+
+          // icms
+          orderItem.taxes.push({
+            id: uuid.v4(),
+            itemId: orderItem.id,
+            orderId: orderItem.orderId,
+            taxBase: taxItem.produto.base_calculo_icms,
+            taxBaseReduction: 0,
+            taxName: "ICMS",
+            taxPercentual: taxItem.produto.aliquota_icms,
+            taxValue: taxItem.produto.valor_icms,
+          });
+
+          // st
+          orderItem.taxes.push({
+            id: uuid.v4(),
+            itemId: orderItem.id,
+            orderId: orderItem.orderId,
+            taxBase: taxItem.produto.base_calculo_st,
+            taxBaseReduction: 0,
+            taxName: "ICMS-ST",
+            taxPercentual: taxItem.produto.aliquota_st,
+            taxValue: taxItem.produto.valor_st,
+          });
+
+          taxItem.produto.reforma.map((taxReforma) => {
+            // impostos da reforma
+            orderItem.taxes.push({
+              id: uuid.v4(),
+              itemId: orderItem.id,
+              orderId: orderItem.orderId,
+              taxBase: taxReforma.base_tributo,
+              taxBaseReduction: taxReforma.perc_reducao_governamental,
+              taxName: taxReforma.tipo_tributo_descricao,
+              taxPercentual: taxReforma.aliquota,
+              taxValue: taxReforma.valor_tributo,
+            });
+          });
+        }
+      });
+    });
 
     if (order.id) {
       // update
@@ -151,7 +247,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
       2,
     );
 
-    return grossValue;
+    return grossValue + totalTaxes;
   };
 
   const getSelectedDeliveryLocation = () => {
@@ -313,7 +409,10 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
       const { data } = await api.post(`/order-items/calc-item-taxes`, payload);
       if (data) {
         setTaxesData(data);
+        setTotalTaxes(data.total_impostos);
         //console.log("IMPOSTOS", data);
+      } else {
+        setTotalTaxes(0);
       }
     } catch (error) {
       console.log(error);
@@ -699,7 +798,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                   Impostos:
                 </div>
 
-                <span>R$ {formatNumber(getOrderTotalTaxes(), 2)}</span>
+                <span>R$ {formatNumber(totalTaxes, 2)}</span>
               </div>
               <div className="flex justify-between font-medium pr-2 bg-emerald-600 rounded-md py-2 px-2 text-white">
                 <span>

@@ -9,44 +9,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useState } from "react";
-import { useOrder } from "../-context/order-context";
-import type { OrderItemTaxModel } from "@/models/orders/order-item-tax-model";
 import { formatNumber } from "@/lib/number-utils";
+import type { TaxResponseDto } from "@/models/dto/responses/tax-response.model";
 
 interface Props {
-  data: any;
+  data: TaxResponseDto | undefined;
 }
 
 export const TaxesModal = ({ data }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { order } = useOrder();
 
-  // const getTaxes = () => {
-  //   const list: OrderItemTaxModel[] = [];
-  //   for (let item of order.items) {
-  //     if (item.taxes) {
-  //       for (let tax of item.taxes) {
-  //         let existingTax = list.findIndex((f) => f.taxName == tax.taxName);
-  //         if (existingTax >= 0) {
-  //           list[existingTax].taxValue += tax.taxValue;
-  //         } else {
-  //           list.push({
-  //             id: "",
-  //             itemId: "",
-  //             orderId: "",
-  //             taxBase: 0,
-  //             taxBaseReduction: 0,
-  //             taxName: tax.taxName,
-  //             taxPercentual: 0,
-  //             taxValue: tax.taxValue,
-  //           });
-  //         }
-  //       }
-  //     }
-  //   }
-  //   return list;
-  // };
-  console.log("IMPOSTS", data);
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -81,21 +53,26 @@ export const TaxesModal = ({ data }: Props) => {
           <DialogTitle>Impostos Calculados</DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
-        <div>
-          <div className="grid grid-cols-4">
-            <div>Imposto</div>
-            <div>Valor</div>
-            <div>Base de Cálculo</div>
-            <div>Alíquota</div>
-            {data?.TaxesDetail.map((item: any) => (
-              <>
-                <div>{item.descricao}</div>
-                <div>{formatNumber(item.valor, 2)}</div>
-                <div>{formatNumber(item.base_calculo, 2)}</div>
-                <div>{formatNumber(item.aliquota, 2)}</div>
-              </>
-            ))}
+        <div className="flex flex-col border">
+          <div className="grid grid-cols-4 text-sm border-b bg-neutral-200 border-neutral-300">
+            <div className="border-r border-neutral-300 px-1">Imposto</div>
+            <div className="border-r border-neutral-300 px-1">Valor</div>
+            <div className="border-r border-neutral-300 px-1">
+              Base de Cálculo
+            </div>
+            <div className="px-1">Alíquota</div>
           </div>
+          {data?.TaxesDetail.map((item: any) => (
+            <div
+              className="grid grid-cols-4 border-b py-1.5 px-1 last:border-b-0 first:border-t text-sm even:bg-neutral-50"
+              key={item.descricao}
+            >
+              <div>{item.descricao}</div>
+              <div>{formatNumber(item.valor, 2)}</div>
+              <div>{formatNumber(item.base_calculo, 2)}</div>
+              <div>{formatNumber(item.aliquota, 2)}</div>
+            </div>
+          ))}
         </div>
         <DialogFooter>
           <Button onClick={() => setIsOpen(false)}>Fechar</Button>

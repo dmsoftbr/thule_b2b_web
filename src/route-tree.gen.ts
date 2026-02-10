@@ -25,6 +25,7 @@ import { Route as AppBudgetsNewBudgetRouteImport } from './pages/_app/budgets/ne
 import { Route as AppSystemSyncStatusIndexRouteImport } from './pages/_app/system/sync-status/index'
 import { Route as AppStockProductStockIndexRouteImport } from './pages/_app/stock/product-stock/index'
 import { Route as AppStockEsli011IndexRouteImport } from './pages/_app/stock/esli011/index'
+import { Route as AppReportsListaPedidosIndexRouteImport } from './pages/_app/reports/lista-pedidos/index'
 import { Route as AppReportsDashboardProductGroupsIndexRouteImport } from './pages/_app/reports/dashboard-product-groups/index'
 import { Route as AppReportsCustomersListIndexRouteImport } from './pages/_app/reports/customers-list/index'
 import { Route as AppReportsComissaoIndexRouteImport } from './pages/_app/reports/comissao/index'
@@ -158,6 +159,12 @@ const AppStockEsli011IndexRoute = AppStockEsli011IndexRouteImport.update({
   path: '/stock/esli011/',
   getParentRoute: () => AppLayoutRoute,
 } as any)
+const AppReportsListaPedidosIndexRoute =
+  AppReportsListaPedidosIndexRouteImport.update({
+    id: '/reports/lista-pedidos/',
+    path: '/reports/lista-pedidos/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 const AppReportsDashboardProductGroupsIndexRoute =
   AppReportsDashboardProductGroupsIndexRouteImport.update({
     id: '/reports/dashboard-product-groups/',
@@ -495,6 +502,7 @@ export interface FileRoutesByFullPath {
   '/reports/comissao': typeof AppReportsComissaoIndexRoute
   '/reports/customers-list': typeof AppReportsCustomersListIndexRoute
   '/reports/dashboard-product-groups': typeof AppReportsDashboardProductGroupsIndexRoute
+  '/reports/lista-pedidos': typeof AppReportsListaPedidosIndexRoute
   '/stock/esli011': typeof AppStockEsli011IndexRoute
   '/stock/product-stock': typeof AppStockProductStockIndexRoute
   '/system/sync-status': typeof AppSystemSyncStatusIndexRoute
@@ -562,6 +570,7 @@ export interface FileRoutesByTo {
   '/reports/comissao': typeof AppReportsComissaoIndexRoute
   '/reports/customers-list': typeof AppReportsCustomersListIndexRoute
   '/reports/dashboard-product-groups': typeof AppReportsDashboardProductGroupsIndexRoute
+  '/reports/lista-pedidos': typeof AppReportsListaPedidosIndexRoute
   '/stock/esli011': typeof AppStockEsli011IndexRoute
   '/stock/product-stock': typeof AppStockProductStockIndexRoute
   '/system/sync-status': typeof AppSystemSyncStatusIndexRoute
@@ -631,6 +640,7 @@ export interface FileRoutesById {
   '/_app/reports/comissao/': typeof AppReportsComissaoIndexRoute
   '/_app/reports/customers-list/': typeof AppReportsCustomersListIndexRoute
   '/_app/reports/dashboard-product-groups/': typeof AppReportsDashboardProductGroupsIndexRoute
+  '/_app/reports/lista-pedidos/': typeof AppReportsListaPedidosIndexRoute
   '/_app/stock/esli011/': typeof AppStockEsli011IndexRoute
   '/_app/stock/product-stock/': typeof AppStockProductStockIndexRoute
   '/_app/system/sync-status/': typeof AppSystemSyncStatusIndexRoute
@@ -700,6 +710,7 @@ export interface FileRouteTypes {
     | '/reports/comissao'
     | '/reports/customers-list'
     | '/reports/dashboard-product-groups'
+    | '/reports/lista-pedidos'
     | '/stock/esli011'
     | '/stock/product-stock'
     | '/system/sync-status'
@@ -767,6 +778,7 @@ export interface FileRouteTypes {
     | '/reports/comissao'
     | '/reports/customers-list'
     | '/reports/dashboard-product-groups'
+    | '/reports/lista-pedidos'
     | '/stock/esli011'
     | '/stock/product-stock'
     | '/system/sync-status'
@@ -835,6 +847,7 @@ export interface FileRouteTypes {
     | '/_app/reports/comissao/'
     | '/_app/reports/customers-list/'
     | '/_app/reports/dashboard-product-groups/'
+    | '/_app/reports/lista-pedidos/'
     | '/_app/stock/esli011/'
     | '/_app/stock/product-stock/'
     | '/_app/system/sync-status/'
@@ -980,6 +993,13 @@ declare module '@tanstack/react-router' {
       path: '/stock/esli011'
       fullPath: '/stock/esli011'
       preLoaderRoute: typeof AppStockEsli011IndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/reports/lista-pedidos/': {
+      id: '/_app/reports/lista-pedidos/'
+      path: '/reports/lista-pedidos'
+      fullPath: '/reports/lista-pedidos'
+      preLoaderRoute: typeof AppReportsListaPedidosIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/reports/dashboard-product-groups/': {
@@ -1374,6 +1394,7 @@ interface AppLayoutRouteChildren {
   AppReportsComissaoIndexRoute: typeof AppReportsComissaoIndexRoute
   AppReportsCustomersListIndexRoute: typeof AppReportsCustomersListIndexRoute
   AppReportsDashboardProductGroupsIndexRoute: typeof AppReportsDashboardProductGroupsIndexRoute
+  AppReportsListaPedidosIndexRoute: typeof AppReportsListaPedidosIndexRoute
   AppStockEsli011IndexRoute: typeof AppStockEsli011IndexRoute
   AppStockProductStockIndexRoute: typeof AppStockProductStockIndexRoute
   AppSystemSyncStatusIndexRoute: typeof AppSystemSyncStatusIndexRoute
@@ -1450,6 +1471,7 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppReportsCustomersListIndexRoute: AppReportsCustomersListIndexRoute,
   AppReportsDashboardProductGroupsIndexRoute:
     AppReportsDashboardProductGroupsIndexRoute,
+  AppReportsListaPedidosIndexRoute: AppReportsListaPedidosIndexRoute,
   AppStockEsli011IndexRoute: AppStockEsli011IndexRoute,
   AppStockProductStockIndexRoute: AppStockProductStockIndexRoute,
   AppSystemSyncStatusIndexRoute: AppSystemSyncStatusIndexRoute,

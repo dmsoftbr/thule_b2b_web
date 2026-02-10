@@ -19,7 +19,6 @@ import { toast } from "sonner";
 import { columns } from "./-components/columns";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { type ComissaoReportModel } from "@/models/reports/comission.model";
-import { ServerTable } from "@/components/server-table/server-table";
 import {
   Table,
   TableBody,

@@ -344,7 +344,7 @@ export const ServerTable = <T,>({
         return;
       }
       if (dataMethod == "POST") {
-        const { data: serverData } = await api.post<PagedResponseModel<T>>(
+        let { data: serverData } = await api.post<PagedResponseModel<T>>(
           dataUrl,
           {
             currentPage,
@@ -357,6 +357,11 @@ export const ServerTable = <T,>({
             ...additionalInfo,
           },
         );
+
+        if (Array.isArray(serverData)) {
+          serverData = { result: serverData, totalRecords: serverData.length };
+        }
+
         if (serverData.result == null) serverData.result = [];
         setData(serverData);
         onAfterGetData?.(serverData.result);

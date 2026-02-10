@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_app/orders/new-outlet-order")({
   component: RouteComponent,
   loader: async () => {
     const data = await generateOrderFromOutlet();
-    console.log(data);
+    console.log("", data);
     return { orderData: data };
   },
 });
