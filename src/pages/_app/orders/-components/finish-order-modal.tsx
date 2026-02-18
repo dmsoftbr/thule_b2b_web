@@ -34,7 +34,7 @@ import { type UserPermissionModel } from "@/models/admin/user-permission.model";
 import { getUserPermissions } from "../-utils/order-utils";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
-import { Loader2Icon, Undo2Icon } from "lucide-react";
+import { Loader2Icon, LoaderIcon, Undo2Icon } from "lucide-react";
 import { AppTooltip } from "@/components/layout/app-tooltip";
 import type {
   CalcOrderFreightsItem,
@@ -80,144 +80,167 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   >(undefined);
 
   const [isCalculatingFreight, setIsCalculatingFreight] = useState(false);
+  const [isCalculatingTaxes, setIsCalculatingTaxes] = useState(false);
   const [isFreightError, setIsFreightError] = useState(false);
   const [totalTaxes, setTotalTaxes] = useState(0);
 
   async function handleSendOrder() {
-    //save the order / budget
-    let savedOrderId = "";
-    const orderData = { ...order, history: [] };
-    setIsSaving(true);
+    try {
+      //save the order / budget
+      let savedOrderId = "";
+      const orderData = { ...order, history: [] };
+      setIsSaving(true);
 
-    orderData.items.map((item) => (item.taxes = []));
+      orderData.items.map((item) => (item.taxes = []));
 
-    orderData.items.map((orderItem) => {
-      orderItem.taxes = [];
-      taxesData?.itens.map((taxItem) => {
-        if (taxItem.produto.codigo_produto == orderItem.productId) {
-          //cofins
-          orderItem.taxes.push({
-            id: uuid.v4(),
-            itemId: orderItem.id,
-            orderId: orderItem.orderId,
-            taxBase: taxItem.produto.base_calculo_cofins,
-            taxBaseReduction: 0,
-            taxName: "COFINS",
-            taxPercentual: taxItem.produto.aliquota_cofins,
-            taxValue: taxItem.produto.valor_cofins,
-          });
-
-          //pis
-          orderItem.taxes.push({
-            id: uuid.v4(),
-            itemId: orderItem.id,
-            orderId: orderItem.orderId,
-            taxBase: taxItem.produto.base_calculo_pis,
-            taxBaseReduction: 0,
-            taxName: "PIS",
-            taxPercentual: taxItem.produto.aliquota_pis,
-            taxValue: taxItem.produto.valor_pis,
-          });
-
-          // ipi
-          orderItem.taxes.push({
-            id: uuid.v4(),
-            itemId: orderItem.id,
-            orderId: orderItem.orderId,
-            taxBase: taxItem.produto.base_calculo_ipi,
-            taxBaseReduction: 0,
-            taxName: "IPI",
-            taxPercentual: taxItem.produto.aliquota_ipi,
-            taxValue: taxItem.produto.valor_ipi,
-          });
-
-          // csll
-          orderItem.taxes.push({
-            id: uuid.v4(),
-            itemId: orderItem.id,
-            orderId: orderItem.orderId,
-            taxBase: 0,
-            taxBaseReduction: 0,
-            taxName: "CSLL",
-            taxPercentual: taxItem.produto.aliquota_csll,
-            taxValue: taxItem.produto.valor_csll,
-          });
-
-          // icms
-          orderItem.taxes.push({
-            id: uuid.v4(),
-            itemId: orderItem.id,
-            orderId: orderItem.orderId,
-            taxBase: taxItem.produto.base_calculo_icms,
-            taxBaseReduction: 0,
-            taxName: "ICMS",
-            taxPercentual: taxItem.produto.aliquota_icms,
-            taxValue: taxItem.produto.valor_icms,
-          });
-
-          // st
-          orderItem.taxes.push({
-            id: uuid.v4(),
-            itemId: orderItem.id,
-            orderId: orderItem.orderId,
-            taxBase: taxItem.produto.base_calculo_st,
-            taxBaseReduction: 0,
-            taxName: "ICMS-ST",
-            taxPercentual: taxItem.produto.aliquota_st,
-            taxValue: taxItem.produto.valor_st,
-          });
-
-          taxItem.produto.reforma.map((taxReforma) => {
-            // impostos da reforma
+      orderData.items.map((orderItem) => {
+        orderItem.taxes = [];
+        taxesData?.itens.map((taxItem) => {
+          if (taxItem.produto.codigo_produto == orderItem.productId) {
+            //cofins
             orderItem.taxes.push({
               id: uuid.v4(),
               itemId: orderItem.id,
               orderId: orderItem.orderId,
-              taxBase: taxReforma.base_tributo,
-              taxBaseReduction: taxReforma.perc_reducao_governamental,
-              taxName: taxReforma.tipo_tributo_descricao,
-              taxPercentual: taxReforma.aliquota,
-              taxValue: taxReforma.valor_tributo,
+              taxBase: taxItem.produto.base_calculo_cofins,
+              taxBaseReduction: 0,
+              taxName: "COFINS",
+              taxPercentual: taxItem.produto.aliquota_cofins,
+              taxValue: taxItem.produto.valor_cofins,
             });
-          });
-        }
+
+            //pis
+            orderItem.taxes.push({
+              id: uuid.v4(),
+              itemId: orderItem.id,
+              orderId: orderItem.orderId,
+              taxBase: taxItem.produto.base_calculo_pis,
+              taxBaseReduction: 0,
+              taxName: "PIS",
+              taxPercentual: taxItem.produto.aliquota_pis,
+              taxValue: taxItem.produto.valor_pis,
+            });
+
+            // ipi
+            orderItem.taxes.push({
+              id: uuid.v4(),
+              itemId: orderItem.id,
+              orderId: orderItem.orderId,
+              taxBase: taxItem.produto.base_calculo_ipi,
+              taxBaseReduction: 0,
+              taxName: "IPI",
+              taxPercentual: taxItem.produto.aliquota_ipi,
+              taxValue: taxItem.produto.valor_ipi,
+            });
+
+            // csll
+            orderItem.taxes.push({
+              id: uuid.v4(),
+              itemId: orderItem.id,
+              orderId: orderItem.orderId,
+              taxBase: 0,
+              taxBaseReduction: 0,
+              taxName: "CSLL",
+              taxPercentual: taxItem.produto.aliquota_csll,
+              taxValue: taxItem.produto.valor_csll,
+            });
+
+            // icms
+            orderItem.taxes.push({
+              id: uuid.v4(),
+              itemId: orderItem.id,
+              orderId: orderItem.orderId,
+              taxBase: taxItem.produto.base_calculo_icms,
+              taxBaseReduction: 0,
+              taxName: "ICMS",
+              taxPercentual: taxItem.produto.aliquota_icms,
+              taxValue: taxItem.produto.valor_icms,
+            });
+
+            // st
+            orderItem.taxes.push({
+              id: uuid.v4(),
+              itemId: orderItem.id,
+              orderId: orderItem.orderId,
+              taxBase: taxItem.produto.base_calculo_st,
+              taxBaseReduction: 0,
+              taxName: "ICMS-ST",
+              taxPercentual: taxItem.produto.aliquota_st,
+              taxValue: taxItem.produto.valor_st,
+            });
+
+            taxItem.produto.reforma.map((taxReforma) => {
+              // impostos da reforma
+              orderItem.taxes.push({
+                id: uuid.v4(),
+                itemId: orderItem.id,
+                orderId: orderItem.orderId,
+                taxBase: taxReforma.base_tributo,
+                taxBaseReduction: taxReforma.perc_reducao_governamental,
+                taxName: taxReforma.tipo_tributo_descricao,
+                taxPercentual: taxReforma.aliquota,
+                taxValue: taxReforma.valor_tributo,
+              });
+            });
+          }
+        });
       });
-    });
 
-    if (order.id) {
-      // update
-      const { data } = await api.patch(`/orders`, orderData);
-      savedOrderId = data.orderId;
-    } else {
-      // add
-      const { data } = await api.post(`/orders`, orderData);
-      savedOrderId = data.orderId;
-    }
+      if (order.id) {
+        // update
+        const { data } = await api.patch(`/orders`, orderData);
+        savedOrderId = data.orderId;
+      } else {
+        // add
+        orderData.id = uuid.v4();
+        const { data } = await api.post(`/orders`, orderData);
+        savedOrderId = data.orderId;
+      }
 
-    if (orderData.maxBillingDate) {
+      if (orderData.maxBillingDate) {
+        await showAppDialog({
+          title: "ATENÇÃO",
+          message:
+            "Você informou uma Data Mínima de Faturamento. Favor entrar em contato com a THULE pelo e-mail <b>pedidos.itupeva@thule.com<b/> e solicitar a alocação do estoque para este Pedido.",
+          type: "info",
+        });
+      }
+      setIsSaving(false);
+      onClose();
       await showAppDialog({
-        title: "ATENÇÃO",
-        message:
-          "Você informou uma Data Mínima de Faturamento. Favor entrar em contato com a THULE pelo e-mail <b>pedidos.itupeva@thule.com<b/> e solicitar a alocação do estoque para este Pedido.",
-        type: "info",
+        type: "success",
+        title: order.isBudget
+          ? "Simulação Enviada com Sucesso"
+          : "Pedido Enviado com sucesso!",
+        message: order.isBudget
+          ? `Gerada a Simulação ${savedOrderId}`
+          : `Gerado o Pedido ${savedOrderId}`,
+        buttons: [
+          { text: "OK", variant: "primary", value: "ok", autoClose: true },
+        ],
       });
+
+      await showAppDialog({
+        type: "success",
+        title: "ATENÇÃO!",
+        message: `Pedido encontra-se em análise financeira e serão checados a partir das 11:30,14:30 e 16:30.
+Os produtos não serão reservados e poderão sofrer alterações na data de entrega.`,
+        buttons: [
+          { text: "OK", variant: "primary", value: "ok", autoClose: true },
+        ],
+      });
+
+      if (order.isBudget) navigate({ to: "/budgets" });
+      else navigate({ to: "/orders" });
+    } catch (error) {
+      console.log(error);
+
+      toast.error("ATENÇÃO:", handleError(error));
+    } finally {
+      setIsSaving(false);
+      setIsCalculatingFreight(false);
+      setIsCalculatingTaxes(false);
     }
-    setIsSaving(false);
-    onClose();
-    await showAppDialog({
-      type: "success",
-      title: order.isBudget
-        ? "Simulação Enviada com Sucesso"
-        : "Pedido Enviado com sucesso!",
-      message: order.isBudget
-        ? `Gerada a Simulação ${savedOrderId}`
-        : `Gerado o Pedido ${savedOrderId}`,
-      buttons: [
-        { text: "OK", variant: "primary", value: "ok", autoClose: true },
-      ],
-    });
-    if (order.isBudget) navigate({ to: "/budgets" });
-    else navigate({ to: "/orders" });
   }
 
   const getSubTotal = () => {
@@ -294,6 +317,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
 
   const getPermissions = async () => {
     const data = await getUserPermissions(session?.user.id ?? "");
+    console.log("PERMISSIONS", data);
     setUserPermissions(data ?? []);
   };
 
@@ -378,6 +402,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   };
 
   const getTaxes = async () => {
+    setIsCalculatingTaxes(true);
     try {
       if (!isEditing) return;
       if (order.items.length == 0) return;
@@ -417,6 +442,8 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
     } catch (error) {
       console.log(error);
       //      toast.error(handleError(error));
+    } finally {
+      setIsCalculatingTaxes(false);
     }
   };
 
@@ -724,7 +751,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                     decimalSeparator=","
                     decimalScale={2}
                     fixedDecimalScale
-                    disabled
+                    readOnly={isItemPermissionDisabled("318")}
                     max={100}
                     min={0}
                     maxLength={6}
@@ -756,7 +783,8 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                 </div>
               </div>
               {((order.orderClassificationId != 6 &&
-                selectedPaymentCondition?.additionalDiscountPercent) ??
+                (selectedPaymentCondition?.additionalDiscountPercent ?? 0) >
+                  0) ??
                 0 > 0) && (
                 <div className="flex justify-between text-sm bg-orange-100 p-1 rounded">
                   <Label className="text-orange-600">
@@ -797,16 +825,28 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                   <TaxesModal data={taxesData} />
                   Impostos:
                 </div>
-
-                <span>R$ {formatNumber(totalTaxes, 2)}</span>
+                {isCalculatingTaxes && (
+                  <div className="text-xs min-w-fit flex items-center">
+                    <LoaderIcon className="size-3 animate-spin mr-1" />
+                    Calculando...
+                  </div>
+                )}
+                {!isCalculatingTaxes && (
+                  <span>R$ {formatNumber(totalTaxes, 2)}</span>
+                )}
               </div>
               <div className="flex justify-between font-medium pr-2 bg-emerald-600 rounded-md py-2 px-2 text-white">
                 <span>
-                  {order.isBudget
-                    ? "Total da Simulação"
-                    : "Total do Pedido"}{" "}
+                  {order.isBudget ? "Total da Simulação" : "Total do Pedido"}{" "}
+                  c/Impostos
                 </span>
-                <span>R$ {formatNumber(getTotal(), 2)}</span>
+                {isCalculatingFreight || isCalculatingTaxes ? (
+                  <span className="size-4 flex items-center justify-center mr-1">
+                    <LoaderIcon className="size-4 animate-spin" />
+                  </span>
+                ) : (
+                  <span>R$ {formatNumber(getTotal(), 2)}</span>
+                )}
               </div>
 
               {orderValidationMessage && (
@@ -841,7 +881,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
           {isEditing && (
             <Button
               onClick={handleSendOrder}
-              disabled={isCalculatingFreight || isSaving}
+              disabled={isCalculatingFreight || isCalculatingTaxes || isSaving}
             >
               {isSaving ? (
                 <div>

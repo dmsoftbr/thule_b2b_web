@@ -8,7 +8,7 @@ import { formatDate } from "@/lib/datetime-utils";
 import { formatNumber } from "@/lib/number-utils";
 import type { ProductPriceEstimatedDateModel } from "@/models/stock/product-price-estimated-date.model";
 import { StockService } from "@/services/stock/stock.service";
-import { CheckIcon, Loader2Icon, SearchIcon } from "lucide-react";
+import { CheckIcon, Loader2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 

@@ -13,6 +13,7 @@ import { AppTooltip } from "@/components/layout/app-tooltip";
 import { AvailabilityInfo } from "./availability-info";
 import { getAvailabilityColor } from "../-utils/order-utils";
 import { useOrder } from "../-context/order-context";
+import { useAuth } from "@/hooks/use-auth";
 
 interface Props {
   data: OrderItemModel;
@@ -21,6 +22,7 @@ interface Props {
 
 export const OrderItemCard = ({ data, className }: Props) => {
   const { updateItem, removeItem, order, mode } = useOrder();
+  const { session } = useAuth();
   const isEditing = mode == "NEW" || mode == "EDIT";
   const handleUpdateQuantity = async (newQuantity: number | undefined) => {
     // if (!newQuantity) {
@@ -38,7 +40,7 @@ export const OrderItemCard = ({ data, className }: Props) => {
 
     const { data: response } = await api.post(
       `/stock/caculate-delivery-date`,
-      params
+      params,
     );
 
     const updatedItem = {
@@ -59,7 +61,7 @@ export const OrderItemCard = ({ data, className }: Props) => {
     <div
       className={cn(
         "flex flex-col border-neutral-100  border-x border-b first:border-t-0 last:border-b-0",
-        className
+        className,
       )}
     >
       {/* Order Items */}
@@ -142,7 +144,7 @@ export const OrderItemCard = ({ data, className }: Props) => {
                       variant="outline"
                       className={cn(
                         "select-none mr-4",
-                        getAvailabilityColor(data.availability)
+                        getAvailabilityColor(data.availability),
                       )}
                     >
                       {data.availability}
@@ -157,6 +159,9 @@ export const OrderItemCard = ({ data, className }: Props) => {
                     </div>
                   </div>
                 </div>
+                {session?.user.role == 0 && (
+                  <p className="text-xs">{data.fiscalOperationId}</p>
+                )}
               </div>
             </div>
           </CardContent>

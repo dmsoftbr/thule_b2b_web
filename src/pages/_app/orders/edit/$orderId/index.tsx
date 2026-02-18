@@ -3,6 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { OrderForm } from "../../-components/order-form";
 import { OrderProvider } from "../../-context/order-context";
 import { api } from "@/lib/api";
+import { getOrderClassification } from "../../-utils/order-utils";
+import type { OrderModel } from "@/models/orders/order-model";
 
 export const Route = createFileRoute("/_app/orders/edit/$orderId/")({
   component: EditOrderPageComponent,
@@ -14,10 +16,15 @@ export const Route = createFileRoute("/_app/orders/edit/$orderId/")({
 });
 
 function EditOrderPageComponent() {
-  const order = Route.useLoaderData();
+  const order = Route.useLoaderData() as OrderModel | undefined;
+
+  const orderType =
+    getOrderClassification(order?.orderClassificationId ?? 1) || "Venda";
 
   return (
-    <AppPageHeader titleSlot={`Alterar Pedido de Venda: ${order.orderId}`}>
+    <AppPageHeader
+      titleSlot={`Alterar Pedido de Venda: ${order?.orderId} ${orderType != "Venda" ? " - " + orderType : ""}`}
+    >
       <OrderProvider initialOrder={order} formMode="EDIT">
         <OrderForm />
       </OrderProvider>

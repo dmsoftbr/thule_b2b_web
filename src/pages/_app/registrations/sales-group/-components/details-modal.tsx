@@ -15,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api, handleError } from "@/lib/api";
 import type { SalesGroupModel } from "@/models/registrations/sales-group.model";
-import { useQuery } from "@tanstack/react-query";
 import { Loader2Icon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";

@@ -17,11 +17,11 @@ export class OrdersService {
   }
 
   static async listPaged(
-    request: PagedRequestModel
+    request: PagedRequestModel,
   ): Promise<PagedResponseModel<OrderModel>> {
     const response = await api.post<PagedResponseModel<OrderModel>>(
       `/${this.basePath}/list-paged`,
-      request
+      request,
     );
     return response.data;
   }
@@ -33,11 +33,11 @@ export class OrdersService {
 
   static async update(
     id: string,
-    data: Partial<OrderModel>
+    data: Partial<OrderModel>,
   ): Promise<OrderModel> {
     const response = await api.patch<OrderModel>(
       `/${this.basePath}/${id}`,
-      data
+      data,
     );
     return response.data;
   }
@@ -46,7 +46,8 @@ export class OrdersService {
     await api.delete(`/${this.basePath}/${id}`);
   }
 
-  static async duplicate(id: string): Promise<void> {
-    await api.post(`/${this.basePath}/duplicate/${id}`);
+  static async duplicate(id: string) {
+    const response = await api.get(`/${this.basePath}/duplicate/${id}`);
+    return response.data;
   }
 }

@@ -42,6 +42,7 @@ const PAGES = [
   { id: "12", label: "Usuários" },
   { id: "13", label: "Configurações do Portal" },
   { id: "14", label: "Sincronização" },
+  { id: "15", label: "Confirmação de Pedidos" },
 ];
 
 const PAGES_APP = [
@@ -65,9 +66,8 @@ const SALES = [
   { id: "301", label: "Alterar Pedido Aprovado" },
   { id: "302", label: "Reprovar Pedido Aprovado" },
   { id: "303", label: "Reintegrar Pedido com Erro" },
-  { id: "304", label: "Confirmação de Pedidos" },
+  { id: "318", label: "Alterar % Desconto no Pedido" },
   { id: "305", label: "Alterar Preço" }, // nao tem
-  // { id: "306", label: "Alterar Data de Entrega" },
   { id: "307", label: "Alterar Condição de Pagamento" }, // ok
   { id: "308", label: "Alterar Local de Entrega" }, // ok
   { id: "309", label: "Alterar Estabelecimento" }, // ok
@@ -84,7 +84,7 @@ const SALES = [
 export const PermissionsModal = ({ user, isOpen, onClose }: Props) => {
   // state que mapeia cada checkbox por uma chave única (ex: "PAGE_1", "SALES_301", "REPORTS_201")
   const [permissionsMap, setPermissionsMap] = useState<UserPermissionModel[]>(
-    []
+    [],
   );
 
   useEffect(() => {
@@ -94,7 +94,7 @@ export const PermissionsModal = ({ user, isOpen, onClose }: Props) => {
 
   const getPermissions = async () => {
     const { data } = await api.get<UserPermissionModel[]>(
-      `/admin/users/permissions/${user.id}`
+      `/admin/users/permissions/${user.id}`,
     );
     const allPermissions: UserPermissionModel[] = [];
 
@@ -148,7 +148,7 @@ export const PermissionsModal = ({ user, isOpen, onClose }: Props) => {
       .replace("SALES_", "")
       .replace("REPORTS", "");
     const itemIndex = permissionsMap.findIndex(
-      (f) => f.permissionId == sanitizedKey
+      (f) => f.permissionId == sanitizedKey,
     );
 
     if (itemIndex > -1) {

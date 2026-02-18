@@ -13,7 +13,7 @@ import { AlertTriangleIcon, BellIcon } from "lucide-react";
 import { subMinutes } from "date-fns";
 import * as uuid from "uuid";
 import { getTimeAgo } from "@/lib/datetime-utils";
-import Alink from "@/components/ui/alink";
+
 import { Link } from "@tanstack/react-router";
 
 const notifications = [

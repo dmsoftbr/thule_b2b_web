@@ -2,7 +2,6 @@ import { api, handleError } from "@/lib/api";
 import type { UserPermissionModel } from "@/models/admin/user-permission.model";
 import type { OrderItemModel } from "@/models/orders/order-item-model";
 import type { OrderModel } from "@/models/orders/order-model";
-import { CustomersService } from "@/services/registrations/customers.service";
 import { ProductsService } from "@/services/registrations/products.service";
 import { RepresentativesService } from "@/services/registrations/representatives.service";
 import { toast } from "sonner";
@@ -44,6 +43,22 @@ export const NEW_ORDER_EMPTY: OrderModel = {
   origin: "",
   priceTypeId: 1,
   useCustomerCarrier: false,
+};
+
+export const getOrderClassification = (id: number) => {
+  if (id < 3) return "Venda";
+  if (id == 3) return "Bonificação";
+  if (id == 4) return "Consignação";
+  if (id == 5) return "Garantia";
+  if (id == 6) return "Outlet";
+};
+
+export const getOrderClassificationCss = (id: number) => {
+  if (id < 3) return "bg-emerald-600";
+  if (id == 3) return "bg-purple-600";
+  if (id == 4) return "Consignação";
+  if (id == 5) return "bg-orange-400";
+  if (id == 6) return "bg-blue-400";
 };
 
 export const NEW_ORDER_ITEM_EMPTY: Omit<
@@ -197,4 +212,42 @@ export const getAvailabilityColor = (availability: string) => {
     default:
       return "bg-neutral-200 text-white";
   }
+};
+
+export const getOrderItemTaxes = async (
+  branchId: string,
+  customerId: string,
+  paymentConditionId: string,
+  fiscalOperationId: string,
+  freightValue: number,
+  orderDiscountPercent: number,
+  item: OrderItemModel,
+) => {
+  const payload = {
+    BranchId: branchId,
+    SalesType: "N",
+    CustomerId: customerId,
+    CustomerUnit: "",
+    CustomerIdDelivery: customerId, // Deve ser INT
+    CustomerUnitDelivery: "",
+    Currency: 0,
+    Payment: paymentConditionId,
+    Freight: freightValue,
+    ListofProducts: [
+      {
+        ItemId: `${item.sequence}`,
+        ProductId: item.productId,
+        CodRefer: item.referenceCode,
+        Quantity: item.orderQuantity,
+        UnitaryValue: item.inputPrice * (1 - orderDiscountPercent / 100.0),
+        TotalValue: item.inputPrice * item.orderQuantity,
+        TES: fiscalOperationId,
+        ItemDiscountPercentage: 0,
+        PriceTableId: item.priceTableId,
+      },
+    ],
+  };
+
+  const { data } = await api.post(`/order-items/calc-item-taxes`, payload);
+  return data;
 };

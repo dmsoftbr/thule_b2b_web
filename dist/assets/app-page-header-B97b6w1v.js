@@ -1,0 +1,1 @@
+import{j as e}from"./index-C-yn2kxu.js";const a=({titleSlot:r,children:s})=>e.jsxs("div",{className:"m-2 bg-white border shadow rounded w-full relative",children:[e.jsx("h1",{className:"font-semibold text-lg px-2 bg-neutral-200",children:r}),s]});export{a as A};

@@ -15,7 +15,7 @@ import { formatNumber } from "@/lib/number-utils";
 import { cn } from "@/lib/utils";
 import { type Esli011Model } from "@/models/stock/esli011.model";
 import { StockService } from "@/services/stock/stock.service";
-import { CheckIcon, Loader2Icon, SearchIcon } from "lucide-react";
+import { CheckIcon, Loader2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { SearchProductModal } from "@/components/app/search-product-modal";

@@ -11,12 +11,14 @@ import type { OrderModel } from "@/models/orders/order-model";
 import { Label } from "@/components/ui/label";
 import { SearchCombo } from "@/components/ui/search-combo";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api, handleError } from "@/lib/api";
 import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { add } from "date-fns";
 import { useRouter } from "@tanstack/react-router";
+import { OrdersService } from "@/services/orders/orders.service";
+import { toast } from "sonner";
 
 const searchFieldsList: ServerTableSearchField[] = [
   {
@@ -64,6 +66,7 @@ function ListOrdersPage() {
   const [createdAtTo, setCreatedAtTo] = useState<Date | undefined>(new Date());
   const [selectedReps, setSelectedReps] = useState<number[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<number[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleAdd = () => {
     navigate({ to: "/orders/new-order" });
@@ -71,6 +74,18 @@ function ListOrdersPage() {
 
   const handleEdit = (data: OrderModel) => {
     navigate({ to: `/orders/edit/${data.id}` });
+  };
+
+  const handleCopy = async (data: OrderModel) => {
+    try {
+      setIsLoading(true);
+      await OrdersService.duplicate(data.id);
+      setTableToken(new Date().valueOf());
+    } catch (error) {
+      toast.error(handleError(error));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleView = (data: OrderModel, anotherTab?: boolean) => {
@@ -96,7 +111,9 @@ function ListOrdersPage() {
     });
 
     if (continueDelete) {
+      setIsLoading(true);
       await api.delete(`/orders/${data.id}`);
+      setIsLoading(false);
 
       //await OrdersService
       setTableToken(new Date().valueOf());
@@ -200,11 +217,13 @@ function ListOrdersPage() {
           defaultSearchField="orderId"
           defaultSortFieldDataIndex="createdAt"
           defaultSortDesc
+          isPending={isLoading}
           searchFields={searchFieldsList}
           columns={columns({
             fnEdit: handleEdit,
             fnCancel: handleCancel,
             fnView: handleView,
+            fnCopy: handleCopy,
           })}
           showAddButton
           onAdd={() => handleAdd()}

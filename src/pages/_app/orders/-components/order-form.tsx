@@ -15,31 +15,7 @@ export const OrderForm = () => {
   const [showFinishOrderModal, setShowFinishOrderModal] = useState(false);
   const { order, mode, isBudget } = useOrder();
 
-  const isEditing = mode == "NEW" || mode == "EDIT";
-
-  // const handleSetOrderFromOutlet = async () => {
-  //   try {
-  //     const outletOrderData =
-  //       sessionStorage.getItem("b2b@outletOrderData") ?? "";
-  //     if (outletOrderData) {
-  //       const orderGenerated = await generateOrderFromOutlet();
-  //       sessionStorage.removeItem("b2b@outletOrderData");
-  //       //        if (orderGenerated.priceTable) setPriceTable(orderGenerated.priceTable);
-  //       if (orderGenerated.customer) setCustomer(orderGenerated.customer);
-  //       if (orderGenerated.representative)
-  //         setRepresentative(orderGenerated.representative);
-  //       setDiscountPercentual(0);
-  //       setOrder(orderGenerated);
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //     toast.error(handleError(error));
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   handleSetOrderFromOutlet();
-  // }, []);
+  const isEditing = mode != "VIEW";
 
   return (
     <>
@@ -62,7 +38,6 @@ export const OrderForm = () => {
               size="sm"
               onClick={() => navigate({ to: "/orders" })}
             >
-              {isEditing}
               Cancelar
             </Button>
 

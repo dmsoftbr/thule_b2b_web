@@ -1,0 +1,1 @@
+import{e as t,r as o,j as s}from"./index-C-yn2kxu.js";const a=function(){const e=t();return o.useEffect(()=>{setTimeout(()=>{e({to:"/dashboard",replace:!0})},500)},[]),s.jsx("div",{className:"bg-white flex w-full h-full items-center justify-center",children:"Aguarde..."})};export{a as component};

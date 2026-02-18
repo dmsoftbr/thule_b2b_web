@@ -24,7 +24,7 @@ interface Props {
 
 export const AppMenuItem = ({ item, index, level = 0 }: Props) => {
   const location = useLocation();
-
+  console.log(level);
   function getIsActive(item: MenuModel) {
     if (item.children?.length && !item.url) return false;
     if (!item.url) return false;

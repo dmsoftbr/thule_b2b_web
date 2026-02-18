@@ -131,7 +131,7 @@ function ListaPedidosComponent() {
         }}
       >
         <div className="p-2 flex gap-x-2">
-          <div className="form-group flex-0">
+          <div className="form-group flex-0 min-w-[200px]">
             <Label>Tipo do Relatório</Label>
             <RadioGroup
               defaultValue={situacao.toString()}
@@ -148,7 +148,7 @@ function ListaPedidosComponent() {
               </div>
             </RadioGroup>
           </div>
-          <div className="form-group flex-1 min-w-0">
+          <div className="form-group flex-1 min-w-0 max-w-[400px]">
             <Label>Período</Label>
             <DateRangePicker
               initialDateFrom={dtInicio}

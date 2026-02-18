@@ -1,0 +1,1 @@
+import{j as o}from"./index-C-yn2kxu.js";import{A as t}from"./app-page-header-B97b6w1v.js";const p=function(){return o.jsx(t,{titleSlot:"Notificações",children:o.jsx("div",{})})};export{p as component};

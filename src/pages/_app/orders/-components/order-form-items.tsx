@@ -4,24 +4,23 @@ import { OrderItemCard } from "./order-item-card";
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { OrderSearchProductModal } from "./order-search-product-modal";
-import type { ProductModel } from "@/models/product.model";
 import { toast } from "sonner";
 import { EmptyOrder } from "./empty-order";
 import { formatNumber } from "@/lib/number-utils";
 import { cn } from "@/lib/utils";
-import { Checkbox } from "@/components/ui/checkbox";
-import type { OrderItemModel } from "@/models/orders/order-item-model";
 import { NEW_ORDER_ITEM_EMPTY } from "../-utils/order-utils";
 import { api } from "@/lib/api";
 import { OrderItemTable } from "./order-item-table";
 import { useOrder } from "../-context/order-context";
 import { SearchCombo } from "@/components/ui/search-combo";
 import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
-import { type PriceTableModel } from "@/models/registrations/price-table.model";
-import { ProductCostsService } from "@/services/registrations/product-costs.service";
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 import { StretchHorizontalIcon, Table2Icon } from "lucide-react";
 import { AppTooltip } from "@/components/layout/app-tooltip";
+
+import type { OrderItemModel } from "@/models/orders/order-item-model";
+import type { PriceTableModel } from "@/models/registrations/price-table.model";
+import type { ProductModel } from "@/models/product.model";
 
 export const OrderFormItems = () => {
   const { order, addItem, mode } = useOrder();
@@ -106,9 +105,16 @@ export const OrderFormItems = () => {
       params,
     );
 
-    const costData = await ProductCostsService.getById(
-      order.branchId,
-      product.id,
+    // chama api de matriz de cfop
+    var paramsCFOP = {
+      branchId: order.branchId,
+      customerAbbreviation: order.customer?.abbreviation,
+      productId: product.id,
+      fiscalOperationId: order.customer?.fiscalOperationId,
+    };
+    const { data: cfopData } = await api.post(
+      `/order-items/matriz-cfop-item`,
+      paramsCFOP,
     );
 
     const newOrderItem: OrderItemModel = {
@@ -127,7 +133,8 @@ export const OrderFormItems = () => {
       taxes: [],
       priceTable,
       priceTableId: priceTable.id,
-      costValue: costData ? costData.unitCost : 0,
+      costValue: 0,
+      fiscalOperationId: cfopData,
     };
 
     addItem(newOrderItem);
@@ -211,13 +218,6 @@ export const OrderFormItems = () => {
                 </button>
               </AppTooltip>
             </div>
-            {/* <Label>
-              <Checkbox
-                checked={showCard}
-                onCheckedChange={(e) => setShowCard(e ? true : false)}
-              />{" "}
-              Ver em Cards
-            </Label> */}
           </div>
         </div>
       </div>
@@ -248,6 +248,8 @@ export const OrderFormItems = () => {
               <div className="flex items-center text-lg font-semibold">
                 Total {order.isBudget ? "da Simulação" : "do Pedido"}: R${" "}
                 {formatNumber(orderTotal, 2)}
+              </div>
+              <div className="flex items-center justify-center gap-x-2">
                 <div className="text-xs font-semibold bg-neutral-700 text-white rounded px-1.5 py-0.5 flex items-center justify-center ml-2">
                   {`(${order.items.length}) ${order.items.length > 1 ? "itens" : "item"}`}
                 </div>

@@ -31,6 +31,7 @@ function PriceTableProductsExceptionComponent() {
 
   const handleDelete = (data: PriceTableProductExceptionModel) => {
     //
+    console.log(data);
   };
 
   return (

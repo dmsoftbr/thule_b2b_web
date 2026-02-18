@@ -26,31 +26,59 @@ import {
   SettingsIcon,
   XSquareIcon,
 } from "lucide-react";
+import {
+  getOrderClassification,
+  getOrderClassificationCss,
+} from "../-utils/order-utils";
 
 interface Props {
   fnView: (order: OrderModel, anotherTab?: boolean) => void;
   fnEdit: (order: OrderModel) => void;
   fnCancel: (order: OrderModel) => void;
+  fnCopy: (order: OrderModel) => void;
 }
 
 export const columns = ({
   fnEdit,
   fnView,
   fnCancel,
+  fnCopy,
 }: Props): ServerTableColumn[] => [
   {
     key: "orderId",
     dataIndex: "orderId",
     title: "Pedido",
+    className: "text-xs",
     renderItem: (order: OrderModel) => (
       <span className="font-semibold text-blue-600 ">{order.orderId}</span>
     ),
     sortable: true,
   },
   {
+    key: "orderClassificationId",
+    dataIndex: "orderClassificationId",
+    title: "Tipo",
+    cellClassName: "text-center w-[100px]",
+    className: "w-[100px] text-xs",
+    renderItem: (order: OrderModel) => {
+      return (
+        <span
+          className={cn(
+            getOrderClassificationCss(order.orderClassificationId),
+            "px-2 py-1 text-xs rounded-full text-white",
+          )}
+        >
+          {getOrderClassification(order.orderClassificationId)}
+        </span>
+      );
+    },
+  },
+
+  {
     key: "customerId",
     dataIndex: "customerId",
     title: "Cliente",
+    className: "text-xs",
     cellClassName: "text-xs",
     renderItem: (order: OrderModel) => (
       <span>
@@ -64,6 +92,7 @@ export const columns = ({
     dataIndex: "orderRepId",
     title: "Ped. Distribuidor",
     cellClassName: "text-xs",
+    className: "text-xs",
     renderItem: (order: OrderModel) => <span>{order.orderRepId}</span>,
     sortable: true,
   },
@@ -72,6 +101,7 @@ export const columns = ({
     dataIndex: "repName",
     title: "Representante",
     cellClassName: "text-xs",
+    className: "text-xs",
     renderItem: (order: OrderModel) => (
       <span>
         {order.representativeId} - {order.representative?.abbreviation}
@@ -84,6 +114,7 @@ export const columns = ({
     dataIndex: "createdAt",
     title: "Dt Implantação",
     cellClassName: "text-xs",
+    className: "text-xs",
     renderItem: (order: OrderModel) => (
       <div className="text-center">{formatDate(order.createdAt)}</div>
     ),
@@ -94,6 +125,7 @@ export const columns = ({
     dataIndex: "totalOrderValue",
     title: "Total do Pedido",
     cellClassName: "text-xs",
+    className: "text-xs",
     renderItem: (order: OrderModel) => (
       <div className="text-right">{formatNumber(order.grossTotalValue, 2)}</div>
     ),
@@ -103,11 +135,12 @@ export const columns = ({
     key: "statusId",
     dataIndex: "statusId",
     title: "Situação",
+    className: "text-xs",
     renderItem: (order: OrderModel) => (
       <div className="flex items-center justify-center">
         <span
           className={cn(
-            "px-2 py-1 text-xs font-medium rounded-full",
+            "px-2 py-1 text-xs rounded-full",
             getOrderStatusColor(order),
           )}
         >
@@ -121,6 +154,7 @@ export const columns = ({
     key: "actions",
     dataIndex: "id",
     title: "Ações",
+    className: "text-xs",
     renderItem: (order: OrderModel) => (
       <div className="flex justify-end">
         {order.statusId != 6 && (
@@ -147,7 +181,11 @@ export const columns = ({
               Visualizar Pedido em Nova Aba
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                fnCopy(order);
+              }}
+            >
               <CopyIcon className="size-4" />
               Duplicar
             </DropdownMenuItem>
@@ -165,7 +203,7 @@ export const columns = ({
               Ver Dados da Nota
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem disabled>
               <SettingsIcon className="size-4" />
               Reintegrar
             </DropdownMenuItem>

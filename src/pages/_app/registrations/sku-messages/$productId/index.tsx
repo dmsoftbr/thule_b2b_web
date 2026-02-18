@@ -5,7 +5,6 @@ import {
   useNavigate,
   useParams,
 } from "@tanstack/react-router";
-import { ItemTypesService } from "@/services/registrations/item-types.service";
 import { SkuMessageForm } from "../-components/sku-message-form";
 import { SkuMessagesService } from "@/services/registrations/sku-messages.service";
 
