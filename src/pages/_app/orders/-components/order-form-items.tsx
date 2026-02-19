@@ -21,6 +21,7 @@ import { AppTooltip } from "@/components/layout/app-tooltip";
 import type { OrderItemModel } from "@/models/orders/order-item-model";
 import type { PriceTableModel } from "@/models/registrations/price-table.model";
 import type { ProductModel } from "@/models/product.model";
+import type { SkuMessageModel } from "@/models/registrations/sku-message.model";
 
 export const OrderFormItems = () => {
   const { order, addItem, mode } = useOrder();
@@ -59,6 +60,24 @@ export const OrderFormItems = () => {
       return;
     }
     if (!product) return;
+
+    const { data } = await api.get<SkuMessageModel | null>(
+      `/registrations/sku-messages/id/${product.id}`,
+    );
+    console.log(data);
+    if (data) {
+      await showAppDialog({
+        message: data.message,
+        title: "ATENÇÃO",
+        type: "warning",
+        buttons: [
+          {
+            text: "OK",
+            autoClose: true,
+          },
+        ],
+      });
+    }
 
     if (product.orderMessage) {
       await showAppDialog({
