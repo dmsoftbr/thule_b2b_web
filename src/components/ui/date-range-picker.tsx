@@ -109,7 +109,7 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
             ? new Date(new Date(initialCompareTo).setHours(0, 0, 0, 0))
             : new Date(new Date(initialCompareFrom).setHours(0, 0, 0, 0)),
         }
-      : undefined
+      : undefined,
   );
 
   // Refs to store the values of range and rangeCompare when the date picker is opened
@@ -117,11 +117,11 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
   const openedRangeCompareRef = useRef<DateRange | undefined>(undefined);
 
   const [selectedPreset, setSelectedPreset] = useState<string | undefined>(
-    undefined
+    undefined,
   );
 
   const [isSmallScreen, setIsSmallScreen] = useState(
-    typeof window !== "undefined" ? window.innerWidth < 960 : false
+    typeof window !== "undefined" ? window.innerWidth < 960 : false,
   );
 
   useEffect(() => {
@@ -206,13 +206,13 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
         from: new Date(
           range.from.getFullYear() - 1,
           range.from.getMonth(),
-          range.from.getDate()
+          range.from.getDate(),
         ),
         to: range.to
           ? new Date(
               range.to.getFullYear() - 1,
               range.to.getMonth(),
-              range.to.getDate()
+              range.to.getDate(),
             )
           : undefined,
       };
@@ -227,13 +227,13 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
       const normalizedRangeFrom = new Date(range.from);
       normalizedRangeFrom.setHours(0, 0, 0, 0);
       const normalizedPresetFrom = new Date(
-        presetRange.from.setHours(0, 0, 0, 0)
+        presetRange.from.setHours(0, 0, 0, 0),
       );
 
       const normalizedRangeTo = new Date(range.to ?? 0);
       normalizedRangeTo.setHours(0, 0, 0, 0);
       const normalizedPresetTo = new Date(
-        presetRange.to?.setHours(0, 0, 0, 0) ?? 0
+        presetRange.to?.setHours(0, 0, 0, 0) ?? 0,
       );
 
       if (
@@ -277,7 +277,7 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
                 ? getDateAdjustedForTimezone(initialCompareFrom)
                 : initialCompareFrom,
           }
-        : undefined
+        : undefined,
     );
   };
 
@@ -339,7 +339,7 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
     >
       <PopoverTrigger asChild>
         <Button variant="outline" disabled={disabled}>
-          <div className="text-right">
+          <div className="text-right text-sm font-normal">
             <div className="py-1">
               <div>{`${formatDate(range.from, locale)}${
                 range.to != null ? " até " + formatDate(range.to, locale) : ""
@@ -386,18 +386,18 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
                             from: new Date(
                               range.from.getFullYear(),
                               range.from.getMonth(),
-                              range.from.getDate() - 365
+                              range.from.getDate() - 365,
                             ),
                             to: range.to
                               ? new Date(
                                   range.to.getFullYear() - 1,
                                   range.to.getMonth(),
-                                  range.to.getDate()
+                                  range.to.getDate(),
                                 )
                               : new Date(
                                   range.from.getFullYear() - 1,
                                   range.from.getMonth(),
-                                  range.from.getDate()
+                                  range.from.getDate(),
                                 ),
                           });
                         } else {
@@ -513,8 +513,8 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
                   defaultMonth={
                     new Date(
                       new Date().setMonth(
-                        new Date().getMonth() - (isSmallScreen ? 0 : 1)
-                      )
+                        new Date().getMonth() - (isSmallScreen ? 0 : 1),
+                      ),
                     )
                   }
                 />

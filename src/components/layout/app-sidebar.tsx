@@ -8,10 +8,10 @@ import {
 } from "@/components/ui/sidebar";
 import { Logo } from "@/components/ui/logo";
 import { AppMenuItem } from "./app-menu-item";
-import { MENU_MOCK } from "@/mock/menu-mock";
+import { MENU_DATA } from "@/menu/menu-data";
 import logoThule from "@/assets/images/thule_group-inv.png";
 
-const items = MENU_MOCK;
+const items = MENU_DATA;
 export const AppSideBar = () => {
   return (
     <Sidebar className="bg-zinc-800">

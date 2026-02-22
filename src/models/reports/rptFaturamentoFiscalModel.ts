@@ -1,0 +1,24 @@
+export type RptFaturamentoFiscalModel = {
+  codEstabel: string;
+  codEmitente: number;
+  nomeAbrev: string;
+  serie: string;
+  nrNotaFis: string;
+  natOperacao: string;
+  tipoCompra: number;
+  nrSequencia: number;
+  itCodigo: string;
+  codCanalVenda: number;
+  dtEmissao: Date | string;
+  dtDocto: Date | string;
+  qtFaturada: number;
+  vlMercLiq: number;
+  vlTotItem: number;
+  VlIcmsItem: number;
+  vlSTItem: number;
+  vlIPIItem: number;
+  vlPISItem: number;
+  vlCOFINSItem: number;
+  ncm: string;
+  cfop: string;
+};

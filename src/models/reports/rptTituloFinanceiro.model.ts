@@ -1,0 +1,21 @@
+export type RptTituloFinanceiroResponseDto = {
+  nomeAbRep: string;
+  nomeAbrev: string;
+  nrPedcli: string;
+  codEstab: string;
+  codTitAcr: string;
+  codEspecDoc: string;
+  codSerDocto: string;
+  codParcela: string;
+  datVenctoTitAcr: string;
+  datEmisDocto: Date;
+  datLiqTitAcr: Date;
+  valLiqTitAcr: number;
+  valTotTitAcr: number;
+  valSdoTitAcr: number;
+  valDescTitAcr: number;
+  valAbatTitAcr: number;
+  valST: number;
+  valBaseComis: number;
+  valComis: number;
+};

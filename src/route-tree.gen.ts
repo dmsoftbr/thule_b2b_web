@@ -21,12 +21,17 @@ import { Route as AppBudgetsIndexRouteImport } from './pages/_app/budgets/index'
 import { Route as AppApprovalsIndexRouteImport } from './pages/_app/approvals/index'
 import { Route as AppOrdersNewOutletOrderRouteImport } from './pages/_app/orders/new-outlet-order'
 import { Route as AppOrdersNewOrderRouteImport } from './pages/_app/orders/new-order'
+import { Route as AppDashboardsDashboard1RouteImport } from './pages/_app/dashboards/dashboard1'
 import { Route as AppBudgetsNewBudgetRouteImport } from './pages/_app/budgets/new-budget'
 import { Route as AppSystemSyncStatusIndexRouteImport } from './pages/_app/system/sync-status/index'
 import { Route as AppStockProductStockIndexRouteImport } from './pages/_app/stock/product-stock/index'
 import { Route as AppStockEsli011IndexRouteImport } from './pages/_app/stock/esli011/index'
-import { Route as AppReportsProdutosVendidosIndexRouteImport } from './pages/_app/reports/produtos-vendidos/index'
+import { Route as AppReportsTitulosFinanceirosIndexRouteImport } from './pages/_app/reports/titulos-financeiros/index'
+import { Route as AppReportsProdVendidosPeriodoIndexRouteImport } from './pages/_app/reports/prod-vendidos-periodo/index'
+import { Route as AppReportsProdVendidosMensalIndexRouteImport } from './pages/_app/reports/prod-vendidos-mensal/index'
 import { Route as AppReportsListaPedidosIndexRouteImport } from './pages/_app/reports/lista-pedidos/index'
+import { Route as AppReportsFaturamentoFiscalIndexRouteImport } from './pages/_app/reports/faturamento-fiscal/index'
+import { Route as AppReportsFaturamentoClienteIndexRouteImport } from './pages/_app/reports/faturamento-cliente/index'
 import { Route as AppReportsDashboardProductGroupsIndexRouteImport } from './pages/_app/reports/dashboard-product-groups/index'
 import { Route as AppReportsCustomersListIndexRouteImport } from './pages/_app/reports/customers-list/index'
 import { Route as AppReportsComissaoIndexRouteImport } from './pages/_app/reports/comissao/index'
@@ -138,6 +143,11 @@ const AppOrdersNewOrderRoute = AppOrdersNewOrderRouteImport.update({
   path: '/orders/new-order',
   getParentRoute: () => AppLayoutRoute,
 } as any)
+const AppDashboardsDashboard1Route = AppDashboardsDashboard1RouteImport.update({
+  id: '/dashboards/dashboard1',
+  path: '/dashboards/dashboard1',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
 const AppBudgetsNewBudgetRoute = AppBudgetsNewBudgetRouteImport.update({
   id: '/budgets/new-budget',
   path: '/budgets/new-budget',
@@ -160,16 +170,40 @@ const AppStockEsli011IndexRoute = AppStockEsli011IndexRouteImport.update({
   path: '/stock/esli011/',
   getParentRoute: () => AppLayoutRoute,
 } as any)
-const AppReportsProdutosVendidosIndexRoute =
-  AppReportsProdutosVendidosIndexRouteImport.update({
-    id: '/reports/produtos-vendidos/',
-    path: '/reports/produtos-vendidos/',
+const AppReportsTitulosFinanceirosIndexRoute =
+  AppReportsTitulosFinanceirosIndexRouteImport.update({
+    id: '/reports/titulos-financeiros/',
+    path: '/reports/titulos-financeiros/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppReportsProdVendidosPeriodoIndexRoute =
+  AppReportsProdVendidosPeriodoIndexRouteImport.update({
+    id: '/reports/prod-vendidos-periodo/',
+    path: '/reports/prod-vendidos-periodo/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppReportsProdVendidosMensalIndexRoute =
+  AppReportsProdVendidosMensalIndexRouteImport.update({
+    id: '/reports/prod-vendidos-mensal/',
+    path: '/reports/prod-vendidos-mensal/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
 const AppReportsListaPedidosIndexRoute =
   AppReportsListaPedidosIndexRouteImport.update({
     id: '/reports/lista-pedidos/',
     path: '/reports/lista-pedidos/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppReportsFaturamentoFiscalIndexRoute =
+  AppReportsFaturamentoFiscalIndexRouteImport.update({
+    id: '/reports/faturamento-fiscal/',
+    path: '/reports/faturamento-fiscal/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppReportsFaturamentoClienteIndexRoute =
+  AppReportsFaturamentoClienteIndexRouteImport.update({
+    id: '/reports/faturamento-cliente/',
+    path: '/reports/faturamento-cliente/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
 const AppReportsDashboardProductGroupsIndexRoute =
@@ -473,6 +507,7 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/': typeof AppIndexRoute
   '/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
+  '/dashboards/dashboard1': typeof AppDashboardsDashboard1Route
   '/orders/new-order': typeof AppOrdersNewOrderRoute
   '/orders/new-outlet-order': typeof AppOrdersNewOutletOrderRoute
   '/approvals': typeof AppApprovalsIndexRoute
@@ -509,8 +544,12 @@ export interface FileRoutesByFullPath {
   '/reports/comissao': typeof AppReportsComissaoIndexRoute
   '/reports/customers-list': typeof AppReportsCustomersListIndexRoute
   '/reports/dashboard-product-groups': typeof AppReportsDashboardProductGroupsIndexRoute
+  '/reports/faturamento-cliente': typeof AppReportsFaturamentoClienteIndexRoute
+  '/reports/faturamento-fiscal': typeof AppReportsFaturamentoFiscalIndexRoute
   '/reports/lista-pedidos': typeof AppReportsListaPedidosIndexRoute
-  '/reports/produtos-vendidos': typeof AppReportsProdutosVendidosIndexRoute
+  '/reports/prod-vendidos-mensal': typeof AppReportsProdVendidosMensalIndexRoute
+  '/reports/prod-vendidos-periodo': typeof AppReportsProdVendidosPeriodoIndexRoute
+  '/reports/titulos-financeiros': typeof AppReportsTitulosFinanceirosIndexRoute
   '/stock/esli011': typeof AppStockEsli011IndexRoute
   '/stock/product-stock': typeof AppStockProductStockIndexRoute
   '/system/sync-status': typeof AppSystemSyncStatusIndexRoute
@@ -542,6 +581,7 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/': typeof AppIndexRoute
   '/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
+  '/dashboards/dashboard1': typeof AppDashboardsDashboard1Route
   '/orders/new-order': typeof AppOrdersNewOrderRoute
   '/orders/new-outlet-order': typeof AppOrdersNewOutletOrderRoute
   '/approvals': typeof AppApprovalsIndexRoute
@@ -578,8 +618,12 @@ export interface FileRoutesByTo {
   '/reports/comissao': typeof AppReportsComissaoIndexRoute
   '/reports/customers-list': typeof AppReportsCustomersListIndexRoute
   '/reports/dashboard-product-groups': typeof AppReportsDashboardProductGroupsIndexRoute
+  '/reports/faturamento-cliente': typeof AppReportsFaturamentoClienteIndexRoute
+  '/reports/faturamento-fiscal': typeof AppReportsFaturamentoFiscalIndexRoute
   '/reports/lista-pedidos': typeof AppReportsListaPedidosIndexRoute
-  '/reports/produtos-vendidos': typeof AppReportsProdutosVendidosIndexRoute
+  '/reports/prod-vendidos-mensal': typeof AppReportsProdVendidosMensalIndexRoute
+  '/reports/prod-vendidos-periodo': typeof AppReportsProdVendidosPeriodoIndexRoute
+  '/reports/titulos-financeiros': typeof AppReportsTitulosFinanceirosIndexRoute
   '/stock/esli011': typeof AppStockEsli011IndexRoute
   '/stock/product-stock': typeof AppStockProductStockIndexRoute
   '/system/sync-status': typeof AppSystemSyncStatusIndexRoute
@@ -613,6 +657,7 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/_app/': typeof AppIndexRoute
   '/_app/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
+  '/_app/dashboards/dashboard1': typeof AppDashboardsDashboard1Route
   '/_app/orders/new-order': typeof AppOrdersNewOrderRoute
   '/_app/orders/new-outlet-order': typeof AppOrdersNewOutletOrderRoute
   '/_app/approvals/': typeof AppApprovalsIndexRoute
@@ -649,8 +694,12 @@ export interface FileRoutesById {
   '/_app/reports/comissao/': typeof AppReportsComissaoIndexRoute
   '/_app/reports/customers-list/': typeof AppReportsCustomersListIndexRoute
   '/_app/reports/dashboard-product-groups/': typeof AppReportsDashboardProductGroupsIndexRoute
+  '/_app/reports/faturamento-cliente/': typeof AppReportsFaturamentoClienteIndexRoute
+  '/_app/reports/faturamento-fiscal/': typeof AppReportsFaturamentoFiscalIndexRoute
   '/_app/reports/lista-pedidos/': typeof AppReportsListaPedidosIndexRoute
-  '/_app/reports/produtos-vendidos/': typeof AppReportsProdutosVendidosIndexRoute
+  '/_app/reports/prod-vendidos-mensal/': typeof AppReportsProdVendidosMensalIndexRoute
+  '/_app/reports/prod-vendidos-periodo/': typeof AppReportsProdVendidosPeriodoIndexRoute
+  '/_app/reports/titulos-financeiros/': typeof AppReportsTitulosFinanceirosIndexRoute
   '/_app/stock/esli011/': typeof AppStockEsli011IndexRoute
   '/_app/stock/product-stock/': typeof AppStockProductStockIndexRoute
   '/_app/system/sync-status/': typeof AppSystemSyncStatusIndexRoute
@@ -684,6 +733,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/'
     | '/budgets/new-budget'
+    | '/dashboards/dashboard1'
     | '/orders/new-order'
     | '/orders/new-outlet-order'
     | '/approvals'
@@ -720,8 +770,12 @@ export interface FileRouteTypes {
     | '/reports/comissao'
     | '/reports/customers-list'
     | '/reports/dashboard-product-groups'
+    | '/reports/faturamento-cliente'
+    | '/reports/faturamento-fiscal'
     | '/reports/lista-pedidos'
-    | '/reports/produtos-vendidos'
+    | '/reports/prod-vendidos-mensal'
+    | '/reports/prod-vendidos-periodo'
+    | '/reports/titulos-financeiros'
     | '/stock/esli011'
     | '/stock/product-stock'
     | '/system/sync-status'
@@ -753,6 +807,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/'
     | '/budgets/new-budget'
+    | '/dashboards/dashboard1'
     | '/orders/new-order'
     | '/orders/new-outlet-order'
     | '/approvals'
@@ -789,8 +844,12 @@ export interface FileRouteTypes {
     | '/reports/comissao'
     | '/reports/customers-list'
     | '/reports/dashboard-product-groups'
+    | '/reports/faturamento-cliente'
+    | '/reports/faturamento-fiscal'
     | '/reports/lista-pedidos'
-    | '/reports/produtos-vendidos'
+    | '/reports/prod-vendidos-mensal'
+    | '/reports/prod-vendidos-periodo'
+    | '/reports/titulos-financeiros'
     | '/stock/esli011'
     | '/stock/product-stock'
     | '/system/sync-status'
@@ -823,6 +882,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/_app/'
     | '/_app/budgets/new-budget'
+    | '/_app/dashboards/dashboard1'
     | '/_app/orders/new-order'
     | '/_app/orders/new-outlet-order'
     | '/_app/approvals/'
@@ -859,8 +919,12 @@ export interface FileRouteTypes {
     | '/_app/reports/comissao/'
     | '/_app/reports/customers-list/'
     | '/_app/reports/dashboard-product-groups/'
+    | '/_app/reports/faturamento-cliente/'
+    | '/_app/reports/faturamento-fiscal/'
     | '/_app/reports/lista-pedidos/'
-    | '/_app/reports/produtos-vendidos/'
+    | '/_app/reports/prod-vendidos-mensal/'
+    | '/_app/reports/prod-vendidos-periodo/'
+    | '/_app/reports/titulos-financeiros/'
     | '/_app/stock/esli011/'
     | '/_app/stock/product-stock/'
     | '/_app/system/sync-status/'
@@ -980,6 +1044,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppOrdersNewOrderRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/dashboards/dashboard1': {
+      id: '/_app/dashboards/dashboard1'
+      path: '/dashboards/dashboard1'
+      fullPath: '/dashboards/dashboard1'
+      preLoaderRoute: typeof AppDashboardsDashboard1RouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/budgets/new-budget': {
       id: '/_app/budgets/new-budget'
       path: '/budgets/new-budget'
@@ -1008,11 +1079,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStockEsli011IndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
-    '/_app/reports/produtos-vendidos/': {
-      id: '/_app/reports/produtos-vendidos/'
-      path: '/reports/produtos-vendidos'
-      fullPath: '/reports/produtos-vendidos'
-      preLoaderRoute: typeof AppReportsProdutosVendidosIndexRouteImport
+    '/_app/reports/titulos-financeiros/': {
+      id: '/_app/reports/titulos-financeiros/'
+      path: '/reports/titulos-financeiros'
+      fullPath: '/reports/titulos-financeiros'
+      preLoaderRoute: typeof AppReportsTitulosFinanceirosIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/reports/prod-vendidos-periodo/': {
+      id: '/_app/reports/prod-vendidos-periodo/'
+      path: '/reports/prod-vendidos-periodo'
+      fullPath: '/reports/prod-vendidos-periodo'
+      preLoaderRoute: typeof AppReportsProdVendidosPeriodoIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/reports/prod-vendidos-mensal/': {
+      id: '/_app/reports/prod-vendidos-mensal/'
+      path: '/reports/prod-vendidos-mensal'
+      fullPath: '/reports/prod-vendidos-mensal'
+      preLoaderRoute: typeof AppReportsProdVendidosMensalIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/reports/lista-pedidos/': {
@@ -1020,6 +1105,20 @@ declare module '@tanstack/react-router' {
       path: '/reports/lista-pedidos'
       fullPath: '/reports/lista-pedidos'
       preLoaderRoute: typeof AppReportsListaPedidosIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/reports/faturamento-fiscal/': {
+      id: '/_app/reports/faturamento-fiscal/'
+      path: '/reports/faturamento-fiscal'
+      fullPath: '/reports/faturamento-fiscal'
+      preLoaderRoute: typeof AppReportsFaturamentoFiscalIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/reports/faturamento-cliente/': {
+      id: '/_app/reports/faturamento-cliente/'
+      path: '/reports/faturamento-cliente'
+      fullPath: '/reports/faturamento-cliente'
+      preLoaderRoute: typeof AppReportsFaturamentoClienteIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/reports/dashboard-product-groups/': {
@@ -1378,6 +1477,7 @@ declare module '@tanstack/react-router' {
 interface AppLayoutRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppBudgetsNewBudgetRoute: typeof AppBudgetsNewBudgetRoute
+  AppDashboardsDashboard1Route: typeof AppDashboardsDashboard1Route
   AppOrdersNewOrderRoute: typeof AppOrdersNewOrderRoute
   AppOrdersNewOutletOrderRoute: typeof AppOrdersNewOutletOrderRoute
   AppApprovalsIndexRoute: typeof AppApprovalsIndexRoute
@@ -1414,8 +1514,12 @@ interface AppLayoutRouteChildren {
   AppReportsComissaoIndexRoute: typeof AppReportsComissaoIndexRoute
   AppReportsCustomersListIndexRoute: typeof AppReportsCustomersListIndexRoute
   AppReportsDashboardProductGroupsIndexRoute: typeof AppReportsDashboardProductGroupsIndexRoute
+  AppReportsFaturamentoClienteIndexRoute: typeof AppReportsFaturamentoClienteIndexRoute
+  AppReportsFaturamentoFiscalIndexRoute: typeof AppReportsFaturamentoFiscalIndexRoute
   AppReportsListaPedidosIndexRoute: typeof AppReportsListaPedidosIndexRoute
-  AppReportsProdutosVendidosIndexRoute: typeof AppReportsProdutosVendidosIndexRoute
+  AppReportsProdVendidosMensalIndexRoute: typeof AppReportsProdVendidosMensalIndexRoute
+  AppReportsProdVendidosPeriodoIndexRoute: typeof AppReportsProdVendidosPeriodoIndexRoute
+  AppReportsTitulosFinanceirosIndexRoute: typeof AppReportsTitulosFinanceirosIndexRoute
   AppStockEsli011IndexRoute: typeof AppStockEsli011IndexRoute
   AppStockProductStockIndexRoute: typeof AppStockProductStockIndexRoute
   AppSystemSyncStatusIndexRoute: typeof AppSystemSyncStatusIndexRoute
@@ -1447,6 +1551,7 @@ interface AppLayoutRouteChildren {
 const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppBudgetsNewBudgetRoute: AppBudgetsNewBudgetRoute,
+  AppDashboardsDashboard1Route: AppDashboardsDashboard1Route,
   AppOrdersNewOrderRoute: AppOrdersNewOrderRoute,
   AppOrdersNewOutletOrderRoute: AppOrdersNewOutletOrderRoute,
   AppApprovalsIndexRoute: AppApprovalsIndexRoute,
@@ -1492,8 +1597,16 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppReportsCustomersListIndexRoute: AppReportsCustomersListIndexRoute,
   AppReportsDashboardProductGroupsIndexRoute:
     AppReportsDashboardProductGroupsIndexRoute,
+  AppReportsFaturamentoClienteIndexRoute:
+    AppReportsFaturamentoClienteIndexRoute,
+  AppReportsFaturamentoFiscalIndexRoute: AppReportsFaturamentoFiscalIndexRoute,
   AppReportsListaPedidosIndexRoute: AppReportsListaPedidosIndexRoute,
-  AppReportsProdutosVendidosIndexRoute: AppReportsProdutosVendidosIndexRoute,
+  AppReportsProdVendidosMensalIndexRoute:
+    AppReportsProdVendidosMensalIndexRoute,
+  AppReportsProdVendidosPeriodoIndexRoute:
+    AppReportsProdVendidosPeriodoIndexRoute,
+  AppReportsTitulosFinanceirosIndexRoute:
+    AppReportsTitulosFinanceirosIndexRoute,
   AppStockEsli011IndexRoute: AppStockEsli011IndexRoute,
   AppStockProductStockIndexRoute: AppStockProductStockIndexRoute,
   AppSystemSyncStatusIndexRoute: AppSystemSyncStatusIndexRoute,
