@@ -21,6 +21,14 @@ import { Route as AppBudgetsIndexRouteImport } from './pages/_app/budgets/index'
 import { Route as AppApprovalsIndexRouteImport } from './pages/_app/approvals/index'
 import { Route as AppOrdersNewOutletOrderRouteImport } from './pages/_app/orders/new-outlet-order'
 import { Route as AppOrdersNewOrderRouteImport } from './pages/_app/orders/new-order'
+import { Route as AppDashboardsDashboard9RouteImport } from './pages/_app/dashboards/dashboard9'
+import { Route as AppDashboardsDashboard8RouteImport } from './pages/_app/dashboards/dashboard8'
+import { Route as AppDashboardsDashboard7RouteImport } from './pages/_app/dashboards/dashboard7'
+import { Route as AppDashboardsDashboard6RouteImport } from './pages/_app/dashboards/dashboard6'
+import { Route as AppDashboardsDashboard5RouteImport } from './pages/_app/dashboards/dashboard5'
+import { Route as AppDashboardsDashboard4RouteImport } from './pages/_app/dashboards/dashboard4'
+import { Route as AppDashboardsDashboard3RouteImport } from './pages/_app/dashboards/dashboard3'
+import { Route as AppDashboardsDashboard2RouteImport } from './pages/_app/dashboards/dashboard2'
 import { Route as AppDashboardsDashboard1RouteImport } from './pages/_app/dashboards/dashboard1'
 import { Route as AppBudgetsNewBudgetRouteImport } from './pages/_app/budgets/new-budget'
 import { Route as AppSystemSyncStatusIndexRouteImport } from './pages/_app/system/sync-status/index'
@@ -141,6 +149,46 @@ const AppOrdersNewOutletOrderRoute = AppOrdersNewOutletOrderRouteImport.update({
 const AppOrdersNewOrderRoute = AppOrdersNewOrderRouteImport.update({
   id: '/orders/new-order',
   path: '/orders/new-order',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
+const AppDashboardsDashboard9Route = AppDashboardsDashboard9RouteImport.update({
+  id: '/dashboards/dashboard9',
+  path: '/dashboards/dashboard9',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
+const AppDashboardsDashboard8Route = AppDashboardsDashboard8RouteImport.update({
+  id: '/dashboards/dashboard8',
+  path: '/dashboards/dashboard8',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
+const AppDashboardsDashboard7Route = AppDashboardsDashboard7RouteImport.update({
+  id: '/dashboards/dashboard7',
+  path: '/dashboards/dashboard7',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
+const AppDashboardsDashboard6Route = AppDashboardsDashboard6RouteImport.update({
+  id: '/dashboards/dashboard6',
+  path: '/dashboards/dashboard6',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
+const AppDashboardsDashboard5Route = AppDashboardsDashboard5RouteImport.update({
+  id: '/dashboards/dashboard5',
+  path: '/dashboards/dashboard5',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
+const AppDashboardsDashboard4Route = AppDashboardsDashboard4RouteImport.update({
+  id: '/dashboards/dashboard4',
+  path: '/dashboards/dashboard4',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
+const AppDashboardsDashboard3Route = AppDashboardsDashboard3RouteImport.update({
+  id: '/dashboards/dashboard3',
+  path: '/dashboards/dashboard3',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
+const AppDashboardsDashboard2Route = AppDashboardsDashboard2RouteImport.update({
+  id: '/dashboards/dashboard2',
+  path: '/dashboards/dashboard2',
   getParentRoute: () => AppLayoutRoute,
 } as any)
 const AppDashboardsDashboard1Route = AppDashboardsDashboard1RouteImport.update({
@@ -508,6 +556,14 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
   '/dashboards/dashboard1': typeof AppDashboardsDashboard1Route
+  '/dashboards/dashboard2': typeof AppDashboardsDashboard2Route
+  '/dashboards/dashboard3': typeof AppDashboardsDashboard3Route
+  '/dashboards/dashboard4': typeof AppDashboardsDashboard4Route
+  '/dashboards/dashboard5': typeof AppDashboardsDashboard5Route
+  '/dashboards/dashboard6': typeof AppDashboardsDashboard6Route
+  '/dashboards/dashboard7': typeof AppDashboardsDashboard7Route
+  '/dashboards/dashboard8': typeof AppDashboardsDashboard8Route
+  '/dashboards/dashboard9': typeof AppDashboardsDashboard9Route
   '/orders/new-order': typeof AppOrdersNewOrderRoute
   '/orders/new-outlet-order': typeof AppOrdersNewOutletOrderRoute
   '/approvals': typeof AppApprovalsIndexRoute
@@ -582,6 +638,14 @@ export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
   '/dashboards/dashboard1': typeof AppDashboardsDashboard1Route
+  '/dashboards/dashboard2': typeof AppDashboardsDashboard2Route
+  '/dashboards/dashboard3': typeof AppDashboardsDashboard3Route
+  '/dashboards/dashboard4': typeof AppDashboardsDashboard4Route
+  '/dashboards/dashboard5': typeof AppDashboardsDashboard5Route
+  '/dashboards/dashboard6': typeof AppDashboardsDashboard6Route
+  '/dashboards/dashboard7': typeof AppDashboardsDashboard7Route
+  '/dashboards/dashboard8': typeof AppDashboardsDashboard8Route
+  '/dashboards/dashboard9': typeof AppDashboardsDashboard9Route
   '/orders/new-order': typeof AppOrdersNewOrderRoute
   '/orders/new-outlet-order': typeof AppOrdersNewOutletOrderRoute
   '/approvals': typeof AppApprovalsIndexRoute
@@ -658,6 +722,14 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
   '/_app/dashboards/dashboard1': typeof AppDashboardsDashboard1Route
+  '/_app/dashboards/dashboard2': typeof AppDashboardsDashboard2Route
+  '/_app/dashboards/dashboard3': typeof AppDashboardsDashboard3Route
+  '/_app/dashboards/dashboard4': typeof AppDashboardsDashboard4Route
+  '/_app/dashboards/dashboard5': typeof AppDashboardsDashboard5Route
+  '/_app/dashboards/dashboard6': typeof AppDashboardsDashboard6Route
+  '/_app/dashboards/dashboard7': typeof AppDashboardsDashboard7Route
+  '/_app/dashboards/dashboard8': typeof AppDashboardsDashboard8Route
+  '/_app/dashboards/dashboard9': typeof AppDashboardsDashboard9Route
   '/_app/orders/new-order': typeof AppOrdersNewOrderRoute
   '/_app/orders/new-outlet-order': typeof AppOrdersNewOutletOrderRoute
   '/_app/approvals/': typeof AppApprovalsIndexRoute
@@ -734,6 +806,14 @@ export interface FileRouteTypes {
     | '/'
     | '/budgets/new-budget'
     | '/dashboards/dashboard1'
+    | '/dashboards/dashboard2'
+    | '/dashboards/dashboard3'
+    | '/dashboards/dashboard4'
+    | '/dashboards/dashboard5'
+    | '/dashboards/dashboard6'
+    | '/dashboards/dashboard7'
+    | '/dashboards/dashboard8'
+    | '/dashboards/dashboard9'
     | '/orders/new-order'
     | '/orders/new-outlet-order'
     | '/approvals'
@@ -808,6 +888,14 @@ export interface FileRouteTypes {
     | '/'
     | '/budgets/new-budget'
     | '/dashboards/dashboard1'
+    | '/dashboards/dashboard2'
+    | '/dashboards/dashboard3'
+    | '/dashboards/dashboard4'
+    | '/dashboards/dashboard5'
+    | '/dashboards/dashboard6'
+    | '/dashboards/dashboard7'
+    | '/dashboards/dashboard8'
+    | '/dashboards/dashboard9'
     | '/orders/new-order'
     | '/orders/new-outlet-order'
     | '/approvals'
@@ -883,6 +971,14 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/budgets/new-budget'
     | '/_app/dashboards/dashboard1'
+    | '/_app/dashboards/dashboard2'
+    | '/_app/dashboards/dashboard3'
+    | '/_app/dashboards/dashboard4'
+    | '/_app/dashboards/dashboard5'
+    | '/_app/dashboards/dashboard6'
+    | '/_app/dashboards/dashboard7'
+    | '/_app/dashboards/dashboard8'
+    | '/_app/dashboards/dashboard9'
     | '/_app/orders/new-order'
     | '/_app/orders/new-outlet-order'
     | '/_app/approvals/'
@@ -1042,6 +1138,62 @@ declare module '@tanstack/react-router' {
       path: '/orders/new-order'
       fullPath: '/orders/new-order'
       preLoaderRoute: typeof AppOrdersNewOrderRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/dashboards/dashboard9': {
+      id: '/_app/dashboards/dashboard9'
+      path: '/dashboards/dashboard9'
+      fullPath: '/dashboards/dashboard9'
+      preLoaderRoute: typeof AppDashboardsDashboard9RouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/dashboards/dashboard8': {
+      id: '/_app/dashboards/dashboard8'
+      path: '/dashboards/dashboard8'
+      fullPath: '/dashboards/dashboard8'
+      preLoaderRoute: typeof AppDashboardsDashboard8RouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/dashboards/dashboard7': {
+      id: '/_app/dashboards/dashboard7'
+      path: '/dashboards/dashboard7'
+      fullPath: '/dashboards/dashboard7'
+      preLoaderRoute: typeof AppDashboardsDashboard7RouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/dashboards/dashboard6': {
+      id: '/_app/dashboards/dashboard6'
+      path: '/dashboards/dashboard6'
+      fullPath: '/dashboards/dashboard6'
+      preLoaderRoute: typeof AppDashboardsDashboard6RouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/dashboards/dashboard5': {
+      id: '/_app/dashboards/dashboard5'
+      path: '/dashboards/dashboard5'
+      fullPath: '/dashboards/dashboard5'
+      preLoaderRoute: typeof AppDashboardsDashboard5RouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/dashboards/dashboard4': {
+      id: '/_app/dashboards/dashboard4'
+      path: '/dashboards/dashboard4'
+      fullPath: '/dashboards/dashboard4'
+      preLoaderRoute: typeof AppDashboardsDashboard4RouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/dashboards/dashboard3': {
+      id: '/_app/dashboards/dashboard3'
+      path: '/dashboards/dashboard3'
+      fullPath: '/dashboards/dashboard3'
+      preLoaderRoute: typeof AppDashboardsDashboard3RouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/dashboards/dashboard2': {
+      id: '/_app/dashboards/dashboard2'
+      path: '/dashboards/dashboard2'
+      fullPath: '/dashboards/dashboard2'
+      preLoaderRoute: typeof AppDashboardsDashboard2RouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/dashboards/dashboard1': {
@@ -1478,6 +1630,14 @@ interface AppLayoutRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppBudgetsNewBudgetRoute: typeof AppBudgetsNewBudgetRoute
   AppDashboardsDashboard1Route: typeof AppDashboardsDashboard1Route
+  AppDashboardsDashboard2Route: typeof AppDashboardsDashboard2Route
+  AppDashboardsDashboard3Route: typeof AppDashboardsDashboard3Route
+  AppDashboardsDashboard4Route: typeof AppDashboardsDashboard4Route
+  AppDashboardsDashboard5Route: typeof AppDashboardsDashboard5Route
+  AppDashboardsDashboard6Route: typeof AppDashboardsDashboard6Route
+  AppDashboardsDashboard7Route: typeof AppDashboardsDashboard7Route
+  AppDashboardsDashboard8Route: typeof AppDashboardsDashboard8Route
+  AppDashboardsDashboard9Route: typeof AppDashboardsDashboard9Route
   AppOrdersNewOrderRoute: typeof AppOrdersNewOrderRoute
   AppOrdersNewOutletOrderRoute: typeof AppOrdersNewOutletOrderRoute
   AppApprovalsIndexRoute: typeof AppApprovalsIndexRoute
@@ -1552,6 +1712,14 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppBudgetsNewBudgetRoute: AppBudgetsNewBudgetRoute,
   AppDashboardsDashboard1Route: AppDashboardsDashboard1Route,
+  AppDashboardsDashboard2Route: AppDashboardsDashboard2Route,
+  AppDashboardsDashboard3Route: AppDashboardsDashboard3Route,
+  AppDashboardsDashboard4Route: AppDashboardsDashboard4Route,
+  AppDashboardsDashboard5Route: AppDashboardsDashboard5Route,
+  AppDashboardsDashboard6Route: AppDashboardsDashboard6Route,
+  AppDashboardsDashboard7Route: AppDashboardsDashboard7Route,
+  AppDashboardsDashboard8Route: AppDashboardsDashboard8Route,
+  AppDashboardsDashboard9Route: AppDashboardsDashboard9Route,
   AppOrdersNewOrderRoute: AppOrdersNewOrderRoute,
   AppOrdersNewOutletOrderRoute: AppOrdersNewOutletOrderRoute,
   AppApprovalsIndexRoute: AppApprovalsIndexRoute,

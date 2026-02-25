@@ -36,7 +36,7 @@ const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 );
 
 function Button({
@@ -59,7 +59,7 @@ function Button({
       className={cn(
         "",
         buttonVariants({ variant, size, className }),
-        useAnimation && "active:scale-[0.92]"
+        useAnimation && "active:scale-[0.98]",
       )}
       {...props}
     />

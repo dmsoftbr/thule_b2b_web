@@ -86,7 +86,7 @@ export const UserForm = ({ initialData, mode, onClose }: Props) => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit, (errors) =>
-            console.log(errors)
+            console.log(errors),
           )}
           className="space-y-4"
         >
@@ -125,7 +125,7 @@ export const UserForm = ({ initialData, mode, onClose }: Props) => {
           <FormSearchCombo
             className={cn("hidden space-y-2", roleWatch == "3" && "block")}
             control={form.control}
-            apiEndpoint={`/registrations/customers/all/${session?.user.id}`}
+            apiEndpoint={`/registrations/customers/all`}
             queryStringName=""
             labelProp="abbreviation"
             valueProp="id"
