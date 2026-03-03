@@ -199,6 +199,12 @@ export const MENU_DATA: MenuModel[] = [
         url: "/reports/titulos-financeiros",
         icon: "CircleIcon",
       },
+      {
+        id: "59",
+        title: "Lista de Preço",
+        url: "/reports/lista-preco",
+        icon: "CircleIcon",
+      },
     ],
   },
   {

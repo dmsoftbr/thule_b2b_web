@@ -22,7 +22,7 @@ interface Props {
   level?: number; // controla o nível de aninhamento
 }
 
-export const AppMenuItem = ({ item, index, level = 0 }: Props) => {
+export const AppMenuItem = ({ item, index }: Props) => {
   const location = useLocation();
 
   function getIsActive(item: MenuModel) {

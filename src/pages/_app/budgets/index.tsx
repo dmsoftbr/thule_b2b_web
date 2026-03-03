@@ -8,7 +8,7 @@ import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 import { useState } from "react";
 import { add } from "date-fns";
 import type { OrderModel } from "@/models/orders/order-model";
-import { api } from "@/lib/api";
+import { api, handleError } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { Label } from "recharts";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -17,6 +17,8 @@ import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 import { Button } from "@/components/ui/button";
 import { AppPageHeader } from "@/components/layout/app-page-header";
 import { columns } from "../orders/-components/columns";
+import { OrdersService } from "@/services/orders/orders.service";
+import { toast } from "sonner";
 
 const searchFieldsList: ServerTableSearchField[] = [
   {
@@ -58,7 +60,7 @@ function BudgetsPage() {
   const { showAppDialog } = useAppDialog();
   const [tableToken, setTableToken] = useState(new Date().valueOf());
   const [createdAtFrom, setCreatedAtFrom] = useState<Date | undefined>(
-    new Date(add(new Date(), { days: -30 }))
+    new Date(add(new Date(), { days: -30 })),
   );
   const [createdAtTo, setCreatedAtTo] = useState<Date | undefined>(new Date());
   const [selectedReps, setSelectedReps] = useState<number[]>([]);
@@ -136,7 +138,7 @@ function BudgetsPage() {
             staticItems={convertArrayToSearchComboItem(
               representativesData ?? [],
               "id",
-              "abbreviation"
+              "abbreviation",
             )}
             showSelectButtons
           />
@@ -161,6 +163,17 @@ function BudgetsPage() {
       </div>
     );
   };
+  const handleCopy = async (data: OrderModel) => {
+    try {
+      //setIsLoading(true);
+      await OrdersService.duplicate(data.id);
+      setTableToken(new Date().valueOf());
+    } catch (error) {
+      toast.error(handleError(error));
+    } finally {
+      //setIsLoading(false);
+    }
+  };
 
   return (
     <AppPageHeader titleSlot="Simulações">
@@ -175,6 +188,7 @@ function BudgetsPage() {
             fnEdit: handleEdit,
             fnCancel: handleCancel,
             fnView: handleView,
+            fnCopy: handleCopy,
           })}
           showAddButton
           onAdd={() => handleAdd()}

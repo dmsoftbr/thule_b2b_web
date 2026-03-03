@@ -37,6 +37,7 @@ import { Route as AppStockEsli011IndexRouteImport } from './pages/_app/stock/esl
 import { Route as AppReportsTitulosFinanceirosIndexRouteImport } from './pages/_app/reports/titulos-financeiros/index'
 import { Route as AppReportsProdVendidosPeriodoIndexRouteImport } from './pages/_app/reports/prod-vendidos-periodo/index'
 import { Route as AppReportsProdVendidosMensalIndexRouteImport } from './pages/_app/reports/prod-vendidos-mensal/index'
+import { Route as AppReportsListaPrecoIndexRouteImport } from './pages/_app/reports/lista-preco/index'
 import { Route as AppReportsListaPedidosIndexRouteImport } from './pages/_app/reports/lista-pedidos/index'
 import { Route as AppReportsFaturamentoFiscalIndexRouteImport } from './pages/_app/reports/faturamento-fiscal/index'
 import { Route as AppReportsFaturamentoClienteIndexRouteImport } from './pages/_app/reports/faturamento-cliente/index'
@@ -234,6 +235,12 @@ const AppReportsProdVendidosMensalIndexRoute =
   AppReportsProdVendidosMensalIndexRouteImport.update({
     id: '/reports/prod-vendidos-mensal/',
     path: '/reports/prod-vendidos-mensal/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppReportsListaPrecoIndexRoute =
+  AppReportsListaPrecoIndexRouteImport.update({
+    id: '/reports/lista-preco/',
+    path: '/reports/lista-preco/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
 const AppReportsListaPedidosIndexRoute =
@@ -603,6 +610,7 @@ export interface FileRoutesByFullPath {
   '/reports/faturamento-cliente': typeof AppReportsFaturamentoClienteIndexRoute
   '/reports/faturamento-fiscal': typeof AppReportsFaturamentoFiscalIndexRoute
   '/reports/lista-pedidos': typeof AppReportsListaPedidosIndexRoute
+  '/reports/lista-preco': typeof AppReportsListaPrecoIndexRoute
   '/reports/prod-vendidos-mensal': typeof AppReportsProdVendidosMensalIndexRoute
   '/reports/prod-vendidos-periodo': typeof AppReportsProdVendidosPeriodoIndexRoute
   '/reports/titulos-financeiros': typeof AppReportsTitulosFinanceirosIndexRoute
@@ -685,6 +693,7 @@ export interface FileRoutesByTo {
   '/reports/faturamento-cliente': typeof AppReportsFaturamentoClienteIndexRoute
   '/reports/faturamento-fiscal': typeof AppReportsFaturamentoFiscalIndexRoute
   '/reports/lista-pedidos': typeof AppReportsListaPedidosIndexRoute
+  '/reports/lista-preco': typeof AppReportsListaPrecoIndexRoute
   '/reports/prod-vendidos-mensal': typeof AppReportsProdVendidosMensalIndexRoute
   '/reports/prod-vendidos-periodo': typeof AppReportsProdVendidosPeriodoIndexRoute
   '/reports/titulos-financeiros': typeof AppReportsTitulosFinanceirosIndexRoute
@@ -769,6 +778,7 @@ export interface FileRoutesById {
   '/_app/reports/faturamento-cliente/': typeof AppReportsFaturamentoClienteIndexRoute
   '/_app/reports/faturamento-fiscal/': typeof AppReportsFaturamentoFiscalIndexRoute
   '/_app/reports/lista-pedidos/': typeof AppReportsListaPedidosIndexRoute
+  '/_app/reports/lista-preco/': typeof AppReportsListaPrecoIndexRoute
   '/_app/reports/prod-vendidos-mensal/': typeof AppReportsProdVendidosMensalIndexRoute
   '/_app/reports/prod-vendidos-periodo/': typeof AppReportsProdVendidosPeriodoIndexRoute
   '/_app/reports/titulos-financeiros/': typeof AppReportsTitulosFinanceirosIndexRoute
@@ -853,6 +863,7 @@ export interface FileRouteTypes {
     | '/reports/faturamento-cliente'
     | '/reports/faturamento-fiscal'
     | '/reports/lista-pedidos'
+    | '/reports/lista-preco'
     | '/reports/prod-vendidos-mensal'
     | '/reports/prod-vendidos-periodo'
     | '/reports/titulos-financeiros'
@@ -935,6 +946,7 @@ export interface FileRouteTypes {
     | '/reports/faturamento-cliente'
     | '/reports/faturamento-fiscal'
     | '/reports/lista-pedidos'
+    | '/reports/lista-preco'
     | '/reports/prod-vendidos-mensal'
     | '/reports/prod-vendidos-periodo'
     | '/reports/titulos-financeiros'
@@ -1018,6 +1030,7 @@ export interface FileRouteTypes {
     | '/_app/reports/faturamento-cliente/'
     | '/_app/reports/faturamento-fiscal/'
     | '/_app/reports/lista-pedidos/'
+    | '/_app/reports/lista-preco/'
     | '/_app/reports/prod-vendidos-mensal/'
     | '/_app/reports/prod-vendidos-periodo/'
     | '/_app/reports/titulos-financeiros/'
@@ -1250,6 +1263,13 @@ declare module '@tanstack/react-router' {
       path: '/reports/prod-vendidos-mensal'
       fullPath: '/reports/prod-vendidos-mensal'
       preLoaderRoute: typeof AppReportsProdVendidosMensalIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/reports/lista-preco/': {
+      id: '/_app/reports/lista-preco/'
+      path: '/reports/lista-preco'
+      fullPath: '/reports/lista-preco'
+      preLoaderRoute: typeof AppReportsListaPrecoIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/reports/lista-pedidos/': {
@@ -1677,6 +1697,7 @@ interface AppLayoutRouteChildren {
   AppReportsFaturamentoClienteIndexRoute: typeof AppReportsFaturamentoClienteIndexRoute
   AppReportsFaturamentoFiscalIndexRoute: typeof AppReportsFaturamentoFiscalIndexRoute
   AppReportsListaPedidosIndexRoute: typeof AppReportsListaPedidosIndexRoute
+  AppReportsListaPrecoIndexRoute: typeof AppReportsListaPrecoIndexRoute
   AppReportsProdVendidosMensalIndexRoute: typeof AppReportsProdVendidosMensalIndexRoute
   AppReportsProdVendidosPeriodoIndexRoute: typeof AppReportsProdVendidosPeriodoIndexRoute
   AppReportsTitulosFinanceirosIndexRoute: typeof AppReportsTitulosFinanceirosIndexRoute
@@ -1769,6 +1790,7 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
     AppReportsFaturamentoClienteIndexRoute,
   AppReportsFaturamentoFiscalIndexRoute: AppReportsFaturamentoFiscalIndexRoute,
   AppReportsListaPedidosIndexRoute: AppReportsListaPedidosIndexRoute,
+  AppReportsListaPrecoIndexRoute: AppReportsListaPrecoIndexRoute,
   AppReportsProdVendidosMensalIndexRoute:
     AppReportsProdVendidosMensalIndexRoute,
   AppReportsProdVendidosPeriodoIndexRoute:

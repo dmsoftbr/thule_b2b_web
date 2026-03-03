@@ -6,6 +6,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dropzone,
   DropzoneContent,
@@ -14,6 +16,7 @@ import {
 import { api, handleError } from "@/lib/api";
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
+import { NumericFormat } from "react-number-format";
 import { toast } from "sonner";
 
 interface Props {
@@ -21,6 +24,8 @@ interface Props {
   onClose: (refresh: boolean) => void;
 }
 export const UploadModal = ({ isOpen, onClose }: Props) => {
+  const [ano, setAno] = useState(new Date().getFullYear());
+  const [percentual, setPercentual] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState<File[] | undefined>();
   const handleDrop = (files: File[]) => {
@@ -36,10 +41,12 @@ export const UploadModal = ({ isOpen, onClose }: Props) => {
     try {
       const formData = new FormData();
       formData.append("file", files[0]);
+      formData.append("ano", ano.toString());
+      formData.append("percentual", percentual.toString());
 
       await api.post(
         "/registrations/representative-goals/import-profitability",
-        formData
+        formData,
       );
       onClose(true);
     } catch (error) {
@@ -72,6 +79,31 @@ export const UploadModal = ({ isOpen, onClose }: Props) => {
             importação dos dados das metas.
           </DialogDescription>
         </DialogHeader>
+        <div className="form-group">
+          <Label>Considerar dados como sendo Ano:</Label>
+          <Input
+            type="number"
+            min={2020}
+            max={2072}
+            step={1}
+            value={ano.toString()}
+            onChange={(e) => setAno(Number(e.target.value))}
+          />
+        </div>
+        <div className="form-group">
+          <Label>% de Reajuste:</Label>
+          <NumericFormat
+            decimalScale={2}
+            decimalSeparator=","
+            fixedDecimalScale
+            min={0}
+            max={1000}
+            step={1}
+            value={percentual}
+            onValueChange={(value) => setPercentual(value.floatValue ?? 0)}
+            className="form-input"
+          />
+        </div>
         <div>
           <Dropzone
             disabled={isLoading}
@@ -87,11 +119,6 @@ export const UploadModal = ({ isOpen, onClose }: Props) => {
           </Dropzone>
         </div>
         <div className="flex justify-between w-full flex-1">
-          {/* <Button className="self-start" asChild disabled={isLoading}>
-            <a href="/modelo_metas_representante.xlsx" download>
-              Baixar Modelo
-            </a>
-          </Button> */}
           <div></div>
           <div className="flex gap-x-2">
             <Button

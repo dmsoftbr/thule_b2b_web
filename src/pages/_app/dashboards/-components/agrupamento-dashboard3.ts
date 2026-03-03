@@ -36,13 +36,14 @@ export const agruparDados = (dados: VendaRaw[]): VendaAgrupada[] => {
     const anoItem = new Date(item.data).getFullYear();
     const isAtual = anoItem === anoAtual;
     const isAnterior = anoItem === anoAtual - 1;
+    const pais = item.pais.toUpperCase();
 
     // Inicializa País
-    if (!arvore[item.pais]) {
-      arvore[item.pais] = {
-        id: item.pais,
+    if (!arvore[pais]) {
+      arvore[pais] = {
+        id: pais,
         nivel: "pais",
-        nome: item.pais,
+        nome: pais,
         qtdAnoAnterior: 0,
         valorAnoAnterior: 0,
         qtdAnoAtual: 0,
@@ -53,9 +54,9 @@ export const agruparDados = (dados: VendaRaw[]): VendaAgrupada[] => {
     }
 
     // Inicializa Categoria
-    if (!arvore[item.pais].filhos[item.descrCategoriaProduto]) {
-      arvore[item.pais].filhos[item.descrCategoriaProduto] = {
-        id: `${item.pais}-${item.descrCategoriaProduto}`,
+    if (!arvore[pais].filhos[item.descrCategoriaProduto]) {
+      arvore[pais].filhos[item.descrCategoriaProduto] = {
+        id: `${pais}-${item.descrCategoriaProduto}`,
         nivel: "categoria",
         nome: item.descrCategoriaProduto,
         qtdAnoAnterior: 0,
@@ -69,31 +70,26 @@ export const agruparDados = (dados: VendaRaw[]): VendaAgrupada[] => {
 
     // Inicializa Família
     if (
-      !arvore[item.pais].filhos[item.descrCategoriaProduto].filhos[
-        item.descrFamMat
-      ]
+      !arvore[pais].filhos[item.descrCategoriaProduto].filhos[item.descrFamMat]
     ) {
-      arvore[item.pais].filhos[item.descrCategoriaProduto].filhos[
-        item.descrFamMat
-      ] = {
-        id: `${item.pais}-${item.descrCategoriaProduto}-${item.descrFamMat}`,
-        nivel: "familia",
-        nome: item.descrFamMat,
-        qtdAnoAnterior: 0,
-        valorAnoAnterior: 0,
-        qtdAnoAtual: 0,
-        valorAnoAtual: 0,
-        budget: 0,
-      };
+      arvore[pais].filhos[item.descrCategoriaProduto].filhos[item.descrFamMat] =
+        {
+          id: `${pais}-${item.descrCategoriaProduto}-${item.descrFamMat}`,
+          nivel: "familia",
+          nome: item.descrFamMat,
+          qtdAnoAnterior: 0,
+          valorAnoAnterior: 0,
+          qtdAnoAtual: 0,
+          valorAnoAtual: 0,
+          budget: 0,
+        };
     }
 
     // Acumula os valores
     const nodes = [
-      arvore[item.pais],
-      arvore[item.pais].filhos[item.descrCategoriaProduto],
-      arvore[item.pais].filhos[item.descrCategoriaProduto].filhos[
-        item.descrFamMat
-      ],
+      arvore[pais],
+      arvore[pais].filhos[item.descrCategoriaProduto],
+      arvore[pais].filhos[item.descrCategoriaProduto].filhos[item.descrFamMat],
     ];
 
     nodes.forEach((node) => {

@@ -16,7 +16,6 @@ import { USER_ROLES } from "@/constants";
 import { FormCheckBox } from "@/components/form/form-checkbox";
 import { cn } from "@/lib/utils";
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
-import { useAuth } from "@/hooks/use-auth";
 
 interface Props {
   initialData: UserModel | null;
@@ -26,7 +25,6 @@ interface Props {
 }
 
 export const UserForm = ({ initialData, mode, onClose }: Props) => {
-  const { session } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const { showAppDialog } = useAppDialog();
 
