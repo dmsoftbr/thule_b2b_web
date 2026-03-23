@@ -16,6 +16,7 @@ import { USER_ROLES } from "@/constants";
 import { FormCheckBox } from "@/components/form/form-checkbox";
 import { cn } from "@/lib/utils";
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
+import { CheckIcon } from "lucide-react";
 
 interface Props {
   initialData: UserModel | null;
@@ -123,9 +124,9 @@ export const UserForm = ({ initialData, mode, onClose }: Props) => {
           <FormSearchCombo
             className={cn("hidden space-y-2", roleWatch == "3" && "block")}
             control={form.control}
-            apiEndpoint={`/registrations/customers/all`}
-            queryStringName=""
-            labelProp="abbreviation"
+            apiEndpoint={`/registrations/customers/search-combo`}
+            queryStringName="search"
+            labelProp={(item) => `${item.id} - ${item.abbreviation}`}
             valueProp="id"
             label="Cliente"
             name="customerId"
@@ -137,7 +138,7 @@ export const UserForm = ({ initialData, mode, onClose }: Props) => {
             control={form.control}
             apiEndpoint="/registrations/representatives/all"
             queryStringName=""
-            labelProp="abbreviation"
+            labelProp={(item) => `${item.id} - ${item.abbreviation}`}
             valueProp="id"
             label="Representante"
             name="representativeId"

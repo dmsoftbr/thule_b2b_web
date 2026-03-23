@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 import type { ProductModel } from "@/models/product.model";
 import { ProductImage } from "./product-image";
+import { formatNumber } from "@/lib/number-utils";
 
 interface Props {
   onSelect?: (product: ProductModel | undefined) => void;
@@ -78,7 +79,7 @@ export const ProductsCombo = ({
           },
           {
             signal: abortControllerRef.current.signal,
-          }
+          },
         );
         setData(products);
       } catch (error: any) {
@@ -90,7 +91,7 @@ export const ProductsCombo = ({
         setIsLoading(false);
       }
     },
-    [customerId, priceTableId]
+    [customerId, priceTableId],
   );
 
   // Debounce na busca
@@ -104,7 +105,7 @@ export const ProductsCombo = ({
         performSearch(searchText);
       }, 300);
     },
-    [performSearch]
+    [performSearch],
   );
 
   // Handler de seleção otimizado
@@ -124,7 +125,7 @@ export const ProductsCombo = ({
 
       setData([]); // Limpa os resultados
     },
-    [onSelect, closeOnSelect]
+    [onSelect, closeOnSelect],
   );
 
   // Componente de item memoizado
@@ -139,20 +140,30 @@ export const ProductsCombo = ({
         className={cn(
           "even:bg-neutral-50 border-t rounded-none",
           className,
-          value === item.id.toString() && "!bg-blue-100"
+          value === item.id.toString() && "!bg-blue-100",
         )}
       >
-        <div className="grid grid-cols-[128px_1fr] gap-2">
+        <div className="grid grid-cols-[128px_1fr] gap-2 w-full">
           <div className="w-[128px] h-[128px] relative bg-transparent flex-shrink-0">
             <ProductImage productId={`${item.id}`} alt="Foto do Produto" />
           </div>
-          <div className="flex flex-col justify-center min-w-0">
+          <div className="flex flex-col justify-center min-w-0 w-full">
             <span className="font-bold text-blue-600 truncate">
               {item.id} - {item.description}
             </span>
             <p className="text-xs text-muted-foreground truncate">
               Classificação: {item.productGroup?.name}
             </p>
+            <div className="mt-1 grid grid-cols-[130px_1fr]">
+              Preço Sugerido:{" "}
+              <span className="font-semibold">
+                R$ {formatNumber(item.suggestUnitPrice, 2)}
+              </span>
+              Preço c/Desconto:{" "}
+              <span className="font-semibold text-emerald-700">
+                R$ {formatNumber(item.unitPriceInTable, 2)}
+              </span>
+            </div>
           </div>
         </div>
       </CommandItem>

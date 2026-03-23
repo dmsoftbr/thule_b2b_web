@@ -79,7 +79,8 @@ function ListOrdersPage() {
   const handleCopy = async (data: OrderModel) => {
     try {
       setIsLoading(true);
-      await OrdersService.duplicate(data.id);
+      const newOrder = await OrdersService.duplicate(data.id);
+      navigate({ to: `/orders/edit/${newOrder.id}` });
       setTableToken(new Date().valueOf());
     } catch (error) {
       toast.error(handleError(error));

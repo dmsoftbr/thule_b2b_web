@@ -2,9 +2,20 @@ import { api, handleError } from "@/lib/api";
 import type { UserPermissionModel } from "@/models/admin/user-permission.model";
 import type { OrderItemModel } from "@/models/orders/order-item-model";
 import type { OrderModel } from "@/models/orders/order-model";
+import type { OutletCartItem } from "@/models/outlet/outlet-cart-item.model";
+import type { CustomerModel } from "@/models/registrations/customer.model";
 import { ProductsService } from "@/services/registrations/products.service";
 import { RepresentativesService } from "@/services/registrations/representatives.service";
 import { toast } from "sonner";
+
+export type OutletOrderData = {
+  customerId: number;
+  customer: CustomerModel;
+  paymentConditionId: number;
+  deliveryLocationId: string;
+  branchId: string;
+  items: OutletCartItem[];
+};
 
 export const NEW_ORDER_EMPTY: OrderModel = {
   id: "",
@@ -129,57 +140,52 @@ export const NEW_BUDGET_EMPTY: OrderModel = {
   useCustomerCarrier: false,
 };
 
-export const generateOrderFromOutlet = async (): Promise<OrderModel> => {
-  const newOrder = { ...NEW_ORDER_EMPTY };
+export const generateOrderFromOutlet = async (
+  data: OutletOrderData,
+): Promise<OrderModel> => {
+  const newOrder = { ...NEW_ORDER_EMPTY, items: [] as OrderItemModel[] };
 
-  const outletJson = JSON.parse(
-    sessionStorage.getItem("b2b@outletOrderData") ?? "",
+  newOrder.customerId = Number(data.customerId);
+  newOrder.representativeId = data.customer.representativeId;
+  newOrder.branchId = data.customer.branchId;
+  newOrder.currencyId = 0;
+  newOrder.statusId = 1;
+  newOrder.discountPercentual = 0;
+  newOrder.orderClassificationId = 6; // outlet
+
+  const repData = await new RepresentativesService().getById(
+    newOrder.representativeId,
   );
+  newOrder.representative = repData;
 
-  if (outletJson) {
-    sessionStorage.removeItem("b2b@outletOrderData");
-    localStorage.removeItem("outlet_cart_v1");
-    newOrder.customerId = Number(outletJson.customerId);
-    newOrder.representativeId = outletJson.customer.representativeId;
-    newOrder.branchId = outletJson.customer.branchId;
-    newOrder.currencyId = 0;
-    newOrder.statusId = 1;
-    newOrder.discountPercentual = 0;
-    newOrder.orderClassificationId = 6; // outlet
+  //const customerData = await CustomersService.getById(newOrder.customerId);
+  newOrder.customer = data.customer;
+  newOrder.carrierId = data.customer.carrierId;
+  newOrder.customerAbbreviation = data.customer.abbreviation;
+  newOrder.deliveryLocationId =
+    data.customer.deliveryLocations?.length > 0
+      ? data.customer.deliveryLocations[0].id
+      : "";
+  for (const [index, item] of (data.items ?? []).entries()) {
+    const orderItem: OrderItemModel = {
+      ...NEW_ORDER_ITEM_EMPTY,
+      product: item.product!,
+      taxes: [],
+      priceTable: item.priceTable!,
+    };
+    orderItem.availability = "C";
+    orderItem.orderQuantity = item.quantity;
+    orderItem.productId = item.id;
+    orderItem.priceTableId = item.priceTableId;
+    orderItem.sequence = (index + 1) * 10;
+    orderItem.inputPrice = item.price;
+    orderItem.suggestPrice = item.price;
+    const productData = await ProductsService.getById(item.id);
+    orderItem.product = productData;
 
-    const repData = await new RepresentativesService().getById(
-      newOrder.representativeId,
-    );
-    newOrder.representative = repData;
-
-    //const customerData = await CustomersService.getById(newOrder.customerId);
-    newOrder.customer = outletJson.customer;
-    newOrder.carrierId = outletJson.customer.carrierId;
-    newOrder.customerAbbreviation = outletJson.customer.abbreviation;
-    newOrder.deliveryLocationId =
-      outletJson.customer.deliveryLocations?.length > 0
-        ? outletJson.customer.deliveryLocations[0].id
-        : "";
-    for (const [index, item] of (outletJson.items ?? []).entries()) {
-      const orderItem: OrderItemModel = {
-        ...NEW_ORDER_ITEM_EMPTY,
-        product: item.product,
-        taxes: [],
-        priceTable: item.priceTable,
-      };
-      orderItem.availability = "C";
-      orderItem.orderQuantity = item.quantity;
-      orderItem.productId = item.id;
-      orderItem.priceTableId = item.priceTableId;
-      orderItem.sequence = (index + 1) * 10;
-      orderItem.inputPrice = item.price;
-      orderItem.suggestPrice = item.price;
-      const productData = await ProductsService.getById(item.id);
-      orderItem.product = productData;
-
-      newOrder.items.push(orderItem);
-    }
+    newOrder.items.push(orderItem);
   }
+
   return newOrder;
 };
 

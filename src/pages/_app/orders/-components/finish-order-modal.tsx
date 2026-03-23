@@ -29,7 +29,7 @@ import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 import { useNavigate } from "@tanstack/react-router";
 import { formatNumber, roundNumber } from "@/lib/number-utils";
 import { api, handleError } from "@/lib/api";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { type UserPermissionModel } from "@/models/admin/user-permission.model";
 import { getUserPermissions } from "../-utils/order-utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -83,6 +83,8 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   const [isCalculatingTaxes, setIsCalculatingTaxes] = useState(false);
   const [isFreightError, setIsFreightError] = useState(false);
   const [totalTaxes, setTotalTaxes] = useState(0);
+  const freightAbortControllerRef = useRef<AbortController | null>(null);
+  const taxesAbortControllerRef = useRef<AbortController | null>(null);
 
   async function handleSendOrder() {
     try {
@@ -91,11 +93,9 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
       const orderData = { ...order, history: [] };
       setIsSaving(true);
 
-      orderData.items.map((item) => (item.taxes = []));
-
-      orderData.items.map((orderItem) => {
+      orderData.items.forEach((orderItem) => {
         orderItem.taxes = [];
-        taxesData?.itens.map((taxItem) => {
+        taxesData?.itens.forEach((taxItem) => {
           if (taxItem.produto.codigo_produto == orderItem.productId) {
             //cofins
             orderItem.taxes.push({
@@ -169,7 +169,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               taxValue: taxItem.produto.valor_st,
             });
 
-            taxItem.produto.reforma.map((taxReforma) => {
+            taxItem.produto.reforma.forEach((taxReforma) => {
               // impostos da reforma
               orderItem.taxes.push({
                 id: uuid.v4(),
@@ -201,7 +201,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
         await showAppDialog({
           title: "ATENÇÃO",
           message:
-            "Você informou uma Data Mínima de Faturamento. Favor entrar em contato com a THULE pelo e-mail <b>pedidos.itupeva@thule.com<b/> e solicitar a alocação do estoque para este Pedido.",
+            "Você informou uma Data Mínima de Faturamento. Favor entrar em contato com a THULE pelo e-mail <b>pedidos.itupeva@thule.com</b> e solicitar a alocação do estoque para este Pedido.",
           type: "info",
         });
       }
@@ -233,8 +233,6 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
       if (order.isBudget) navigate({ to: "/budgets" });
       else navigate({ to: "/orders" });
     } catch (error) {
-      console.log(error);
-
       toast.error("ATENÇÃO:", handleError(error));
     } finally {
       setIsSaving(false);
@@ -317,7 +315,6 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
 
   const getPermissions = async () => {
     const data = await getUserPermissions(session?.user.id ?? "");
-    console.log("PERMISSIONS", data);
     setUserPermissions(data ?? []);
   };
 
@@ -341,12 +338,17 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
       return;
     }
 
-    order.discountPercentual = newPercentual;
-    setOrder({ ...order });
+    setOrder({ ...order, discountPercentual: newPercentual });
   };
 
   const getFreights = async () => {
     if (!isEditing) return;
+    if (order.useCustomerCarrier) return;
+
+    freightAbortControllerRef.current?.abort();
+    const abortController = new AbortController();
+    freightAbortControllerRef.current = abortController;
+
     setIsCalculatingFreight(true);
     setIsFreightError(false);
     try {
@@ -371,6 +373,7 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
       const { data } = await api.post<CalcFreightsResposeDto[]>(
         `/orders/calculate-freights`,
         { ttParam: ttParam, ttItems: ttItems },
+        { signal: abortController.signal },
       );
 
       if (data && data.length > 0) {
@@ -383,8 +386,6 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
           }
           return a.freightValue - b.freightValue;
         });
-        order.freightValue =
-          order.freightPaymentId == 1 ? 0 : sortedCarriers[0].freightValue;
         setFreightsData(sortedCarriers);
         setOrder({
           ...order,
@@ -393,8 +394,8 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
         });
       }
     } catch (error) {
+      if (abortController.signal.aborted) return;
       setIsFreightError(true);
-      console.log(error);
       toast.error(handleError(error));
     } finally {
       setIsCalculatingFreight(false);
@@ -402,22 +403,26 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
   };
 
   const getTaxes = async () => {
+    if (!isEditing) return;
+    if (order.items.length == 0) return;
+
+    taxesAbortControllerRef.current?.abort();
+    const abortController = new AbortController();
+    taxesAbortControllerRef.current = abortController;
+
     setIsCalculatingTaxes(true);
     try {
-      if (!isEditing) return;
-      if (order.items.length == 0) return;
       const payload = {
         BranchId: order.branchId,
         SalesType: "N",
         CustomerId: String(order.customerId),
         CustomerUnit: "",
-        CustomerIdDelivery: String(order.customerId), // Deve ser INT
+        CustomerIdDelivery: String(order.customerId),
         CustomerUnitDelivery: "",
         Currency: 0,
         Payment: String(order.paymentConditionId),
         Freight: order.freightValue,
         ListofProducts: order.items.map((item) => ({
-          // Use exatamente o nome das propriedades do seu DTO C#
           ItemId: `${item.sequence + 10}`,
           ProductId: item.productId,
           CodRefer: item.referenceCode,
@@ -431,17 +436,17 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
         })),
       };
 
-      const { data } = await api.post(`/order-items/calc-item-taxes`, payload);
+      const { data } = await api.post(`/order-items/calc-item-taxes`, payload, {
+        signal: abortController.signal,
+      });
       if (data) {
         setTaxesData(data);
         setTotalTaxes(data.total_impostos);
-        //console.log("IMPOSTOS", data);
       } else {
         setTotalTaxes(0);
       }
     } catch (error) {
-      console.log(error);
-      //      toast.error(handleError(error));
+      if (abortController.signal.aborted) return;
     } finally {
       setIsCalculatingTaxes(false);
     }
@@ -466,6 +471,10 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
       getPermissions();
       getFreights();
     }
+    return () => {
+      freightAbortControllerRef.current?.abort();
+      taxesAbortControllerRef.current?.abort();
+    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -482,19 +491,19 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
         );
       }
     }
-    if (order.customer) {
-      if (
-        order.customer.minValuePayedFreight > 0 &&
-        order.freightPaymentId == 1 &&
-        orderTotal < order.customer.minValuePayedFreight
-      ) {
-      }
-    }
   }, [selectedPaymentCondition, order.grossTotalValue]);
 
   useEffect(() => {
     getTaxes();
-  }, [order]);
+    return () => {
+      taxesAbortControllerRef.current?.abort();
+    };
+  }, [
+    order.items,
+    order.freightValue,
+    order.discountPercentual,
+    order.paymentConditionId,
+  ]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -506,7 +515,7 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
           </DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
-        <div className="grid grid-cols-2 gap-x-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
           <div className="flex flex-col space-y-4 mt-2">
             <div className="grid grid-cols-2 space-x-4">
               <div className="form-group">
@@ -514,7 +523,13 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
                   {order.isBudget ? "Tipo da Simulação" : "Tipo do Pedido"}
                 </Label>
                 <Select
-                  defaultValue={order.orderClassificationId.toString()}
+                  value={order.orderClassificationId.toString()}
+                  onValueChange={(value) => {
+                    setOrder({
+                      ...order,
+                      orderClassificationId: Number(value),
+                    });
+                  }}
                   disabled={
                     !isEditing ||
                     isItemPermissionDisabled("317") ||
@@ -538,7 +553,13 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
               </div>
               <div className="form-group">
                 <Label>Nº Pedido Distribuidor</Label>
-                <Input disabled={!isEditing} />
+                <Input
+                  disabled={!isEditing}
+                  value={order.orderRepId}
+                  onChange={(e) => {
+                    setOrder({ ...order, orderRepId: e.target.value });
+                  }}
+                />
               </div>
             </div>
             <div>
@@ -547,8 +568,7 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
                 <InputMask
                   value={order.whatAppPhoneNumber}
                   onChange={(value) => {
-                    order.whatAppPhoneNumber = value ?? "";
-                    setOrder(order);
+                    setOrder({ ...order, whatAppPhoneNumber: value ?? "" });
                   }}
                   disabled={!isEditing}
                   mask="(00) 00000-0000"
@@ -592,7 +612,10 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
               <Label>Estabelecimento</Label>
               <div className="flex items-center gap-x-2">
                 <Select
-                  defaultValue={order.branchId}
+                  value={order.branchId}
+                  onValueChange={(value) => {
+                    setOrder({ ...order, branchId: value });
+                  }}
                   disabled={!isEditing || isItemPermissionDisabled("309")}
                 >
                   <SelectTrigger className="w-full bg-white">
@@ -604,10 +627,25 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
                     <SelectItem value="11">11</SelectItem>
                   </SelectContent>
                 </Select>
-                <Label>
-                  <Checkbox disabled={!isEditing} />
-                  Importadora
-                </Label>
+                {order.customer?.branchId !== "1" && (
+                  <Label>
+                    <Checkbox
+                      disabled={!isEditing}
+                      checked={order.branchId == "1"}
+                      onCheckedChange={(checked) => {
+                        if (!!checked) {
+                          setOrder({ ...order, branchId: "1" });
+                        } else {
+                          setOrder({
+                            ...order,
+                            branchId: order.customer?.branchId ?? "1",
+                          });
+                        }
+                      }}
+                    />
+                    Importadora
+                  </Label>
+                )}
               </div>
             </div>
 
@@ -615,12 +653,20 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
               <div className="form-group">
                 <Label>Faturar em</Label>
                 <DatePicker
+                  defaultValue={order.minBillingDate ?? undefined}
+                  onValueChange={(date) => {
+                    setOrder({ ...order, minBillingDate: date ?? null });
+                  }}
                   disabled={!isEditing || isItemPermissionDisabled("312")}
                 />
               </div>
               <div className="form-group">
                 <Label>Faturar no Máximo até</Label>
                 <DatePicker
+                  defaultValue={order.maxBillingDate ?? undefined}
+                  onValueChange={(date) => {
+                    setOrder({ ...order, maxBillingDate: date ?? null });
+                  }}
                   disabled={!isEditing || isItemPermissionDisabled("312")}
                 />
               </div>
@@ -669,12 +715,13 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
                     disabled={!isEditing || isItemPermissionDisabled("315")}
                     checked={order.useCustomerCarrier}
                     onCheckedChange={(checked) => {
-                      console.log("aki");
                       const newOrder = {
                         ...order,
                         useCustomerCarrier: checked ? true : false,
                       };
                       if (checked == true) {
+                        freightAbortControllerRef.current?.abort();
+                        setIsCalculatingFreight(false);
                         newOrder.freightValue = 0;
                         newOrder.freightTypeId = 4;
                         newOrder.carrierId = newOrder.customer?.carrierId ?? 0;
@@ -692,7 +739,17 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
               </div>
               <div className="form-group">
                 <Label>
-                  <Checkbox disabled={!isEditing} />
+                  <Checkbox
+                    disabled={!isEditing}
+                    onCheckedChange={(value) => {
+                      if (!!value) {
+                        window.open(
+                          "https://form.jotformz.com/210402780488657",
+                          "_blank",
+                        );
+                      }
+                    }}
+                  />
                   Enviar Display com o Pedido
                 </Label>
               </div>
@@ -709,7 +766,7 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
                 />
               </div>
             )}
-            {isEditing && (
+            {isEditing && !order.useCustomerCarrier && (
               <>
                 {" "}
                 <h3 className="font-semibold text-xl">
@@ -719,7 +776,7 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
                   {isCalculatingFreight && (
                     <div className="flex items-center justify-center h-[100px] border">
                       <Loader2Icon className="animate-spin mr-1.5 text-blue-600" />
-                      <span>Caculando Frete. Aguarde...</span>
+                      <span>Calculando Frete. Aguarde...</span>
                     </div>
                   )}
                   {!isCalculatingFreight && (
@@ -727,9 +784,7 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
                       data={freightsData}
                       onRefreshCalc={() => getFreights()}
                       onValueChange={(carrierId, value) => {
-                        order.carrierId = carrierId;
-                        order.freightValue = value;
-                        setOrder({ ...order });
+                        setOrder({ ...order, carrierId, freightValue: value });
                       }}
                     />
                   )}
@@ -782,40 +837,38 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
                   )}
                 </div>
               </div>
-              {((order.orderClassificationId != 6 &&
+              {order.orderClassificationId != 6 &&
                 (selectedPaymentCondition?.additionalDiscountPercent ?? 0) >
-                  0) ??
-                0 > 0) && (
-                <div className="flex justify-between text-sm bg-orange-100 p-1 rounded">
-                  <Label className="text-orange-600">
-                    % Desconto Adicional:
-                  </Label>
-                  <div className="flex gap-x-1.5 items-center">
-                    <span>{formatNumber(order.additionalDiscount, 2)}%</span>
-                    {/* <Input
+                  0 && (
+                  <div className="flex justify-between text-sm bg-orange-100 p-1 rounded">
+                    <Label className="text-orange-600">
+                      % Desconto Adicional:
+                    </Label>
+                    <div className="flex gap-x-1.5 items-center">
+                      <span>{formatNumber(order.additionalDiscount, 2)}%</span>
+                      {/* <Input
                       value={}
                       readOnly
                       className="max-w-[120px] text-right text-orange-600 font-semibold !opacity-100"
                     /> */}
-                    <Checkbox
-                      defaultChecked={
-                        (selectedPaymentCondition?.additionalDiscountPercent ??
-                          0) > 0
-                      }
-                      onCheckedChange={(checked) => {
-                        if (!!checked) {
-                          order.additionalDiscount =
-                            selectedPaymentCondition?.additionalDiscountPercent ??
-                            0;
-                        } else {
-                          order.additionalDiscount = 0;
+                      <Checkbox
+                        defaultChecked={
+                          (selectedPaymentCondition?.additionalDiscountPercent ??
+                            0) > 0
                         }
-                        setOrder({ ...order });
-                      }}
-                    />
+                        onCheckedChange={(checked) => {
+                          setOrder({
+                            ...order,
+                            additionalDiscount: checked
+                              ? (selectedPaymentCondition?.additionalDiscountPercent ??
+                                0)
+                              : 0,
+                          });
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
               <div className="flex justify-between pr-2 text-sm">
                 <span>Frete:</span>
                 <span>R$ {formatNumber(order.freightValue, 2)}</span>
@@ -850,7 +903,7 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
               </div>
 
               {orderValidationMessage && (
-                <div className="flex items-center justify-center font-medium bg-red-200 text-whit p-2">
+                <div className="flex items-center justify-center font-medium bg-red-200 text-white p-2">
                   {orderValidationMessage}
                 </div>
               )}
@@ -863,7 +916,7 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
           </Button>
           {order.isBudget && isEditing && (
             <Button
-              disabled={isCalculatingFreight || isFreightError}
+              disabled={isCalculatingFreight || isFreightError || isSaving}
               variant="green"
               onClick={handleSendOrder}
               className="text-emerald-900"

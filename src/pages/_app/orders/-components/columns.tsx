@@ -198,7 +198,9 @@ export const columns = ({
               Cancelar Pedido
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={order.statusId < 2 || order.statusId > 3}
+            >
               <DollarSignIcon className="size-4 text-emerald-600" />
               Ver Dados da Nota
             </DropdownMenuItem>

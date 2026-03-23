@@ -13,7 +13,7 @@ export const OrderForm = () => {
   const navigate = useNavigate();
 
   const [showFinishOrderModal, setShowFinishOrderModal] = useState(false);
-  const { order, mode, isBudget } = useOrder();
+  const { order, mode, isBudget, clearAll } = useOrder();
 
   const isEditing = mode != "VIEW";
 
@@ -27,7 +27,7 @@ export const OrderForm = () => {
         <OrderFormItems />
         <div className="absolute bottom-0 right-0 left-0 bg-neutral-100 border-t px-2 py-2 flex items-center justify-between">
           <div className="flex gap-x-2">
-            <DiscountMatrizModal />
+            {/* <DiscountMatrizModal /> */}
             <SalesChannelModal />
 
             {!isEditing && <ExportOrder />}
@@ -36,7 +36,10 @@ export const OrderForm = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate({ to: "/orders" })}
+              onClick={() => {
+                clearAll();
+                navigate({ to: "/orders" });
+              }}
             >
               Cancelar
             </Button>

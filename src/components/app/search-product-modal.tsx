@@ -133,9 +133,11 @@ export const SearchProductModal = ({ onSelect }: Props) => {
       className: "w-[170px] border",
       renderItem: (item: ProductModel) => (
         <div className="text-[10px]">
-          {item.isActive > 1 && (
+          {item.isActive > 0 && (
             <span
               className={cn(
+                item.isActive == 1 &&
+                  "bg-emerald-500 text-white  p-1 rounded-md",
                 item.isActive == 2 && "bg-purple-300  p-1 rounded-md",
 
                 item.isActive == 3 && "bg-orange-300  p-1 rounded-md",

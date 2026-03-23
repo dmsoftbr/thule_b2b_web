@@ -1,3 +1,4 @@
+import type React from "react";
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 import {
   FormControl,
@@ -25,7 +26,8 @@ interface Props<
   queryStringName?: string;
   multipleSelect?: boolean;
   valueProp?: string;
-  labelProp?: string;
+  labelProp?: string | ((item: any) => string);
+  renderOption?: (item: SearchComboItem, selected: boolean) => React.ReactNode;
 }
 
 export function FormSearchCombo<
@@ -46,6 +48,7 @@ export function FormSearchCombo<
   queryStringName,
   valueProp,
   labelProp,
+  renderOption,
 }: Props<TFieldValues, TName>) {
   return (
     <FormField
@@ -57,16 +60,17 @@ export function FormSearchCombo<
           <FormControl>
             <SearchCombo
               apiEndpoint={apiEndpoint}
-              queryStringName={queryStringName}
+              {...(queryStringName ? { queryStringName } : {})}
               multipleSelect={multipleSelect}
               searchPlaceholder={searchPlaceholder}
               disabled={disabled}
               onChange={(value) => field.onChange(value)}
-              defaultValue={field.value}
+              defaultValue={field.value != null ? String(field.value) : undefined}
               staticItems={items}
               placeholder={placeholder}
               valueProp={valueProp}
               labelProp={labelProp}
+              renderOption={renderOption}
             />
           </FormControl>
           <FormMessage />

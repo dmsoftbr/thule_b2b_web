@@ -1,3 +1,6 @@
+import type { ProductModel } from "../product.model";
+import type { PriceTableModel } from "../registrations/price-table.model";
+
 export type OutletCartItem = {
   id: string;
   name: string;
@@ -5,4 +8,6 @@ export type OutletCartItem = {
   quantity: number;
   priceTableId: string;
   metadata?: Record<string, unknown>;
+  product?: ProductModel;
+  priceTable?: PriceTableModel;
 };

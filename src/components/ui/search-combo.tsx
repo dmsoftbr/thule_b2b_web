@@ -50,7 +50,7 @@ interface SearchComboProps {
   multipleSelect?: boolean;
   showSelectButtons?: boolean;
   valueProp?: string;
-  labelProp?: string;
+  labelProp?: string | ((item: any) => string);
   deSelectOnClick?: boolean;
   selectFirstOptionOnLoad?: boolean;
   /** Seleciona todos os itens automaticamente após carregar. Requer multipleSelect=true. */
@@ -59,6 +59,8 @@ interface SearchComboProps {
   listHeight?: number;
   /** Altura estimada de cada item em px. Padrão: 36 */
   itemHeight?: number;
+  /** Render customizado para cada option. Recebe o item e se está selecionado. */
+  renderOption?: (item: SearchComboItem, selected: boolean) => React.ReactNode;
 }
 
 export const SearchCombo: React.FC<SearchComboProps> = ({
@@ -83,6 +85,7 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
   selectAllOnLoad = false,
   listHeight = 300,
   itemHeight = 36,
+  renderOption,
 }) => {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<SearchComboItem[]>(staticItems);
@@ -456,30 +459,36 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
                               "bg-white hover:bg-blue-600 hover:!text-white group",
                           )}
                         >
-                          <div
-                            className={cn(
-                              "mr-2 flex h-4 w-4 items-center justify-center rounded",
-                              multipleSelect &&
-                                "border border-blue-400 !text-white",
-                              selected &&
-                                multipleSelect &&
-                                "bg-blue-400 !text-white",
-                            )}
-                          >
-                            <Check
-                              className={cn(
-                                "h-3 w-3 group-hover:!stroke-white",
-                                selected
-                                  ? "opacity-100 text-white"
-                                  : "opacity-0",
-                              )}
-                            />
-                          </div>
-                          <span className="truncate">
-                            {showValueInSelectedItem
-                              ? `${item.value} - ${item.label}`
-                              : item.label}
-                          </span>
+                          {renderOption ? (
+                            renderOption(item, selected)
+                          ) : (
+                            <>
+                              <div
+                                className={cn(
+                                  "mr-2 flex h-4 w-4 items-center justify-center rounded",
+                                  multipleSelect &&
+                                    "border border-blue-400 !text-white",
+                                  selected &&
+                                    multipleSelect &&
+                                    "bg-blue-400 !text-white",
+                                )}
+                              >
+                                <Check
+                                  className={cn(
+                                    "h-3 w-3 group-hover:!stroke-white",
+                                    selected
+                                      ? "opacity-100 text-white"
+                                      : "opacity-0",
+                                  )}
+                                />
+                              </div>
+                              <span className="truncate">
+                                {showValueInSelectedItem
+                                  ? `${item.value} - ${item.label}`
+                                  : item.label}
+                              </span>
+                            </>
+                          )}
                         </CommandItem>
                       );
                     })}

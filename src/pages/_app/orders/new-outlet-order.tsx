@@ -1,25 +1,30 @@
 import { AppPageHeader } from "@/components/layout/app-page-header";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouterState } from "@tanstack/react-router";
 import { OrderProvider } from "./-context/order-context";
 import { OrderForm } from "./-components/order-form";
-import { generateOrderFromOutlet } from "./-utils/order-utils";
+import type { OrderModel } from "@/models/orders/order-model";
 
 export const Route = createFileRoute("/_app/orders/new-outlet-order")({
   component: RouteComponent,
-  loader: async () => {
-    const data = await generateOrderFromOutlet();
-    console.log("", data);
-    return { orderData: data };
-  },
 });
 
 function RouteComponent() {
-  const { orderData } = Route.useLoaderData();
+  const stateData = useRouterState({
+    select: (state) => {
+      return state.location.state.routerData as OrderModel;
+    },
+  });
+
+  if (!stateData) {
+    return <div>Ocorreu um erro ao tentar gerar o pedido de outlet</div>;
+  }
+
   return (
     <AppPageHeader titleSlot={`Novo Pedido de Venda - OUTLET`}>
-      <OrderProvider formMode="NEW" initialOrder={orderData}>
+      <OrderProvider formMode="NEW" initialOrder={stateData}>
         <OrderForm />
       </OrderProvider>
+      <div></div>
     </AppPageHeader>
   );
 }

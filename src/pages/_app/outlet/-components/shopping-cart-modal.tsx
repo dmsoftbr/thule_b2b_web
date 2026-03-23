@@ -28,6 +28,17 @@ import { formatNumber } from "@/lib/number-utils";
 import { CustomersCombo } from "@/components/app/customers-combo";
 import { toast } from "sonner";
 import { type CustomerModel } from "@/models/registrations/customer.model";
+import { generateOrderFromOutlet } from "../../orders/-utils/order-utils";
+import type { OutletCartItem } from "@/models/outlet/outlet-cart-item.model";
+
+type OutletOrderData = {
+  customerId: number;
+  customer: CustomerModel;
+  paymentConditionId: number;
+  deliveryLocationId: string;
+  branchId: string;
+  items: OutletCartItem[];
+};
 
 export const OutletShoppingCartModal = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<
@@ -49,7 +60,7 @@ export const OutletShoppingCartModal = () => {
     setIsOpen(false);
   };
 
-  const handleGenerateOrder = () => {
+  const handleGenerateOrder = async () => {
     if (!selectedCustomer) {
       toast.info("Selecione o Cliente Primeiro");
       return;
@@ -59,7 +70,7 @@ export const OutletShoppingCartModal = () => {
       toast.info("Sem produtos no carrinho para gerar o pedido!");
       return;
     }
-    const data = {
+    const data: OutletOrderData = {
       customerId: selectedCustomer.id,
       customer: selectedCustomer,
       paymentConditionId: selectedCustomer.paymentConditionId,
@@ -67,8 +78,16 @@ export const OutletShoppingCartModal = () => {
       branchId: selectedCustomer.branchId,
       items,
     };
-    sessionStorage.setItem("b2b@outletOrderData", JSON.stringify(data));
-    navigate({ to: "/orders/new-outlet-order" });
+
+    const newOrder = await generateOrderFromOutlet(data);
+    clearCart();
+    navigate({
+      to: "/orders/new-outlet-order",
+      state: (prev) => ({
+        ...prev,
+        routerData: newOrder,
+      }),
+    });
   };
 
   return (
@@ -107,6 +126,7 @@ export const OutletShoppingCartModal = () => {
               <Label>Cliente:</Label>
               <CustomersCombo
                 onSelect={(customer) => setSelectedCustomer(customer)}
+                closeOnSelect
               />
             </div>
             <div>

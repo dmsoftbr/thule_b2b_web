@@ -9,14 +9,18 @@ import {
 import { Logo } from "@/components/ui/logo";
 import { AppMenuItem } from "./app-menu-item";
 import { MENU_DATA } from "@/menu/menu-data";
-import logoThule from "@/assets/images/thule_group-inv.png";
+import logoThule from "@/assets/images/thule_logo.png";
 
 const items = MENU_DATA;
 export const AppSideBar = () => {
   return (
     <Sidebar className="bg-zinc-800">
-      <SidebarHeader className="flex items-center justify-center border-b border-b-zinc-600 min-h-[64px] bg-zinc-800">
-        <img width={180} height={100} src={logoThule} alt="Thule Group" />
+      <SidebarHeader className="flex items-center justify-center border-b border-b-zinc-600 min-h-[64px] bg-zinc-800 relative">
+        <img
+          className="w-auto max-h-[48px]"
+          src={logoThule}
+          alt="Thule Group"
+        />
       </SidebarHeader>
       <SidebarContent className="bg-zinc-800 text-white">
         <SidebarGroup>

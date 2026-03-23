@@ -168,7 +168,7 @@ export const OrderFormItems = () => {
   );
 
   const sortedItems = order.items.sort((a, b) => a.sequence - b.sequence);
-
+  console.log("ITEMS PRE EXISTENTES", order);
   return (
     <div className="w-full p-2 container flex flex-col items-center">
       <div className="flex gap-x-4 mb-2 container w-full">
@@ -199,44 +199,44 @@ export const OrderFormItems = () => {
                   />
                 </div>
                 <OrderSearchProductModal initialPriceTable={priceTable} />
+                <div className="flex items-center gap-x-1">
+                  <AppTooltip
+                    message="Ver em Cards"
+                    className="bg-emerald-700"
+                    indicatorClassName="!bg-emerald-700 fill-emerald-700"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setShowCard(true)}
+                      className={cn(
+                        "flex items-center justify-center p-1 bg-neutral-50 rounded-md size-9 border-neutral-200 border cursor-pointer hover:bg-emerald-600 hover:text-white transition-colors",
+                        showCard && "bg-emerald-500 border-0 text-white",
+                      )}
+                    >
+                      <StretchHorizontalIcon className="size-4" />
+                    </button>
+                  </AppTooltip>
+                  <AppTooltip
+                    message="Ver em Tabela"
+                    className="bg-emerald-700"
+                    indicatorClassName="!bg-emerald-700 fill-emerald-700"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setShowCard(false)}
+                      className={cn(
+                        "flex items-center justify-center p-1 bg-neutral-50 rounded-md size-9 border-neutral-200 border cursor-pointer hover:bg-emerald-600 hover:text-white transition-colors",
+                        !showCard && "bg-emerald-500 border-0 text-white",
+                      )}
+                    >
+                      <Table2Icon className="size-4" />
+                    </button>
+                  </AppTooltip>
+                </div>
               </>
             ) : (
               <div></div>
             )}
-            <div className="flex items-center gap-x-1">
-              <AppTooltip
-                message="Ver em Cards"
-                className="bg-emerald-700"
-                indicatorClassName="!bg-emerald-700 fill-emerald-700"
-              >
-                <button
-                  type="button"
-                  onClick={() => setShowCard(true)}
-                  className={cn(
-                    "flex items-center justify-center p-1 bg-neutral-50 rounded-md size-9 border-neutral-200 border cursor-pointer hover:bg-emerald-600 hover:text-white transition-colors",
-                    showCard && "bg-emerald-500 border-0 text-white",
-                  )}
-                >
-                  <StretchHorizontalIcon className="size-4" />
-                </button>
-              </AppTooltip>
-              <AppTooltip
-                message="Ver em Tabela"
-                className="bg-emerald-700"
-                indicatorClassName="!bg-emerald-700 fill-emerald-700"
-              >
-                <button
-                  type="button"
-                  onClick={() => setShowCard(false)}
-                  className={cn(
-                    "flex items-center justify-center p-1 bg-neutral-50 rounded-md size-9 border-neutral-200 border cursor-pointer hover:bg-emerald-600 hover:text-white transition-colors",
-                    !showCard && "bg-emerald-500 border-0 text-white",
-                  )}
-                >
-                  <Table2Icon className="size-4" />
-                </button>
-              </AppTooltip>
-            </div>
           </div>
         </div>
       </div>

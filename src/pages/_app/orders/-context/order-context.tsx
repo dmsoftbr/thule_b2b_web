@@ -29,6 +29,7 @@ interface OrderContextType {
   setMode: (mode: "NEW" | "EDIT" | "VIEW") => void;
   isBudget: boolean;
   setIsBudget: (type: boolean) => void;
+  clearAll: () => void;
 }
 
 // Create the context with a default undefined value
@@ -78,6 +79,10 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
       ...prevOrder,
       discountPercentual,
     }));
+  };
+
+  const clearAll = () => {
+    setOrder({ ...NEW_ORDER_EMPTY });
   };
 
   const clearItems = () => {
@@ -152,6 +157,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
         setCustomer,
         setDiscountPercentual,
         clearItems,
+        clearAll,
         setRepresentative,
         setDeliveryLocation,
         addItem,

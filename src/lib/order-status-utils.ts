@@ -23,7 +23,7 @@ export function getOrderStatusName(order: OrderModel) {
   if (order.statusId == 5) return "Suspenso";
   if (order.statusId == 6) return "Cancelado";
   if (order.statusId == 7) return "Faturado Balcão";
-  return "N/D";
+  return "Aberto";
 }
 
 export const getOrderStatusColor = (order: OrderModel) => {

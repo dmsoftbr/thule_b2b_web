@@ -3,6 +3,7 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
+import fs from "fs";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -20,8 +21,8 @@ export default defineConfig({
   ],
   server: {
     https: {
-      key: "./.cert/localhost-key.pem",
-      cert: "./.cert/localhost.pem",
+      key: fs.readFileSync("./ssl/localhost-key.pem"),
+      cert: fs.readFileSync("./ssl/localhost.pem"),
     },
     host: "localhost", // ou '0.0.0.0' se quiser acesso externo
     port: 3000,

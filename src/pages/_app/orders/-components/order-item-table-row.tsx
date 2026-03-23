@@ -65,7 +65,9 @@ export const OrderItemTableRow = ({ item }: Props) => {
       </TableCell>
       <TableCell className="flex-1 border-r flex flex-col">
         <span className="font-semibold text-blue-600">{item.productId}</span>
-        <span>{item.product?.description}</span>
+        <span className="break-normal whitespace-normal">
+          {item.product?.description}
+        </span>
       </TableCell>
       <TableCell className="border-r text-right w-[160px]">
         <FormInputQty
@@ -106,17 +108,16 @@ export const OrderItemTableRow = ({ item }: Props) => {
 
       <TableCell className="w-[120px] border-r text-right">
         {formatNumber(
-          ((item.suggestPrice - item.priceTablePrice) /
-            (item.suggestPrice == 0 ? 1 : item.suggestPrice)) *
-            100,
+          item.suggestPrice /
+            (item.priceTablePrice == 0 ? 1 : item.priceTablePrice),
           2,
         )}
-        %
       </TableCell>
       <TableCell className="w-[120px] border-r text-right">
         {formatNumber(
-          ((item.suggestPrice - item.priceTablePrice) /
-            (item.priceTablePrice == 0 ? 1 : item.priceTablePrice)) *
+          (1 -
+            item.priceTablePrice /
+              (item.suggestPrice == 0 ? 1 : item.suggestPrice)) *
             100,
           2,
         )}
