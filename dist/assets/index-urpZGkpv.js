@@ -1,1 +1,0 @@
-import{j as o}from"./index-BpvN2-7G.js";import{A as t}from"./app-page-header-ij17Fs_P.js";const p=function(){return o.jsx(t,{titleSlot:"Dashboard de Vendas por Grupos de Produtos",children:o.jsx("div",{})})};export{p as component};

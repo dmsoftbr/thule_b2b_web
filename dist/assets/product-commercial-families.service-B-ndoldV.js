@@ -1,0 +1,1 @@
+import{g as t}from"./index-e4x52nhy.js";class r{static basePath="registrations/product-commercial-families";static async getAll(){return(await t.get(`/${this.basePath}/all`)).data}static async getById(s){return(await t.get(`/${this.basePath}/id/${s}`)).data}static async listPaged(s){return(await t.post(`/${this.basePath}/list-paged`,s)).data}}export{r as P};

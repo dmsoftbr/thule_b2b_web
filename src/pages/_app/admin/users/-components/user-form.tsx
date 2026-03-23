@@ -16,7 +16,6 @@ import { USER_ROLES } from "@/constants";
 import { FormCheckBox } from "@/components/form/form-checkbox";
 import { cn } from "@/lib/utils";
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
-import { CheckIcon } from "lucide-react";
 
 interface Props {
   initialData: UserModel | null;

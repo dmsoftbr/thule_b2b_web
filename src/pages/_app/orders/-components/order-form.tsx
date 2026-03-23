@@ -3,7 +3,6 @@ import { OrderFormItems } from "./order-form-items";
 import { OrderFormHeader } from "./order-form-header";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { DiscountMatrizModal } from "./discount-matriz-modal";
 import { SalesChannelModal } from "./sales-channel-modal";
 import { FinishOrderModal } from "./finish-order-modal";
 import { ExportOrder } from "./export-order";
