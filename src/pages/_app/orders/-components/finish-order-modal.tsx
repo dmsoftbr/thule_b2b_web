@@ -319,7 +319,7 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
   };
 
   const isItemPermissionDisabled = (permissionId: string) => {
-    if (session?.user.role == 0) return false;
+    if (session?.user.role == 0 || session?.user.role == 1) return false;
 
     const item = userPermissions.find((f) => f.permissionId == permissionId);
 

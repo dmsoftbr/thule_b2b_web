@@ -11,6 +11,7 @@ import { UsersService } from "@/services/admin/users.service";
 import { useState } from "react";
 import { PermissionsModal } from "./-components/permissions-modal";
 import { ChangePasswordModal } from "./-components/change-password-modal";
+import { RequirePermission } from "@/components/auth/require-permission";
 
 const searchFieldsList: ServerTableSearchField[] = [
   {
@@ -28,8 +29,16 @@ const searchFieldsList: ServerTableSearchField[] = [
 ];
 
 export const Route = createFileRoute("/_app/admin/users/")({
-  component: UsersPageComponent,
+  component: GuardedUsersPage,
 });
+
+function GuardedUsersPage() {
+  return (
+    <RequirePermission permissionId="12">
+      <UsersPageComponent />
+    </RequirePermission>
+  );
+}
 
 function UsersPageComponent() {
   const [tableToken, setTableToken] = useState(new Date().valueOf());

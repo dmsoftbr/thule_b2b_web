@@ -42,7 +42,9 @@ function SkuMessagesComponent() {
 
     if (!continueDelete) return;
 
-    await api.delete(`/registrations/sku-messages/${data.productId}`);
+    await api.delete(
+      `/registrations/sku-messages/${encodeURIComponent(data.productId)}`,
+    );
     setTableToken(new Date().valueOf());
   };
 

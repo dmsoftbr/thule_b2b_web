@@ -53,7 +53,7 @@ export const ProductExceptionModal = ({
     setIsLoading(true);
     try {
       const { data } = await api.get(
-        `/registrations/prices/price-table/${priceTableId}`,
+        `/registrations/prices/price-table/${encodeURIComponent(priceTableId)}`,
       );
       const options = convertArrayToSearchComboItem(
         data,

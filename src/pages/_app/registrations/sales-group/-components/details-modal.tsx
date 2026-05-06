@@ -21,6 +21,39 @@ import { toast } from "sonner";
 
 const EMPTY_DATA: TreeNode[] = [];
 
+const IS_ACTIVE_BADGE: Record<
+  number,
+  { text: string; className: string }
+> = {
+  1: {
+    text: "Ativo",
+    className: "bg-green-100 text-green-700 border-green-200",
+  },
+  2: {
+    text: "Obsoleto Ordens Automáticas",
+    className: "bg-yellow-100 text-yellow-700 border-yellow-200",
+  },
+  3: {
+    text: "Obsoleto Todas as Ordens",
+    className: "bg-orange-100 text-orange-700 border-orange-200",
+  },
+  4: {
+    text: "Totalmente Obsoleto",
+    className: "bg-red-100 text-red-700 border-red-200",
+  },
+};
+
+const decorateLeafBadges = (nodes: TreeNode[]): TreeNode[] =>
+  nodes.map((node) => {
+    const hasChildren = !!node.children && node.children.length > 0;
+    if (hasChildren) {
+      return { ...node, children: decorateLeafBadges(node.children!) };
+    }
+    const isActive = (node.data as { isActive?: number } | undefined)?.isActive;
+    const badge = isActive ? IS_ACTIVE_BADGE[isActive] : undefined;
+    return badge ? { ...node, badge } : node;
+  });
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -42,7 +75,10 @@ export const saveCommercialRules = async (
       selectedPathIds,
     };
 
-    await api.post(`/registrations/sales-groups/grid/${salesGroupId}`, payload);
+    await api.post(
+      `/registrations/sales-groups/grid/${encodeURIComponent(salesGroupId)}`,
+      payload,
+    );
   } catch (error) {
     console.log(error);
     toast.error(handleError(error));
@@ -69,9 +105,9 @@ export const DetailsModal = ({ groupData, isOpen, onClose }: Props) => {
 
   const getTreeData = async () => {
     const { data } = await api.get<TreeNode[]>(
-      `/registrations/sales-groups/grid/${groupData.id}`,
+      `/registrations/sales-groups/grid/${encodeURIComponent(groupData.id)}`,
     );
-    setTreeData(data);
+    setTreeData(decorateLeafBadges(data));
   };
 
   const handleSelectionChange = useCallback((ids: string[]) => {

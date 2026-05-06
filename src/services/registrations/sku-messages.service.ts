@@ -13,7 +13,7 @@ export class SkuMessagesService {
 
   static async getById(id: string): Promise<SkuMessageModel> {
     const response = await api.get<SkuMessageModel>(
-      `/${this.basePath}/id/${id}`,
+      `/${this.basePath}/id/${encodeURIComponent(id)}`,
     );
     return response.data;
   }
@@ -40,17 +40,17 @@ export class SkuMessagesService {
     data: Partial<SkuMessageModel>,
   ): Promise<SkuMessageModel> {
     const response = await api.patch<SkuMessageModel>(
-      `/${this.basePath}/${id}`,
+      `/${this.basePath}/${encodeURIComponent(id)}`,
       data,
     );
     return response.data;
   }
 
   static async delete(id: string): Promise<void> {
-    await api.delete(`/${this.basePath}/${id}`);
+    await api.delete(`/${this.basePath}/${encodeURIComponent(id)}`);
   }
 
   static async send(id: string): Promise<void> {
-    await api.post(`/${this.basePath}/send/${id}`);
+    await api.post(`/${this.basePath}/send/${encodeURIComponent(id)}`);
   }
 }

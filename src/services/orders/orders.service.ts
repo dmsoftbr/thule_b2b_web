@@ -12,7 +12,9 @@ export class OrdersService {
   }
 
   static async getById(id: string): Promise<OrderModel> {
-    const response = await api.get<OrderModel>(`/${this.basePath}/id/${id}`);
+    const response = await api.get<OrderModel>(
+      `/${this.basePath}/id/${encodeURIComponent(id)}`,
+    );
     return response.data;
   }
 
@@ -36,18 +38,20 @@ export class OrdersService {
     data: Partial<OrderModel>,
   ): Promise<OrderModel> {
     const response = await api.patch<OrderModel>(
-      `/${this.basePath}/${id}`,
+      `/${this.basePath}/${encodeURIComponent(id)}`,
       data,
     );
     return response.data;
   }
 
   static async delete(id: string): Promise<void> {
-    await api.delete(`/${this.basePath}/${id}`);
+    await api.delete(`/${this.basePath}/${encodeURIComponent(id)}`);
   }
 
   static async duplicate(id: string) {
-    const response = await api.get(`/${this.basePath}/duplicate/${id}`);
+    const response = await api.get(
+      `/${this.basePath}/duplicate/${encodeURIComponent(id)}`,
+    );
     return response.data;
   }
 }

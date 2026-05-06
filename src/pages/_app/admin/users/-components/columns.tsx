@@ -7,6 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { USER_ROLES } from "@/constants";
 import { cn } from "@/lib/utils";
 import type { UserModel } from "@/models/user.model";
 import {
@@ -16,6 +17,21 @@ import {
   Settings2Icon,
   TrashIcon,
 } from "lucide-react";
+
+const roleLabel = (role: string) =>
+  USER_ROLES.find((r) => r.id === String(role))?.name ?? "";
+
+const relatedLabel = (user: UserModel) => {
+  const ref =
+    String(user.role) === "2"
+      ? user.representative
+      : String(user.role) === "3"
+        ? user.customer
+        : null;
+  if (!ref || !ref.id) return "";
+  const display = ref.abbreviation || ref.name;
+  return `${ref.id} - ${display}`;
+};
 
 interface Props {
   fnEdit: (data: UserModel) => void;
@@ -56,6 +72,20 @@ export const columns = ({
     dataIndex: "groupId",
     key: "groupId",
     sortable: true,
+  },
+  {
+    title: "Perfil",
+    dataIndex: "role",
+    key: "role",
+    sortable: true,
+    renderItem: (row: UserModel) => roleLabel(row.role),
+  },
+  {
+    title: "Cliente / Representante",
+    dataIndex: "representativeId",
+    key: "related",
+    sortable: false,
+    renderItem: (row: UserModel) => relatedLabel(row),
   },
   {
     title: "Ativo",
@@ -106,7 +136,7 @@ export const columns = ({
           </DropdownMenuTrigger>
           <DropdownMenuContent side="bottom" align="end">
             <DropdownMenuItem
-              disabled={row.role == "0"}
+              disabled={row.role == "0" || row.role == "1"}
               onClick={() => {
                 fnPermissions(row);
               }}

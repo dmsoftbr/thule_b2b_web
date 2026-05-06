@@ -19,6 +19,7 @@ import { ProductImage } from "@/components/app/product-image";
 
 import { PRODUCT_ACTIVE_STATES } from "@/constants";
 import { cn } from "@/lib/utils";
+import { formatNumber } from "@/lib/number-utils";
 
 interface Props {
   onSelect: (product: ProductModel | null) => void;
@@ -80,28 +81,17 @@ export const SearchProductModal = ({ onSelect }: Props) => {
       sortable: true,
     },
     {
-      key: "familyName",
-      dataIndex: "family.name",
-      title: "Família",
-      className: "w-[128px] border",
-      renderItem: (product: ProductModel) => (
-        <span className="text-sm">{product.familyId}</span>
+      key: "suggestUnitPrice",
+      dataIndex: "suggestUnitPrice",
+      title: "Preço Sugerido",
+      className: "w-[140px] border",
+      renderItem: (item: ProductModel) => (
+        <div className="font-semibold text-blue-600 w-full text-right">
+          {formatNumber(item.suggestUnitPrice ?? 0, 2)}
+        </div>
       ),
       sortable: true,
     },
-    // {
-    //   key: "PreçoSug",
-    //   dataIndex: "suggestUnitPrice",
-    //   title: "Preço Sugerido",
-    //   className: "w-[128px] border",
-
-    //   renderItem: (item: ProductModel) => (
-    //     <div className="font-semibold text-blue-600 w-full text-right">
-    //       {formatNumber(item.suggestUnitPrice, 2)}
-    //     </div>
-    //   ),
-    //   sortable: true,
-    // },
     // {
     //   key: "stock",
     //   dataIndex: "stock",
@@ -189,6 +179,8 @@ export const SearchProductModal = ({ onSelect }: Props) => {
             dataUrl="/registrations/products/list-paged"
             searchFields={[]}
             defaultSearchField="all"
+            defaultSortFieldDataIndex="suggestUnitPrice"
+            defaultSortDesc
             onSelectRow={(row) => {
               setSelectedItem(row);
               handleSelect(row);

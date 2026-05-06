@@ -49,7 +49,9 @@ export const LimitsModal = ({ isOpen, onClose, approvalLevel }: Props) => {
   };
 
   const handleDelete = async (data: ApprovalLevelLimitModel) => {
-    await api.delete(`/registrations/approval-level-limits/${data.id}`);
+    await api.delete(
+      `/registrations/approval-level-limits/${encodeURIComponent(data.id)}`,
+    );
     setTableToken(new Date().valueOf());
   };
 

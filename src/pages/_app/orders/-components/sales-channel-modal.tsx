@@ -34,7 +34,7 @@ export const SalesChannelModal = () => {
         return [];
       }
       const { data } = await api.get<TreeNode[]>(
-        `/registrations/sales-groups/grid/${order.customer.salesGroup[0].groupId}`,
+        `/registrations/sales-groups/grid/${encodeURIComponent(order.customer.salesGroup[0].groupId)}`,
       );
       return data;
     },

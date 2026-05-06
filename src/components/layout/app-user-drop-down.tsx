@@ -15,6 +15,7 @@ import { useState } from "react";
 import { getInitials } from "@/lib/string-utils";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
+import { getUserRoleName } from "@/lib/user-role-utils";
 
 export const AppUserDropDown = () => {
   const { session } = useAuth();
@@ -48,10 +49,30 @@ export const AppUserDropDown = () => {
             <ChevronDownIcon />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="min-w-56">
           <DropdownMenuLabel className="text-xs font-semibold">
             Minha Conta
           </DropdownMenuLabel>
+          <div className="flex items-center gap-2 px-2 py-1.5">
+            <Avatar>
+              <AvatarImage src="https://github.com/shadcn1.png" />
+              <AvatarFallback className="bg-black text-white">
+                {getInitials(session?.user.name ?? "")}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">
+                {session?.user.name}
+              </span>
+              <span className="text-muted-foreground text-xs">
+                {session?.user.email}
+              </span>
+              <span className="text-muted-foreground text-xs">
+                {getUserRoleName(String(session?.user.role ?? ""))}
+              </span>
+            </div>
+          </div>
+          <DropdownMenuSeparator />
           <DropdownMenuItem>
             <UserIcon />
             Perfil

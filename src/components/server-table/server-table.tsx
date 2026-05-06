@@ -393,27 +393,26 @@ export const ServerTable = <T,>({
     }
   };
 
-  const handleFilter = () => {
-    setCurrentPage(0);
-    setTimeout(() => {}, 250);
-    handleGetData();
-  };
-
   useEffect(() => {
-    handleFilter();
+    if (currentPage !== 0) setCurrentPage(0);
   }, [searchText]);
 
   useEffect(() => {
     handleGetData();
-  }, [items, currentPage, pageSize, sortAsc, sortField, searchField]);
+  }, [
+    items,
+    currentPage,
+    pageSize,
+    sortAsc,
+    sortField,
+    searchField,
+    searchText,
+    refreshDataToken,
+  ]);
 
   useEffect(() => {
     setIsLoading(isPending);
   }, [isPending]);
-
-  useEffect(() => {
-    handleGetData();
-  }, [refreshDataToken]);
 
   // Renderizar conteúdo da tabela (agrupado ou normal)
   const renderTableContent = () => {

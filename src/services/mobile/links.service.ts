@@ -13,7 +13,7 @@ export class MobileLinksService {
 
   static async getById(id: string): Promise<MobileLinkModel> {
     const response = await api.get<MobileLinkModel>(
-      `/${this.basePath}/id/${id}`
+      `/${this.basePath}/id/${encodeURIComponent(id)}`
     );
     return response.data;
   }
@@ -40,13 +40,13 @@ export class MobileLinksService {
     data: Partial<MobileLinkModel>
   ): Promise<MobileLinkModel> {
     const response = await api.patch<MobileLinkModel>(
-      `/${this.basePath}/${id}`,
+      `/${this.basePath}/${encodeURIComponent(id)}`,
       data
     );
     return response.data;
   }
 
   static async delete(id: string): Promise<void> {
-    await api.delete(`/${this.basePath}/${id}`);
+    await api.delete(`/${this.basePath}/${encodeURIComponent(id)}`);
   }
 }

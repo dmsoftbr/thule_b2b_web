@@ -15,7 +15,7 @@ export class ProductFamiliesService {
 
   static async getById(id: string): Promise<ProductFamilyModel> {
     const response = await api.get<ProductFamilyModel>(
-      `/${this.basePath}/id/${id}`,
+      `/${this.basePath}/id/${encodeURIComponent(id)}`,
     );
     return response.data;
   }

@@ -120,6 +120,7 @@ export const OrderFormHeader = () => {
               labelProp="abbreviation"
               valueProp="id"
               disabled={!isEditing}
+              showValueInSelectedItem
             />
           </div>
         </div>

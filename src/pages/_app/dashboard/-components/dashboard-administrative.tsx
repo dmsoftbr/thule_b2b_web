@@ -49,7 +49,7 @@ export const DashboardAdministrative = () => {
     queryKey: ["representatives"],
     queryFn: async () => {
       const { data } = await api.get<RepresentativeModel[]>(
-        "/registrations/representatives/all"
+        "/registrations/representatives/all",
       );
       const allReps = data.map((rep) => rep.id);
       setFilter({ ...filter, representatives: allReps });
@@ -61,13 +61,13 @@ export const DashboardAdministrative = () => {
     if (!representativesData) return [];
 
     const reps = representativesData.filter((f) =>
-      filter.representatives.includes(f.id)
+      filter.representatives.includes(f.id),
     );
 
     const options = convertArrayToSearchComboItem(
       reps ?? [],
       "id",
-      "abbreviation"
+      "abbreviation",
     );
     return options;
   };
@@ -181,7 +181,7 @@ export const DashboardAdministrative = () => {
                 staticItems={convertArrayToSearchComboItem(
                   representativesData ?? [],
                   "id",
-                  "abbreviation"
+                  "abbreviation",
                 )}
                 showSelectButtons
               />
@@ -215,7 +215,7 @@ export const DashboardAdministrative = () => {
                           "flex items-center text-xs font-semibold hover:cursor-pointer w-fit",
                           percGrossRevenue > 0
                             ? "text-emerald-600"
-                            : "text-red-500"
+                            : "text-red-500",
                         )}
                       >
                         {percGrossRevenue >= 0 && (
@@ -250,7 +250,7 @@ export const DashboardAdministrative = () => {
                           "flex items-center text-xs font-semibold hover:cursor-pointer w-fit",
                           percOrderQuantity > 0
                             ? "text-emerald-600"
-                            : "text-red-500"
+                            : "text-red-500",
                         )}
                       >
                         {percOrderQuantity >= 0 && (
@@ -285,7 +285,7 @@ export const DashboardAdministrative = () => {
                           "flex items-center text-xs font-semibold hover:cursor-pointer w-fit",
                           percAverageTicket > 0
                             ? "text-emerald-600"
-                            : "text-red-500"
+                            : "text-red-500",
                         )}
                       >
                         {percAverageTicket >= 0 && (
@@ -323,7 +323,7 @@ export const DashboardAdministrative = () => {
                           "flex items-center text-xs font-semibold hover:cursor-pointer w-fit",
                           percAnnualRevenue > 0
                             ? "text-emerald-600"
-                            : "text-red-500"
+                            : "text-red-500",
                         )}
                       >
                         {percAnnualRevenue >= 0 && (
@@ -361,7 +361,10 @@ export const DashboardAdministrative = () => {
                     <Loader2Icon className="size-6 animate-spin" />
                   </div>
                 ) : (
-                  <TopRepresentatives data={representatives} />
+                  <TopRepresentatives
+                    data={representatives}
+                    representatives={representativesData ?? []}
+                  />
                 )}
               </div>
             </div>
@@ -374,6 +377,7 @@ export const DashboardAdministrative = () => {
           </div>
         </DashboardProvider>
       </div>
+      {/* <PivotTableExample /> */}
     </AppPageHeader>
   );
 };

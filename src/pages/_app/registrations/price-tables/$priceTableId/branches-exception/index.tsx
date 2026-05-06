@@ -31,7 +31,7 @@ function PriceTableBranchesExceptionComponent() {
 
   const handleDelete = async (data: PriceTableBranchExceptionModel) => {
     await api.delete(
-      `/registrations/price-table-branches-exception/${priceTableId}/${data.branchId}`,
+      `/registrations/price-table-branches-exception/${encodeURIComponent(priceTableId)}/${encodeURIComponent(data.branchId)}`,
     );
     setTableToken(new Date().valueOf());
   };

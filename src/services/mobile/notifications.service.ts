@@ -15,7 +15,7 @@ export class MobileNotificationsService {
 
   static async getById(id: string): Promise<MobileNotificationModel> {
     const response = await api.get<MobileNotificationModel>(
-      `/${this.basePath}/id/${id}`
+      `/${this.basePath}/id/${encodeURIComponent(id)}`
     );
     return response.data;
   }
@@ -44,17 +44,17 @@ export class MobileNotificationsService {
     data: Partial<MobileNotificationModel>
   ): Promise<MobileNotificationModel> {
     const response = await api.patch<MobileNotificationModel>(
-      `/${this.basePath}/${id}`,
+      `/${this.basePath}/${encodeURIComponent(id)}`,
       data
     );
     return response.data;
   }
 
   static async delete(id: string): Promise<void> {
-    await api.delete(`/${this.basePath}/${id}`);
+    await api.delete(`/${this.basePath}/${encodeURIComponent(id)}`);
   }
 
   static async send(id: string): Promise<void> {
-    await api.post(`/${this.basePath}/send/${id}`);
+    await api.post(`/${this.basePath}/send/${encodeURIComponent(id)}`);
   }
 }

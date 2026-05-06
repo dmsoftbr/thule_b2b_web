@@ -89,7 +89,7 @@ function BudgetsPage() {
     });
 
     if (continueDelete) {
-      await api.delete(`/orders/${data.id}`);
+      await api.delete(`/orders/${encodeURIComponent(data.id)}`);
 
       //await OrdersService
       setTableToken(new Date().valueOf());

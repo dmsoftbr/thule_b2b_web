@@ -68,15 +68,16 @@ export const LoginForm = ({ onGotoForgotPassword }: Props) => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <Logo inverse={false} />
           <div className="relative">
             <img
-              src="assets/images/thule_group.png"
-              width={200}
-              height={200}
+              src="assets/images/thule_logo.png"
+              width={140}
+              height={140}
               alt="THULE"
+              className="invert"
             />
           </div>
+          <Logo inverse={false} />
         </CardTitle>
         <CardDescription className="mt-2 text-center">
           Digite seus dados para acessar o sistema

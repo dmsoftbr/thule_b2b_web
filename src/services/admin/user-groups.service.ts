@@ -2,6 +2,7 @@ import { api } from "@/lib/api";
 import type { PagedRequestModel } from "@/models/dto/requests/paged-request.model";
 import type { PagedResponseModel } from "@/models/dto/responses/paged-response.model";
 import type { UserGroupModel } from "@/models/user-group.model";
+import type { GroupPermissionModel } from "@/models/admin/group-permission.model";
 
 export class UserGroupsService {
   private basePath: string = "admin/user-groups";
@@ -12,7 +13,9 @@ export class UserGroupsService {
   }
 
   async getById(id: string): Promise<UserGroupModel> {
-    const response = await api.get<UserGroupModel>(`/${this.basePath}/${id}`);
+    const response = await api.get<UserGroupModel>(
+      `/${this.basePath}/${encodeURIComponent(id)}`
+    );
     return response.data;
   }
 
@@ -37,6 +40,23 @@ export class UserGroupsService {
   }
 
   async delete(id: string): Promise<void> {
-    await api.delete(`/${this.basePath}/${id}`);
+    await api.delete(`/${this.basePath}/${encodeURIComponent(id)}`);
+  }
+
+  async getPermissions(groupId: string): Promise<GroupPermissionModel[]> {
+    const response = await api.get<GroupPermissionModel[]>(
+      `/${this.basePath}/permissions/${encodeURIComponent(groupId)}`
+    );
+    return response.data;
+  }
+
+  async setPermissions(
+    groupId: string,
+    permissions: GroupPermissionModel[]
+  ): Promise<void> {
+    await api.post(
+      `/${this.basePath}/permissions/${encodeURIComponent(groupId)}`,
+      permissions
+    );
   }
 }

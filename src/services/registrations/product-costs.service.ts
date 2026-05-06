@@ -16,7 +16,7 @@ export class ProductCostsService {
     productId: string,
   ): Promise<ProductCostModel> {
     const response = await api.get<ProductCostModel>(
-      `/${this.basePath}/id/${branchId}/${productId}`,
+      `/${this.basePath}/id/${encodeURIComponent(branchId)}/${encodeURIComponent(productId)}`,
     );
     return response.data;
   }

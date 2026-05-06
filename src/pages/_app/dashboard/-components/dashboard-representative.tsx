@@ -26,6 +26,8 @@ import { formatNumber } from "@/lib/number-utils";
 import { AppTooltip } from "@/components/layout/app-tooltip";
 import { cn } from "@/lib/utils";
 import { BillingChart, type Sales } from "./billing-chart";
+import { useQuery } from "@tanstack/react-query";
+import type { RepresentativeModel } from "@/models/representative.model";
 
 type Props = {};
 export const DashboardRepresentative = ({}: Props) => {
@@ -45,8 +47,20 @@ export const DashboardRepresentative = ({}: Props) => {
   const [annualRevenue, setAnnualRevenue] = useState(0);
   const [percAnnualRevenue, setPercAnnualRevenue] = useState(0);
   const [monthlySales, setMonthlySales] = useState<Sales[]>([]);
-  const [families, setFamilies] = useState<any[]>([]);
+  const [, setFamilies] = useState<any[]>([]);
+  const [customerGroups, setCustomerGroups] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const { data: representativeData } = useQuery({
+    queryKey: ["representative", session?.user.representativeId],
+    queryFn: async () => {
+      const { data } = await api.get<RepresentativeModel[]>(
+        "/registrations/representatives/all",
+      );
+      return data.find((r) => r.id === session?.user.representativeId) ?? null;
+    },
+    enabled: !!session?.user.representativeId,
+  });
 
   useEffect(() => {
     handleApplyFilter();
@@ -80,6 +94,7 @@ export const DashboardRepresentative = ({}: Props) => {
       setAnnualRevenue(data.annualRevenue);
       setPercAnnualRevenue(data.percAnnualRevenue);
       setFamilies(data.families);
+      setCustomerGroups(data.customerGroups ?? []);
       setMonthlySales(data.monthlySales);
     }
     setIsLoading(false);
@@ -91,7 +106,11 @@ export const DashboardRepresentative = ({}: Props) => {
 
   return (
     <AppPageHeader
-      titleSlot={`Dashboard Representante: ${session?.user.representativeId}`}
+      titleSlot={`Dashboard Representante: ${session?.user.representativeId}${
+        representativeData?.abbreviation
+          ? ` - ${representativeData.abbreviation}`
+          : ""
+      }`}
     >
       <div className="p-4 space-y-2">
         <DashboardProvider>
@@ -168,7 +187,7 @@ export const DashboardRepresentative = ({}: Props) => {
                 ) : (
                   <>
                     <p className="text-3xl font-bold">
-                      R$ {formatNumber(grossRevenue / 1_000_000, 2)}M
+                      R$ {formatNumber(grossRevenue, 0)}
                     </p>
                     <AppTooltip message="Em relação ao mês passado">
                       <p
@@ -176,7 +195,7 @@ export const DashboardRepresentative = ({}: Props) => {
                           "flex items-center text-xs font-semibold hover:cursor-pointer w-fit",
                           percGrossRevenue > 0
                             ? "text-emerald-600"
-                            : "text-red-500"
+                            : "text-red-500",
                         )}
                       >
                         {percGrossRevenue >= 0 && (
@@ -211,7 +230,7 @@ export const DashboardRepresentative = ({}: Props) => {
                           "flex items-center text-xs font-semibold hover:cursor-pointer w-fit",
                           percOrderQuantity > 0
                             ? "text-emerald-600"
-                            : "text-red-500"
+                            : "text-red-500",
                         )}
                       >
                         {percOrderQuantity >= 0 && (
@@ -246,7 +265,7 @@ export const DashboardRepresentative = ({}: Props) => {
                           "flex items-center text-xs font-semibold hover:cursor-pointer w-fit",
                           percAverageTicket > 0
                             ? "text-emerald-600"
-                            : "text-red-500"
+                            : "text-red-500",
                         )}
                       >
                         {percAverageTicket >= 0 && (
@@ -276,7 +295,7 @@ export const DashboardRepresentative = ({}: Props) => {
                 ) : (
                   <>
                     <p className="text-3xl font-bold">
-                      R$ {formatNumber(annualRevenue / 1_000_000, 2)}M
+                      R$ {formatNumber(annualRevenue, 0)}
                     </p>
                     <AppTooltip message="Em relação ao ano passado">
                       <p
@@ -284,7 +303,7 @@ export const DashboardRepresentative = ({}: Props) => {
                           "flex items-center text-xs font-semibold hover:cursor-pointer w-fit",
                           percAnnualRevenue > 0
                             ? "text-emerald-600"
-                            : "text-red-500"
+                            : "text-red-500",
                         )}
                       >
                         {percAnnualRevenue >= 0 && (
@@ -309,7 +328,7 @@ export const DashboardRepresentative = ({}: Props) => {
                   <p className="text-muted-foreground font-semibold">
                     Top Grupos de Clientes
                   </p>
-                  <TopCustomers data={families} />
+                  <TopCustomers data={customerGroups} />
                 </div>
 
                 <div className="rounded-lg shadow bg-white flex-1 p-6 border">

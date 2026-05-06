@@ -14,7 +14,7 @@ export const ExportOrder = () => {
   const { order } = useOrder();
 
   const handleGetExcel = async () => {
-    const response = await api.get(`/orders/xlsx/${order.id}`, {
+    const response = await api.get(`/orders/xlsx/${encodeURIComponent(order.id)}`, {
       responseType: "blob",
     });
     const blob = new Blob([response.data], {
@@ -31,7 +31,7 @@ export const ExportOrder = () => {
   };
 
   const handleGetPdf = async () => {
-    const response = await api.get(`/orders/pdf/${order.id}`, {
+    const response = await api.get(`/orders/pdf/${encodeURIComponent(order.id)}`, {
       responseType: "blob",
     });
     const blob = new Blob([response.data], { type: "application/pdf" });

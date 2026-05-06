@@ -20,12 +20,18 @@ import { Input } from "@/components/ui/input";
 
 // --- TIPOS ---
 
+export interface TreeNodeBadge {
+  text: string;
+  className?: string;
+}
+
 export interface TreeNode {
   id: string;
   label: string;
   checked?: boolean;
   children?: TreeNode[];
   data?: any;
+  badge?: TreeNodeBadge;
 }
 
 interface CheckboxState {
@@ -224,10 +230,20 @@ const TreeNodeComponent = ({
         </div>
 
         <span
-          className="text-sm text-gray-700 flex-1 truncate cursor-pointer"
+          className="text-sm text-gray-700 flex-1 truncate cursor-pointer flex items-center gap-1.5 min-w-0"
           onClick={handleExpandToggle}
         >
-          {highlightedLabel}
+          <span className="truncate">{highlightedLabel}</span>
+          {node.badge && (
+            <span
+              className={`flex-none text-[10px] leading-none px-1.5 py-0.5 rounded-full font-medium border ${
+                node.badge.className ??
+                "bg-gray-100 text-gray-700 border-gray-200"
+              }`}
+            >
+              {node.badge.text}
+            </span>
+          )}
         </span>
       </div>
 

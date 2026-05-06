@@ -12,7 +12,9 @@ export class ProductsService {
   }
 
   static async getById(id: string): Promise<ProductModel> {
-    const response = await api.get<ProductModel>(`/${this.basePath}/id/${id}`);
+    const response = await api.get<ProductModel>(
+      `/${this.basePath}/id/${encodeURIComponent(id)}`,
+    );
     return response.data;
   }
 
@@ -37,6 +39,6 @@ export class ProductsService {
   }
 
   static async delete(id: number): Promise<void> {
-    await api.delete(`/${this.basePath}/${id}`);
+    await api.delete(`/${this.basePath}/${encodeURIComponent(id)}`);
   }
 }

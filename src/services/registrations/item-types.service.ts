@@ -12,7 +12,9 @@ export class ItemTypesService {
   }
 
   static async getById(id: string): Promise<ItemTypeModel> {
-    const response = await api.get<ItemTypeModel>(`/${this.basePath}/id/${id}`);
+    const response = await api.get<ItemTypeModel>(
+      `/${this.basePath}/id/${encodeURIComponent(id)}`,
+    );
     return response.data;
   }
 
@@ -36,13 +38,13 @@ export class ItemTypesService {
     data: Partial<ItemTypeModel>,
   ): Promise<ItemTypeModel> {
     const response = await api.patch<ItemTypeModel>(
-      `/${this.basePath}/${id}`,
+      `/${this.basePath}/${encodeURIComponent(id)}`,
       data,
     );
     return response.data;
   }
 
   static async delete(id: string): Promise<void> {
-    await api.delete(`/${this.basePath}/${id}`);
+    await api.delete(`/${this.basePath}/${encodeURIComponent(id)}`);
   }
 }

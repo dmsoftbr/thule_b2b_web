@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/popover";
 import { useRef, useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown, Loader2Icon, PackageSearchIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 import type { ProductModel } from "@/models/product.model";
@@ -41,6 +41,7 @@ export const ProductsCombo = ({
   const [data, setData] = useState<ProductModel[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [value, setValue] = useState("");
+  const [searchText, setSearchText] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const debounceTimerRef = useRef<number | undefined>(undefined);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -123,6 +124,7 @@ export const ProductsCombo = ({
         searchInputRef.current.focus();
       }
 
+      setSearchText("");
       setData([]); // Limpa os resultados
     },
     [onSelect, closeOnSelect],
@@ -210,15 +212,31 @@ export const ProductsCombo = ({
             ref={searchInputRef}
             placeholder="Procurar..."
             className="h-9"
-            onValueChange={onSearch}
+            onValueChange={(v) => {
+              setSearchText(v);
+              onSearch(v);
+            }}
           />
           <CommandList>
             <CommandEmpty>
-              {isLoading
-                ? "Carregando..."
-                : !value
-                  ? "Digite o termo a procurar: Código Longo/Código Curto/Descrição"
-                  : "Produto não cadastrado na lista de preço ou não disponível para seu canal de vendas."}
+              {isLoading ? (
+                <div className="flex items-center justify-center gap-2 py-6 px-4 text-blue-600">
+                  <Loader2Icon className="size-4 animate-spin" />
+                  <span className="text-sm font-medium">Procurando...</span>
+                </div>
+              ) : !searchText.trim() ? (
+                "Digite o termo a procurar: Código Longo/Código Curto/Descrição"
+              ) : (
+                <div className="flex flex-col items-center gap-2 py-6 px-4 text-orange-600">
+                  <div className="rounded-full bg-orange-100 p-3 ring-4 ring-orange-50">
+                    <PackageSearchIcon className="size-6" />
+                  </div>
+                  <span className="text-sm font-semibold text-center">
+                    Não encontramos um produto com os critérios de busca
+                    informados
+                  </span>
+                </div>
+              )}
             </CommandEmpty>
             <CommandGroup className="p-0">
               {data.map((item) => (

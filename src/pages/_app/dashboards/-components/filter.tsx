@@ -4,7 +4,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SearchCombo } from "@/components/ui/search-combo";
 import { api } from "@/lib/api";
@@ -17,7 +16,7 @@ import type { ProductGroupModel } from "@/models/registrations/product-group.mod
 import type { RepresentativeModel } from "@/models/representative.model";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDownIcon, FilterIcon } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 const MESES = [
   { value: "1", label: "Janeiro" },
@@ -34,8 +33,15 @@ const MESES = [
   { value: "12", label: "Dezembro" },
 ];
 
+const MARCAS = [
+  { value: "THULE", label: "THULE" },
+  { value: "CL", label: "CASE LOGIC" },
+];
+
 export type DashboardFiltro = {
+  /** Mantido por compatibilidade: maior ano selecionado em `anos`. */
   ano: number;
+  anos: number[];
   meses: number[];
   paises: string[];
   representantes: number[];
@@ -55,7 +61,7 @@ interface Props {
 
 export const DashboardsFilter = ({ onAplicar }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [ano, setAno] = useState(new Date().getFullYear());
+  const [anos, setAnos] = useState<number[]>([new Date().getFullYear()]);
   const [meses, setMeses] = useState<number[]>([
     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
   ]);
@@ -124,6 +130,15 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
     refetchOnWindowFocus: false,
   });
 
+  const { data: anosData } = useQuery({
+    queryKey: ["filter-anos"],
+    queryFn: async () => {
+      const { data } = await api.get<number[]>("/dashboards-thule/anos");
+      return data;
+    },
+    refetchOnWindowFocus: false,
+  });
+
   const { data: paisesData } = useQuery({
     queryKey: ["filter-paises"],
     queryFn: async () => {
@@ -186,9 +201,101 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
     refetchOnWindowFocus: false,
   });
 
+  const anosItems = useMemo(
+    () =>
+      (anosData ?? []).map((ano) => ({
+        value: String(ano),
+        label: String(ano),
+      })),
+    [anosData],
+  );
+
+  const paisesItems = useMemo(
+    () => convertArrayToSearchComboItem(paisesData ?? [], "pais", "pais", false),
+    [paisesData],
+  );
+  const representantesItems = useMemo(
+    () =>
+      convertArrayToSearchComboItem(
+        representantesData ?? [],
+        "id",
+        "abbreviation",
+        false,
+      ),
+    [representantesData],
+  );
+  const gerentesItems = useMemo(
+    () =>
+      convertArrayToSearchComboItem(
+        gerentesData ?? [],
+        "manager",
+        "manager",
+        false,
+      ),
+    [gerentesData],
+  );
+  const gruposClienteItems = useMemo(
+    () =>
+      convertArrayToSearchComboItem(
+        gruposClienteData ?? [],
+        "id",
+        "name",
+        false,
+      ),
+    [gruposClienteData],
+  );
+  const clientesItems = useMemo(
+    () =>
+      convertArrayToSearchComboItem(
+        clientesData ?? [],
+        "id",
+        "abbreviation",
+        false,
+      ),
+    [clientesData],
+  );
+  const tiposItemItems = useMemo(
+    () =>
+      convertArrayToSearchComboItem(tiposItemData ?? [], "id", "name", false),
+    [tiposItemData],
+  );
+  const gruposEstoqueItems = useMemo(
+    () =>
+      convertArrayToSearchComboItem(
+        gruposEstoqueData ?? [],
+        "id",
+        "name",
+        false,
+      ),
+    [gruposEstoqueData],
+  );
+  const famComerciaisItems = useMemo(
+    () =>
+      convertArrayToSearchComboItem(
+        famComerciaisData ?? [],
+        "id",
+        "name",
+        false,
+      ),
+    [famComerciaisData],
+  );
+  const produtosItems = useMemo(
+    () =>
+      convertArrayToSearchComboItem(
+        produtosData ?? [],
+        "id",
+        "description",
+        false,
+      ),
+    [produtosData],
+  );
+
   const handleAplicar = () => {
+    const anoAtual = new Date().getFullYear();
+    const ano = anos.length > 0 ? Math.max(...anos) : anoAtual;
     const newFiltro: DashboardFiltro = {
       ano,
+      anos,
       meses,
       paises,
       representantes,
@@ -224,10 +331,18 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
           <div className="grid grid-cols-4 gap-x-4 py-2 px-1">
             <div className="form-group">
               <Label>Ano</Label>
-              <Input
-                type="number"
-                value={ano}
-                onChange={(e) => setAno(Number(e.target.value))}
+              <SearchCombo
+                multipleSelect
+                showSelectButtons
+                staticItems={anosItems}
+                onSelectOption={(values) => {
+                  const selecionados = values.map((v) => Number(v.value));
+                  setAnos(
+                    selecionados.length > 0
+                      ? selecionados
+                      : [new Date().getFullYear()],
+                  );
+                }}
               />
             </div>
             <div className="form-group">
@@ -249,12 +364,7 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
                 selectAllOnLoad
                 multipleSelect
                 showSelectButtons
-                staticItems={convertArrayToSearchComboItem(
-                  paisesData ?? [],
-                  "pais",
-                  "pais",
-                  false,
-                )}
+                staticItems={paisesItems}
                 onSelectOption={(values) => {
                   const pais = values.map((pais) => pais.value);
                   setPaises(pais);
@@ -267,12 +377,7 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
                 selectAllOnLoad
                 multipleSelect
                 showSelectButtons
-                staticItems={convertArrayToSearchComboItem(
-                  representantesData ?? [],
-                  "id",
-                  "abbreviation",
-                  false,
-                )}
+                staticItems={representantesItems}
                 valueProp="id"
                 labelProp="abbreviation"
                 showValueInSelectedItem
@@ -290,12 +395,7 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
                 selectAllOnLoad
                 multipleSelect
                 showSelectButtons
-                staticItems={convertArrayToSearchComboItem(
-                  gerentesData ?? [],
-                  "manager",
-                  "manager",
-                  false,
-                )}
+                staticItems={gerentesItems}
                 onSelectOption={(values) => {
                   const gerente = values.map((ger) => ger.value);
                   setGerentes(gerente);
@@ -309,12 +409,7 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
                 multipleSelect
                 showSelectButtons
                 showValueInSelectedItem
-                staticItems={convertArrayToSearchComboItem(
-                  gruposClienteData ?? [],
-                  "id",
-                  "name",
-                  false,
-                )}
+                staticItems={gruposClienteItems}
                 onSelectOption={(values) => {
                   const grupo = values.map((grupo) => Number(grupo.value));
                   setGruposCliente(grupo);
@@ -329,12 +424,7 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
                 multipleSelect
                 showSelectButtons
                 showValueInSelectedItem
-                staticItems={convertArrayToSearchComboItem(
-                  clientesData ?? [],
-                  "id",
-                  "abbreviation",
-                  false,
-                )}
+                staticItems={clientesItems}
                 onSelectOption={(values) => {
                   const cliente = values.map((cli) => Number(cli.value));
                   setClientes(cliente);
@@ -349,12 +439,7 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
                 multipleSelect
                 showSelectButtons
                 selectAllOnLoad
-                staticItems={convertArrayToSearchComboItem(
-                  tiposItemData ?? [],
-                  "id",
-                  "name",
-                  false,
-                )}
+                staticItems={tiposItemItems}
                 valueProp="id"
                 labelProp="name"
                 showValueInSelectedItem
@@ -370,12 +455,7 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
                 multipleSelect
                 selectAllOnLoad
                 showSelectButtons
-                staticItems={convertArrayToSearchComboItem(
-                  gruposEstoqueData ?? [],
-                  "id",
-                  "name",
-                  false,
-                )}
+                staticItems={gruposEstoqueItems}
                 valueProp="id"
                 labelProp="name"
                 showValueInSelectedItem
@@ -392,10 +472,7 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
                 selectAllOnLoad
                 multipleSelect
                 showSelectButtons
-                staticItems={[
-                  { value: "THULE", label: "THULE" },
-                  { value: "CL", label: "CASE LOGIC" },
-                ]}
+                staticItems={MARCAS}
                 onSelectOption={(values) => {
                   const marcas = values.map((item) => item.value);
                   setMarcas(marcas);
@@ -409,12 +486,7 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
                 selectAllOnLoad
                 multipleSelect
                 showSelectButtons
-                staticItems={convertArrayToSearchComboItem(
-                  famComerciaisData ?? [],
-                  "id",
-                  "name",
-                  false,
-                )}
+                staticItems={famComerciaisItems}
                 valueProp="id"
                 labelProp="name"
                 showValueInSelectedItem
@@ -433,12 +505,7 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
                 multipleSelect
                 showSelectButtons
                 showValueInSelectedItem
-                staticItems={convertArrayToSearchComboItem(
-                  produtosData ?? [],
-                  "id",
-                  "description",
-                  false,
-                )}
+                staticItems={produtosItems}
                 onSelectOption={(values) => {
                   const prods = values.map((item) => item.value);
                   setMarcas(prods);

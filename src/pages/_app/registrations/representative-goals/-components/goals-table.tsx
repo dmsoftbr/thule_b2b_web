@@ -329,7 +329,7 @@ export function GoalsTable() {
   };
 
   const handleExport = () => {
-    exportHierarchyToCSV(hierarchyData);
+    exportHierarchyToCSV(hierarchyData ?? []);
   };
 
   function exportHierarchyToCSV(data: HierarchyData[], fileName = "dados.csv") {
@@ -578,7 +578,7 @@ export function GoalsTable() {
               </th>
               <th className="border bg-slate-200 border-slate-300 p-1 text-right">
                 {formatNumber(
-                  hierarchyData.reduce(
+                  (hierarchyData ?? []).reduce(
                     (acc: number, b: HierarchyData) =>
                       acc + (b.quantidade ?? 0),
                     0,
@@ -587,7 +587,7 @@ export function GoalsTable() {
               </th>
               <th className="border bg-slate-200 border-slate-300 p-1 text-right">
                 {formatNumber(
-                  hierarchyData.reduce(
+                  (hierarchyData ?? []).reduce(
                     (acc: number, b: HierarchyData) => acc + (b.valor ?? 0),
                     0,
                   ),

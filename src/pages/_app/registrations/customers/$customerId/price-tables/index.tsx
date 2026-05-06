@@ -32,7 +32,7 @@ function CustomerIdPageComponent() {
     queryKey: ["customer-id", customerId],
     queryFn: async () => {
       const { data } = await api.get<CustomerModel>(
-        `/registrations/customers/id/${customerId}`,
+        `/registrations/customers/id/${encodeURIComponent(customerId)}`,
       );
       return data;
     },
@@ -45,7 +45,7 @@ function CustomerIdPageComponent() {
 
   const handleDelete = async (data: CustomerPriceTableModel) => {
     await api.delete(
-      `/registrations/customer-price-tables/${data.customerId}/${data.priceTableId}`,
+      `/registrations/customer-price-tables/${encodeURIComponent(data.customerId)}/${encodeURIComponent(data.priceTableId)}`,
     );
 
     setTableToken(new Date().valueOf());
@@ -56,7 +56,7 @@ function CustomerIdPageComponent() {
     direction: string,
   ) => {
     await api.patch(
-      `/registrations/customer-price-tables/reorder/${data.customerId}/${data.priceTableId}/${direction}`,
+      `/registrations/customer-price-tables/reorder/${encodeURIComponent(data.customerId)}/${encodeURIComponent(data.priceTableId)}/${encodeURIComponent(direction)}`,
     );
     setTableToken(new Date().valueOf());
   };

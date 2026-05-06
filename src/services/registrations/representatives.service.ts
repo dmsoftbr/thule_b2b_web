@@ -15,7 +15,7 @@ export class RepresentativesService {
 
   async getById(id: number): Promise<RepresentativeModel> {
     const response = await api.get<RepresentativeModel>(
-      `/${this.basePath}/${id}`
+      `/${this.basePath}/${encodeURIComponent(id)}`
     );
     return response.data;
   }
@@ -45,13 +45,13 @@ export class RepresentativesService {
     data: Partial<RepresentativeModel>
   ): Promise<RepresentativeModel> {
     const response = await api.patch<RepresentativeModel>(
-      `/${this.basePath}/${id}`,
+      `/${this.basePath}/${encodeURIComponent(id)}`,
       data
     );
     return response.data;
   }
 
   async delete(id: number): Promise<void> {
-    await api.delete(`/${this.basePath}/${id}`);
+    await api.delete(`/${this.basePath}/${encodeURIComponent(id)}`);
   }
 }

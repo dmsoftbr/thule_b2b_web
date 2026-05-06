@@ -13,7 +13,7 @@ export class SalesGroupsService {
 
   static async getById(id: string): Promise<SalesGroupModel> {
     const response = await api.get<SalesGroupModel>(
-      `/${this.basePath}/id/${id}`
+      `/${this.basePath}/id/${encodeURIComponent(id)}`
     );
     return response.data;
   }
@@ -46,6 +46,6 @@ export class SalesGroupsService {
   }
 
   static async delete(id: string): Promise<void> {
-    await api.delete(`/${this.basePath}/${id}`);
+    await api.delete(`/${this.basePath}/${encodeURIComponent(id)}`);
   }
 }

@@ -58,7 +58,9 @@ function SalesGroupPageComponent() {
     });
 
     if (continueDelete) {
-      await api.delete(`/registrations/sales-groups/${data.id}`);
+      await api.delete(
+        `/registrations/sales-groups/${encodeURIComponent(data.id)}`,
+      );
       setTableToken(new Date().valueOf());
     }
   };

@@ -2,6 +2,10 @@ import { api } from "@/lib/api";
 import type { PagedRequestModel } from "@/models/dto/requests/paged-request.model";
 import type { PagedResponseModel } from "@/models/dto/responses/paged-response.model";
 import type { UserModel } from "@/models/user.model";
+import type {
+  EffectivePermissionModel,
+  UserPermissionModel,
+} from "@/models/admin/user-permission.model";
 
 export class UsersService {
   private basePath: string = "admin/users";
@@ -13,7 +17,7 @@ export class UsersService {
 
   async getById(id: string, onlyActive: boolean = true): Promise<UserModel> {
     const response = await api.get<UserModel>(
-      `/${this.basePath}/${id}?onlyActives=${onlyActive}`
+      `/${this.basePath}/${encodeURIComponent(id)}?onlyActives=${onlyActive}`
     );
     return response.data;
   }
@@ -54,6 +58,30 @@ export class UsersService {
   }
 
   async delete(id: string): Promise<void> {
-    await api.delete(`/${this.basePath}/${id}`);
+    await api.delete(`/${this.basePath}/${encodeURIComponent(id)}`);
+  }
+
+  async getPermissions(userId: string): Promise<EffectivePermissionModel[]> {
+    const response = await api.get<EffectivePermissionModel[]>(
+      `/${this.basePath}/permissions/${encodeURIComponent(userId)}`
+    );
+    return response.data;
+  }
+
+  async getMyPermissions(): Promise<EffectivePermissionModel[]> {
+    const response = await api.get<EffectivePermissionModel[]>(
+      `/${this.basePath}/permissions/me`
+    );
+    return response.data;
+  }
+
+  async setPermissions(
+    userId: string,
+    permissions: UserPermissionModel[]
+  ): Promise<void> {
+    await api.post(
+      `/${this.basePath}/permissions/${encodeURIComponent(userId)}`,
+      permissions
+    );
   }
 }

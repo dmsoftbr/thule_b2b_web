@@ -47,7 +47,9 @@ function RouteComponent() {
 
     if (!continueDelete) return;
 
-    await api.delete(`/registrations/item-types/${data.id}`);
+    await api.delete(
+      `/registrations/item-types/${encodeURIComponent(data.id)}`,
+    );
     setTableToken(new Date().valueOf());
   };
 

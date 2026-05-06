@@ -8,21 +8,21 @@ export class StockService {
 
   static async getStockByPriceAndEstimatedDate(productId: string) {
     const { data } = await api.get<ProductPriceEstimatedDateModel>(
-      `/${this.basePath}/product-price-estimated-date/${productId}`
+      `/${this.basePath}/product-price-estimated-date/${encodeURIComponent(productId)}`
     );
     return data;
   }
 
   static async getEsli011(productId: string) {
     const { data } = await api.get<Esli011Model>(
-      `/${this.basePath}/esli011/${productId}`
+      `/${this.basePath}/esli011/${encodeURIComponent(productId)}`
     );
     return data;
   }
 
   static async getByProductId(productId: string) {
     const { data } = await api.get<StockModel[]>(
-      `/${this.basePath}/product/${productId}`
+      `/${this.basePath}/product/${encodeURIComponent(productId)}`
     );
     return data;
   }

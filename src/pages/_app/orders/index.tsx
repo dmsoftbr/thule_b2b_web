@@ -113,7 +113,7 @@ function ListOrdersPage() {
 
     if (continueDelete) {
       setIsLoading(true);
-      await api.delete(`/orders/${data.id}`);
+      await api.delete(`/orders/${encodeURIComponent(data.id)}`);
       setIsLoading(false);
 
       //await OrdersService

@@ -14,8 +14,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import type { ProductModel } from "@/models/product.model";
-import { MinusIcon, PlusIcon, SearchIcon } from "lucide-react";
-import { useState } from "react";
+import { Loader2Icon, MinusIcon, PlusIcon, SearchIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { ProductImage } from "@/components/app/product-image";
 import { formatNumber } from "@/lib/number-utils";
 import { useOrder } from "../-context/order-context";
@@ -37,7 +37,27 @@ export const OrderSearchProductModal = ({ initialPriceTable }: Props) => {
   const [priceTable, setPriceTable] =
     useState<PriceTableModel>(initialPriceTable);
   const [tableToken, setTableToken] = useState(new Date().valueOf());
+  const [isFetching, setIsFetching] = useState(false);
   const { showAppDialog } = useAppDialog();
+
+  // Mantém o priceTable do modal sincronizado com a prop (o useState inicial
+  // só pega o valor da primeira renderização — se a prop mudar depois, o state
+  // ficaria defasado).
+  useEffect(() => {
+    if (initialPriceTable) {
+      setPriceTable(initialPriceTable);
+    }
+  }, [initialPriceTable]);
+
+  // Força a ServerTable a refazer o fetch quando o dialog abre OU quando os
+  // parâmetros que vão pra `additionalInfo` mudam (customerId/priceTableId
+  // não estão nas deps internas do useEffect da ServerTable).
+  useEffect(() => {
+    if (isOpen) {
+      setIsFetching(true);
+      setTableToken(new Date().valueOf());
+    }
+  }, [isOpen, order.customerId, priceTable?.id]);
   function handleAddItemToOrder(
     priceTable: PriceTableModel,
     product: ProductModel,
@@ -50,13 +70,16 @@ export const OrderSearchProductModal = ({ initialPriceTable }: Props) => {
     if (!orderQuantity) orderQuantity = 1;
     if (orderQuantity == 0) orderQuantity = 1;
 
-    const newOrder = { ...order };
+    const newOrder = { ...order, items: [...order.items] };
     const existingItemIndex = newOrder.items.findIndex(
       (f) => f.productId == product.id,
     );
 
     if (existingItemIndex >= 0) {
-      newOrder.items[existingItemIndex].orderQuantity = orderQuantity;
+      newOrder.items[existingItemIndex] = {
+        ...newOrder.items[existingItemIndex],
+        orderQuantity,
+      };
       toast.success("Quantidade atualizada!");
     } else {
       newOrder.items.push({
@@ -245,13 +268,33 @@ export const OrderSearchProductModal = ({ initialPriceTable }: Props) => {
       </DialogTrigger>
       <DialogContent className="min-w-[90%]">
         <DialogHeader>
-          <DialogTitle>Pesquisar Produtos</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            Pesquisar Produtos
+            {isFetching && (
+              <span className="flex items-center gap-1 text-xs font-normal text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
+                <Loader2Icon className="size-3 animate-spin" />
+                Carregando produtos...
+              </span>
+            )}
+          </DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col w-full">
+        <div className="flex flex-col w-full relative">
+          {isFetching && (
+            <div className="absolute inset-0 z-40 flex items-center justify-center bg-white/60 backdrop-blur-[1px] rounded-md">
+              <div className="flex items-center gap-2 px-4 py-2 bg-white shadow-md rounded-full border border-blue-200 text-blue-700">
+                <Loader2Icon className="size-4 animate-spin" />
+                <span className="text-sm font-medium">
+                  Buscando produtos...
+                </span>
+              </div>
+            </div>
+          )}
           <ServerTable<ProductModel>
             key={tableToken}
+            refreshDataToken={String(tableToken)}
+            onAfterGetData={() => setIsFetching(false)}
             searchSlot={
               <AppTooltip message="Tabela de Preço">
                 <SearchCombo
@@ -276,6 +319,8 @@ export const OrderSearchProductModal = ({ initialPriceTable }: Props) => {
             defaultSearchField="all"
             defaultSortFieldDataIndex="suggestUnitPrice"
             defaultSortDesc={true}
+            searchAutoFocus
+            showAddButton={false}
             additionalInfo={{
               priceTableId: priceTable?.id ?? "",
               customerId: order.customerId ?? 0,

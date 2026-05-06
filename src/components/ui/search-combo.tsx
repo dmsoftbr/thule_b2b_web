@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -426,7 +426,10 @@ export const SearchCombo: React.FC<SearchComboProps> = ({
               style={{ maxHeight: `${listHeight}px`, overflow: "auto" }}
             >
               {loading ? (
-                <div className="py-6 text-center text-sm">Carregando...</div>
+                <div className="py-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="size-4 animate-spin" />
+                  Aguarde...
+                </div>
               ) : filteredItems.length === 0 ? (
                 <CommandEmpty>{noResultsText}</CommandEmpty>
               ) : (

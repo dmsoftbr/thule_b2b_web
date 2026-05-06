@@ -10,16 +10,48 @@ import { Logo } from "@/components/ui/logo";
 import { AppMenuItem } from "./app-menu-item";
 import { MENU_DATA } from "@/menu/menu-data";
 import logoThule from "@/assets/images/thule_logo.png";
+import { usePermissions } from "@/hooks/use-permissions";
+import type { MenuModel } from "@/models/menu-model";
 
-const items = MENU_DATA;
+function filterMenuByPermissions(
+  items: MenuModel[],
+  has: (id?: string) => boolean,
+  isAdmin: boolean,
+): MenuModel[] {
+  return items.flatMap((item) => {
+    const originalHadChildren = (item.children?.length ?? 0) > 0;
+
+    if (originalHadChildren) {
+      const filteredChildren = filterMenuByPermissions(
+        item.children!,
+        has,
+        isAdmin,
+      );
+      if (filteredChildren.length === 0) return [];
+      return [{ ...item, children: filteredChildren }];
+    }
+
+    // Leaf: admin sempre vê; itens sem permissionId são públicos; demais exigem permissão concedida.
+    if (isAdmin) return [item];
+    if (!item.permissionId) return [item];
+    if (!has(item.permissionId)) return [];
+    return [item];
+  });
+}
+
 export const AppSideBar = () => {
+  const { has, isLoading, isAdmin } = usePermissions();
+  const items = isLoading
+    ? []
+    : filterMenuByPermissions(MENU_DATA, has, isAdmin);
+
   return (
     <Sidebar className="bg-zinc-800">
-      <SidebarHeader className="flex items-center justify-center border-b border-b-zinc-600 min-h-[64px] bg-zinc-800 relative">
+      <SidebarHeader className="flex items-start pl-6 justify-center border-b border-b-zinc-600 min-h-[64px] bg-zinc-800 relative">
         <img
-          className="w-auto max-h-[48px]"
+          className="w-auto max-h-[30px]"
           src={logoThule}
-          alt="Thule Group"
+          alt="Thule Sweden"
         />
       </SidebarHeader>
       <SidebarContent className="bg-zinc-800 text-white">
@@ -31,15 +63,9 @@ export const AppSideBar = () => {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="flex items-center justify-center border-t border-t-zinc-600 bg-zinc-800 min-h-20">
+      <SidebarFooter className="flex items-start pl-6 justify-center border-t border-t-zinc-600 bg-zinc-800 min-h-20">
         <div className="relative">
           <Logo inverse />
-          {/* <img
-            width={180}
-            height={100}
-            src="/assets/images/thule_group-inv.png"
-            alt="Thule Group"
-          /> */}
         </div>
       </SidebarFooter>
     </Sidebar>

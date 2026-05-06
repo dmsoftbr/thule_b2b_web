@@ -1,9 +1,13 @@
 export const USER_ROLES = [
-  { id: "0", name: "ADMINISTRADOR" },
   { id: "1", name: "ADMINISTRATIVO" },
   { id: "2", name: "REPRESENTANTE" },
   { id: "3", name: "CLIENTE" },
 ];
+
+/** Roles consideradas administrativas com acesso global. */
+export const ADMIN_ROLE_IDS = ["0", "1"] as const;
+export const isAdminRole = (role: string | number | undefined | null) =>
+  role !== undefined && role !== null && ADMIN_ROLE_IDS.includes(String(role) as any);
 
 export const PRODUCT_ACTIVE_STATES = [
   "",

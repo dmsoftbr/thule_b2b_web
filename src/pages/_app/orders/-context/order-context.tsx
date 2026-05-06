@@ -50,7 +50,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
 }) => {
   const isBudget = initialOrder?.isBudget ?? false;
   const [order, setOrder] = useState<OrderModel>(() => {
-    return initialOrder ?? { ...NEW_ORDER_EMPTY, isBudget };
+    return initialOrder ?? { ...NEW_ORDER_EMPTY, items: [], isBudget };
   });
   const [mode, setMode] = useState<"NEW" | "EDIT" | "VIEW">(() => {
     return formMode ?? "VIEW";
@@ -82,7 +82,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
   };
 
   const clearAll = () => {
-    setOrder({ ...NEW_ORDER_EMPTY });
+    setOrder({ ...NEW_ORDER_EMPTY, items: [] });
   };
 
   const clearItems = () => {

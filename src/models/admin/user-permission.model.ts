@@ -3,3 +3,9 @@ export type UserPermissionModel = {
   userId: string;
   isPermitted: boolean;
 };
+
+export type EffectivePermissionModel = {
+  permissionId: string;
+  isPermitted: boolean;
+  fromGroup: boolean;
+};

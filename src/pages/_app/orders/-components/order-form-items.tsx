@@ -24,7 +24,7 @@ import type { ProductModel } from "@/models/product.model";
 import type { SkuMessageModel } from "@/models/registrations/sku-message.model";
 
 export const OrderFormItems = () => {
-  const { order, addItem, mode } = useOrder();
+  const { order, addItem, mode, setOrder } = useOrder();
   const [showCard, setShowCard] = useState(true);
   const { showAppDialog } = useAppDialog();
   const [priceTable, setPriceTable] = useState<PriceTableModel>(
@@ -62,7 +62,7 @@ export const OrderFormItems = () => {
     if (!product) return;
 
     const { data } = await api.get<SkuMessageModel | null>(
-      `/registrations/sku-messages/id/${product.id}`,
+      `/registrations/sku-messages/id/${encodeURIComponent(product.id)}`,
     );
     console.log(data);
     if (data) {
@@ -110,6 +110,22 @@ export const OrderFormItems = () => {
       return;
     }
 
+    // Garante que o cliente está no state. Sem cliente, não há como definir
+    // estabelecimento, abreviação nem natureza de operação.
+    if (!order.customer) {
+      toast.warning("Selecione o cliente antes de adicionar produtos.");
+      return;
+    }
+
+    // Quando o cliente está definido, o branchId do pedido deve refletir o do
+    // cliente. Sincroniza no state se ainda estiver defasado. Como ~60% dos
+    // clientes na base estão com BranchId vazio, faz fallback para "1" (mesma
+    // convenção usada em finish-order-modal.tsx).
+    const effectiveBranchId = order.customer.branchId || "1";
+    if (order.branchId !== effectiveBranchId) {
+      setOrder({ ...order, branchId: effectiveBranchId });
+    }
+
     // chama a
     // api que calcula data de entrega
 
@@ -124,12 +140,13 @@ export const OrderFormItems = () => {
       params,
     );
 
-    // chama api de matriz de cfop
+    // chama api de matriz de cfop — usa effectiveBranchId direto (o setOrder
+    // acima é assíncrono e a closure ainda enxergaria o valor antigo).
     var paramsCFOP = {
-      branchId: order.branchId,
-      customerAbbreviation: order.customer?.abbreviation,
+      branchId: effectiveBranchId,
+      customerAbbreviation: order.customer.abbreviation,
       productId: product.id,
-      fiscalOperationId: order.customer?.fiscalOperationId,
+      fiscalOperationId: order.customer.fiscalOperationId,
     };
     const { data: cfopData } = await api.post(
       `/order-items/matriz-cfop-item`,

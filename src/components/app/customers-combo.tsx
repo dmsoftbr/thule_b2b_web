@@ -142,7 +142,7 @@ export const CustomersCombo = ({
       try {
         setIsLoading(true);
         const { data } = await api.post(
-          `/registrations/customers/search/${session.user.id}`,
+          `/registrations/customers/search/${encodeURIComponent(session.user.id)}`,
           {
             search: searchText,
           },
@@ -240,7 +240,7 @@ export const CustomersCombo = ({
       const fetchDefault = async () => {
         try {
           const { data } = await api.post(
-            `/registrations/customers/search/${session.user.id}`,
+            `/registrations/customers/search/${encodeURIComponent(session.user.id)}`,
             {
               search: defaultValue.toString(),
             },

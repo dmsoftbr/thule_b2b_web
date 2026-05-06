@@ -1,21 +1,30 @@
 import type { ServerTableColumn } from "@/components/server-table/server-table";
 import { Button } from "@/components/ui/button";
 import type { UserGroupModel } from "@/models/user-group.model";
-import { EditIcon, TrashIcon } from "lucide-react";
+import { EditIcon, Settings2Icon, TrashIcon } from "lucide-react";
 
 interface Props {
   fnEdit: (data: UserGroupModel) => void;
   fnDelete: (data: UserGroupModel) => void;
+  fnPermissions: (data: UserGroupModel) => void;
 }
 
-export const columns = ({ fnEdit, fnDelete }: Props): ServerTableColumn[] => [
+export const columns = ({
+  fnEdit,
+  fnDelete,
+  fnPermissions,
+}: Props): ServerTableColumn[] => [
   {
     title: "Código",
     dataIndex: "id",
     key: "id",
     sortable: true,
     renderItem: (item: UserGroupModel) => {
-      return <span className="text-blue-600 font-semibold">{item.id}</span>;
+      return (
+        <span className="text-blue-600 font-semibold">
+          {item.id.toUpperCase()}
+        </span>
+      );
     },
   },
   {
@@ -23,6 +32,7 @@ export const columns = ({ fnEdit, fnDelete }: Props): ServerTableColumn[] => [
     dataIndex: "name",
     key: "name",
     sortable: true,
+    renderItem: (row: UserGroupModel) => <span>{row.name.toUpperCase()}</span>,
   },
   {
     title: "Ações",
@@ -39,6 +49,7 @@ export const columns = ({ fnEdit, fnDelete }: Props): ServerTableColumn[] => [
         >
           <EditIcon className="size-4" />
         </Button>
+
         <Button
           size="sm"
           variant="destructive"
@@ -48,6 +59,17 @@ export const columns = ({ fnEdit, fnDelete }: Props): ServerTableColumn[] => [
           }}
         >
           <TrashIcon className="size-4" />
+        </Button>
+        <Button
+          size="sm"
+          variant="secondary"
+          type="button"
+          title="Permissões do Grupo"
+          onClick={() => {
+            fnPermissions(row);
+          }}
+        >
+          <Settings2Icon className="size-4" />
         </Button>
       </div>
     ),

@@ -8,13 +8,15 @@ export class CustomersService {
 
   static async getAll(userId: string): Promise<CustomerModel[]> {
     const response = await api.get<CustomerModel[]>(
-      `/${this.basePath}/all/${userId}`
+      `/${this.basePath}/all/${encodeURIComponent(userId)}`
     );
     return response.data;
   }
 
   static async getById(id: number): Promise<CustomerModel> {
-    const response = await api.get<CustomerModel>(`/${this.basePath}/id/${id}`);
+    const response = await api.get<CustomerModel>(
+      `/${this.basePath}/id/${encodeURIComponent(id)}`
+    );
     return response.data;
   }
 
@@ -38,13 +40,13 @@ export class CustomersService {
     data: Partial<CustomerModel>
   ): Promise<CustomerModel> {
     const response = await api.patch<CustomerModel>(
-      `/${this.basePath}/${id}`,
+      `/${this.basePath}/${encodeURIComponent(id)}`,
       data
     );
     return response.data;
   }
 
   static async delete(id: number): Promise<void> {
-    await api.delete(`/${this.basePath}/${id}`);
+    await api.delete(`/${this.basePath}/${encodeURIComponent(id)}`);
   }
 }

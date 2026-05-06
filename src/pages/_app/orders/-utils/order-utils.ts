@@ -192,7 +192,7 @@ export const generateOrderFromOutlet = async (
 export const getUserPermissions = async (userId: string) => {
   try {
     const { data } = await api.get<UserPermissionModel[]>(
-      `/admin/users/permissions/${userId}`,
+      `/admin/users/permissions/${encodeURIComponent(userId)}`,
     );
 
     return data;

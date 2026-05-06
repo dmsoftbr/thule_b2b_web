@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_app/budgets/view/$orderId/")({
   component: RouteComponent,
   loader: async ({ params }) => {
     const { orderId } = params;
-    const { data } = await api.get(`/orders/${orderId}`);
+    const { data } = await api.get(`/orders/${encodeURIComponent(orderId)}`);
     return data;
   },
 });

@@ -9,6 +9,8 @@ import { columns } from "./-components/columns";
 import { useState } from "react";
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 import { UserGroupsService } from "@/services/admin/user-groups.service";
+import { GroupPermissionsModal } from "./-components/permissions-modal";
+import { RequirePermission } from "@/components/auth/require-permission";
 
 const searchFieldsList: ServerTableSearchField[] = [
   {
@@ -22,11 +24,21 @@ const searchFieldsList: ServerTableSearchField[] = [
 ];
 
 export const Route = createFileRoute("/_app/admin/user-groups/")({
-  component: UserGroupsPageComponent,
+  component: GuardedUserGroupsPage,
 });
+
+function GuardedUserGroupsPage() {
+  return (
+    <RequirePermission permissionId="11">
+      <UserGroupsPageComponent />
+    </RequirePermission>
+  );
+}
 
 function UserGroupsPageComponent() {
   const [tableToken, setTableToken] = useState(new Date().valueOf());
+  const [showPermissions, setShowPermissions] = useState(false);
+  const [currentGroup, setCurrentGroup] = useState<UserGroupModel | null>(null);
   const { showAppDialog } = useAppDialog();
   const navigate = useNavigate();
 
@@ -55,6 +67,11 @@ function UserGroupsPageComponent() {
     }
   };
 
+  const handlePermissions = (data: UserGroupModel) => {
+    setCurrentGroup(data);
+    setShowPermissions(true);
+  };
+
   return (
     <AppPageHeader titleSlot="Manutenção de Grupos de Usuários">
       <div className="p-2">
@@ -66,12 +83,23 @@ function UserGroupsPageComponent() {
           columns={columns({
             fnEdit: handleEdit,
             fnDelete: handleDelete,
+            fnPermissions: handlePermissions,
           })}
           showAddButton
           onAdd={() => handleAdd()}
           dataUrl="/admin/user-groups/list-paged"
         />
       </div>
+      {showPermissions && currentGroup && (
+        <GroupPermissionsModal
+          isOpen={showPermissions}
+          onClose={() => {
+            setCurrentGroup(null);
+            setShowPermissions(false);
+          }}
+          group={currentGroup}
+        />
+      )}
     </AppPageHeader>
   );
 }

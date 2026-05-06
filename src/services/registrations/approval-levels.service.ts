@@ -15,7 +15,7 @@ export class ApprovalLevelsService {
 
   static async getById(id: string): Promise<ApprovalLevelModel> {
     const response = await api.get<ApprovalLevelModel>(
-      `/${this.basePath}/id/${id}`
+      `/${this.basePath}/id/${encodeURIComponent(id)}`
     );
     return response.data;
   }
@@ -45,13 +45,13 @@ export class ApprovalLevelsService {
     data: Partial<ApprovalLevelModel>
   ): Promise<ApprovalLevelModel> {
     const response = await api.patch<ApprovalLevelModel>(
-      `/${this.basePath}/${id}`,
+      `/${this.basePath}/${encodeURIComponent(id)}`,
       data
     );
     return response.data;
   }
 
   static async delete(id: string): Promise<void> {
-    await api.delete(`/${this.basePath}/${id}`);
+    await api.delete(`/${this.basePath}/${encodeURIComponent(id)}`);
   }
 }

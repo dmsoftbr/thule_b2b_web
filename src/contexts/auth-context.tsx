@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import eventBus from "@/lib/event-bus";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AuthContextType {
   isPending: boolean;
@@ -23,15 +24,18 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<SessionModel | null>(null);
   const [isPending, setIsPending] = useState(true);
+  const queryClient = useQueryClient();
 
   const login = (userData: SessionModel) => {
     setSession(userData);
     localStorage.setItem("b2b@session", JSON.stringify(userData));
+    queryClient.invalidateQueries({ queryKey: ["permissions"] });
   };
 
   const logout = () => {
     setSession(null);
     localStorage.removeItem("b2b@session");
+    queryClient.removeQueries({ queryKey: ["permissions"] });
   };
 
   useEffect(() => {

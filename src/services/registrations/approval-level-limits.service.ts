@@ -15,7 +15,7 @@ export class ApprovalLevelLimitsService {
 
   static async getById(id: string): Promise<ApprovalLevelLimitModel> {
     const response = await api.get<ApprovalLevelLimitModel>(
-      `/${this.basePath}/id/${id}`
+      `/${this.basePath}/id/${encodeURIComponent(id)}`
     );
     return response.data;
   }
@@ -44,13 +44,13 @@ export class ApprovalLevelLimitsService {
     data: Partial<ApprovalLevelLimitModel>
   ): Promise<ApprovalLevelLimitModel> {
     const response = await api.patch<ApprovalLevelLimitModel>(
-      `/${this.basePath}/${id}`,
+      `/${this.basePath}/${encodeURIComponent(id)}`,
       data
     );
     return response.data;
   }
 
   static async delete(id: string): Promise<void> {
-    await api.delete(`/${this.basePath}/${id}`);
+    await api.delete(`/${this.basePath}/${encodeURIComponent(id)}`);
   }
 }

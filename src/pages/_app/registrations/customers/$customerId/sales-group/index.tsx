@@ -32,7 +32,7 @@ function CustomerIdSalesGroupPageComponent() {
     queryKey: ["customer-id", customerId],
     queryFn: async () => {
       const { data } = await api.get<CustomerModel>(
-        `/registrations/customers/id/${customerId}`,
+        `/registrations/customers/id/${encodeURIComponent(customerId)}`,
       );
       return data;
     },
@@ -45,7 +45,7 @@ function CustomerIdSalesGroupPageComponent() {
 
   const handleDelete = async (data: CustomerSalesGroupModel) => {
     await api.delete(
-      `/registrations/customer-sales-group/${data.customerId}/${data.groupId}`,
+      `/registrations/customer-sales-group/${encodeURIComponent(data.customerId)}/${encodeURIComponent(data.groupId)}`,
     );
 
     setTableToken(new Date().valueOf());

@@ -159,7 +159,7 @@ export const OrderItemCard = ({ data, className }: Props) => {
                     </div>
                   </div>
                 </div>
-                {session?.user.role == 0 && (
+                {(session?.user.role == 0 || session?.user.role == 1) && (
                   <p className="text-xs">{data.fiscalOperationId}</p>
                 )}
               </div>

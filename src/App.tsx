@@ -18,9 +18,9 @@ function App() {
   const queryClient = new QueryClient();
 
   return (
-    <AuthProvider>
-      <NuqsAdapter>
-        <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <NuqsAdapter>
           <AppDialogProvider>
             <RouterProvider router={router} />
           </AppDialogProvider>
@@ -39,9 +39,9 @@ function App() {
               },
             }}
           />
-        </QueryClientProvider>
-      </NuqsAdapter>
-    </AuthProvider>
+        </NuqsAdapter>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
