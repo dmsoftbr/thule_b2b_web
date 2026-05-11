@@ -18,6 +18,7 @@ export const OrderFormHeader = () => {
     setDeliveryLocation,
     clearItems,
     mode,
+    isBudget,
   } = useOrder();
   const { showAppDialog } = useAppDialog();
   const isEditing = mode == "NEW" || mode == "EDIT";
@@ -29,7 +30,7 @@ export const OrderFormHeader = () => {
       showAppDialog({
         title: "Cliente",
         message:
-          "Cliente suspenso para implantação de pedidos, por favor, entre em contato com a Thule.",
+          `Cliente suspenso para implantação de ${isBudget ? "simulações" : "pedidos"}, por favor, entre em contato com a Thule.`,
         type: "warning",
       });
       return false;
@@ -61,7 +62,7 @@ export const OrderFormHeader = () => {
     // Se há itens no pedido, pede confirmação
     if (order.items.length > 0) {
       const dialogResult = await showAppDialog({
-        message: "Se trocar o cliente o pedido será redefinido",
+        message: `Se trocar o cliente ${isBudget ? "a simulação será redefinida" : "o pedido será redefinido"}`,
         title: "Atenção",
         type: "confirm",
         buttons: [

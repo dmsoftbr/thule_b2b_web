@@ -12,7 +12,7 @@ function NewBudgetPage() {
       <h1 className="font-semibold text-lg px-2 bg-neutral-200">
         Nova Simulação
       </h1>
-      <OrderProvider formMode="NEW">
+      <OrderProvider formMode="NEW" isBudget>
         <OrderForm />
       </OrderProvider>
     </div>

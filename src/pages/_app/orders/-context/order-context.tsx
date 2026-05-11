@@ -40,6 +40,10 @@ interface OrderProviderProps {
   children: ReactNode;
   initialOrder?: OrderModel;
   formMode?: "NEW" | "EDIT" | "VIEW";
+  // Permite forçar o modo simulação na criação (quando initialOrder é undefined,
+  // como em /budgets/new-budget). Sem isso, o context só conseguiria saber que
+  // é simulação ao carregar uma simulação existente.
+  isBudget?: boolean;
 }
 
 // Create the OrderProvider component
@@ -47,8 +51,9 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
   children,
   initialOrder,
   formMode,
+  isBudget: isBudgetProp,
 }) => {
-  const isBudget = initialOrder?.isBudget ?? false;
+  const isBudget = initialOrder?.isBudget ?? isBudgetProp ?? false;
   const [order, setOrder] = useState<OrderModel>(() => {
     return initialOrder ?? { ...NEW_ORDER_EMPTY, items: [], isBudget };
   });
@@ -82,7 +87,10 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
   };
 
   const clearAll = () => {
-    setOrder({ ...NEW_ORDER_EMPTY, items: [] });
+    // Preserva isBudget — definido pela rota (/orders vs /budgets), não pelo
+    // payload do pedido. Resetar para NEW_ORDER_EMPTY perdia esse contexto e
+    // fazia simulação ser gravada como pedido.
+    setOrder({ ...NEW_ORDER_EMPTY, items: [], isBudget });
   };
 
   const clearItems = () => {

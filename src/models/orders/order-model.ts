@@ -8,6 +8,10 @@ import type { PaymentConditionModel } from "../registrations/payment-condition.m
 export type OrderModel = {
   id: string;
   orderId: string;
+  // Vínculo Simulação ↔ Pedido (preenchido pelo backend ao gerar pedido a partir de simulação).
+  budgetId?: string | null;
+  generatedOrderId?: string | null;
+  generatedOrderInternalId?: string | null;
   erpOrderId: number;
   customerId: number;
   customerAbbreviation: string;

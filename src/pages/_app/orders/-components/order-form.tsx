@@ -37,7 +37,7 @@ export const OrderForm = () => {
               size="sm"
               onClick={() => {
                 clearAll();
-                navigate({ to: "/orders" });
+                navigate({ to: isBudget ? "/budgets" : "/orders" });
               }}
             >
               Cancelar

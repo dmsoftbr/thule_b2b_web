@@ -1,6 +1,8 @@
 import { PackageIcon } from "lucide-react";
+import { useOrder } from "../-context/order-context";
 
 export const EmptyOrder = () => {
+  const { isBudget } = useOrder();
   return (
     <div className="flex flex-col items-center justify-center py-12 w-full opacity-40">
       <PackageIcon className="h-12 w-12 text-gray-400 mb-4" />
@@ -8,7 +10,7 @@ export const EmptyOrder = () => {
         Nenhum produto adicionado
       </h3>
       <p className="text-gray-500 text-center">
-        Adicione alguns itens para começar seu pedido.
+        Adicione alguns itens para começar {isBudget ? "sua simulação" : "seu pedido"}.
       </p>
     </div>
   );

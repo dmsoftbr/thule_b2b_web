@@ -1,6 +1,8 @@
 import { AppPageHeader } from "@/components/layout/app-page-header";
+import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 import { ServerTable } from "@/components/server-table/server-table";
 import { Button } from "@/components/ui/button";
+import { api } from "@/lib/api";
 import type { PriceTableProductExceptionModel } from "@/models/registrations/price-table-product-exception.model";
 import {
   createFileRoute,
@@ -21,6 +23,7 @@ function PriceTableProductsExceptionComponent() {
   const [tableToken, setTableToken] = useState(new Date().valueOf());
   const [showAddModal, setShowAddModal] = useState(false);
   const navigate = useNavigate();
+  const { showAppDialog } = useAppDialog();
   const { priceTableId } = useParams({
     from: "/_app/registrations/price-tables/$priceTableId/products-exception/",
   });
@@ -29,9 +32,19 @@ function PriceTableProductsExceptionComponent() {
     setShowAddModal(true);
   };
 
-  const handleDelete = (data: PriceTableProductExceptionModel) => {
-    //
-    console.log(data);
+  const handleDelete = async (data: PriceTableProductExceptionModel) => {
+    const continueDelete = await showAppDialog({
+      title: "Atenção",
+      message: "Excluir este registro?",
+      type: "confirm",
+    });
+
+    if (!continueDelete) return;
+
+    await api.delete(
+      `/registrations/price-table-products-exception/${encodeURIComponent(data.priceTableId)}/${encodeURIComponent(data.productId)}/${encodeURIComponent(data.branchId)}`,
+    );
+    setTableToken(new Date().valueOf());
   };
 
   return (

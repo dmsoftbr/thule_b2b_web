@@ -106,7 +106,7 @@ export const OrderFormItems = () => {
         (f) => f.productId.toLowerCase() === product.id.toLowerCase(),
       ) >= 0
     ) {
-      toast.warning("Produto já consta no pedido!");
+      toast.warning(`Produto já consta ${order.isBudget ? "na simulação" : "no pedido"}!`);
       return;
     }
 
@@ -174,7 +174,7 @@ export const OrderFormItems = () => {
     };
 
     addItem(newOrderItem);
-    toast.success("Produto adicionado ao pedido", {
+    toast.success(`Produto adicionado ${order.isBudget ? "à simulação" : "ao pedido"}`, {
       duration: 1000,
     });
   }

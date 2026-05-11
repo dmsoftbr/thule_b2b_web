@@ -36,6 +36,7 @@ interface Props {
   fnEdit: (order: OrderModel) => void;
   fnCancel: (order: OrderModel) => void;
   fnCopy: (order: OrderModel) => void;
+  isBudget?: boolean;
 }
 
 export const columns = ({
@@ -43,11 +44,14 @@ export const columns = ({
   fnView,
   fnCancel,
   fnCopy,
-}: Props): ServerTableColumn[] => [
+  isBudget = false,
+}: Props): ServerTableColumn[] => {
+  const label = isBudget ? "Simulação" : "Pedido";
+  return [
   {
     key: "orderId",
     dataIndex: "orderId",
-    title: "Pedido",
+    title: label,
     className: "text-xs",
     renderItem: (order: OrderModel) => (
       <span className="font-semibold text-blue-600 ">{order.orderId}</span>
@@ -123,7 +127,7 @@ export const columns = ({
   {
     key: "totalOrderValue",
     dataIndex: "totalOrderValue",
-    title: "Total do Pedido",
+    title: `Total ${isBudget ? "da Simulação" : "do Pedido"}`,
     cellClassName: "text-xs",
     className: "text-xs",
     renderItem: (order: OrderModel) => (
@@ -138,14 +142,22 @@ export const columns = ({
     className: "text-xs",
     renderItem: (order: OrderModel) => (
       <div className="flex items-center justify-center">
-        <span
-          className={cn(
-            "px-2 py-1 text-xs rounded-full",
-            getOrderStatusColor(order),
-          )}
-        >
-          {getOrderStatusName(order)}
-        </span>
+        {order.generatedOrderId ? (
+          <AppTooltip message={`Pedido ${order.generatedOrderId}`}>
+            <span className="px-2 py-1 text-xs rounded-full bg-emerald-600 text-white whitespace-nowrap">
+              Pedido Gerado
+            </span>
+          </AppTooltip>
+        ) : (
+          <span
+            className={cn(
+              "px-2 py-1 text-xs rounded-full",
+              getOrderStatusColor(order),
+            )}
+          >
+            {getOrderStatusName(order)}
+          </span>
+        )}
       </div>
     ),
     sortable: true,
@@ -158,13 +170,24 @@ export const columns = ({
     renderItem: (order: OrderModel) => (
       <div className="flex justify-end">
         {order.statusId != 6 && (
-          <AppTooltip message="Alterar Pedido">
-            <Button onClick={() => fnEdit(order)} variant="secondary" size="sm">
+          <AppTooltip
+            message={
+              order.generatedOrderId
+                ? `Simulação fechada — pedido ${order.generatedOrderId} gerado`
+                : `Alterar ${label}`
+            }
+          >
+            <Button
+              onClick={() => fnEdit(order)}
+              variant="secondary"
+              size="sm"
+              disabled={!!order.generatedOrderId}
+            >
               <EditIcon className="size-4" />
             </Button>
           </AppTooltip>
         )}
-        <AppTooltip message="Visualizar Pedido">
+        <AppTooltip message={`Visualizar ${label}`}>
           <Button onClick={() => fnView(order)} variant="secondary" size="sm">
             <SearchIcon className="size-4" />
           </Button>
@@ -178,7 +201,7 @@ export const columns = ({
           <DropdownMenuContent align="end" className="">
             <DropdownMenuItem onClick={() => fnView(order, true)}>
               <ExternalLinkIcon className="size-4" />
-              Visualizar Pedido em Nova Aba
+              Visualizar {label} em Nova Aba
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -192,10 +215,10 @@ export const columns = ({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => fnCancel(order)}
-              disabled={order.statusId == 6}
+              disabled={order.statusId == 6 || !!order.generatedOrderId}
             >
               <XSquareIcon className="size-4 text-red-500" />
-              Cancelar Pedido
+              Cancelar {label}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -215,3 +238,4 @@ export const columns = ({
     ),
   },
 ];
+};

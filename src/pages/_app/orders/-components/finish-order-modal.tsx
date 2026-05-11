@@ -58,7 +58,7 @@ interface Props {
 export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   const navigate = useNavigate();
   const { session } = useAuth();
-  const { order, mode, setOrder } = useOrder();
+  const { order, mode, isBudget, setOrder } = useOrder();
   const { showAppDialog } = useAppDialog();
 
   const isEditing = mode == "NEW" || mode == "EDIT";
@@ -81,7 +81,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
 
   const [isCalculatingFreight, setIsCalculatingFreight] = useState(false);
   const [isCalculatingTaxes, setIsCalculatingTaxes] = useState(false);
-  const [isFreightError, setIsFreightError] = useState(false);
+  const [, setIsFreightError] = useState(false);
   const [totalTaxes, setTotalTaxes] = useState(0);
   const freightAbortControllerRef = useRef<AbortController | null>(null);
   const taxesAbortControllerRef = useRef<AbortController | null>(null);
@@ -90,7 +90,10 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
     try {
       //save the order / budget
       let savedOrderId = "";
-      const orderData = { ...order, history: [] };
+      // Força o isBudget do context (fonte de verdade da rota /budgets vs /orders).
+      // O order.isBudget pode estar dessincronizado se o objeto tiver passado por
+      // um reset (ex.: NEW_ORDER_EMPTY com isBudget=false).
+      const orderData = { ...order, isBudget, history: [] };
       setIsSaving(true);
 
       orderData.items.forEach((orderItem) => {
@@ -209,10 +212,10 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
       onClose();
       await showAppDialog({
         type: "success",
-        title: order.isBudget
+        title: isBudget
           ? "Simulação Enviada com Sucesso"
           : "Pedido Enviado com sucesso!",
-        message: order.isBudget
+        message: isBudget
           ? `Gerada a Simulação ${savedOrderId}`
           : `Gerado o Pedido ${savedOrderId}`,
         buttons: [
@@ -220,17 +223,19 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
         ],
       });
 
-      await showAppDialog({
-        type: "success",
-        title: "ATENÇÃO!",
-        message: `Pedido encontra-se em análise financeira e serão checados a partir das 11:30,14:30 e 16:30.
+      if (!isBudget) {
+        await showAppDialog({
+          type: "success",
+          title: "ATENÇÃO!",
+          message: `Pedido encontra-se em análise financeira e serão checados a partir das 11:30,14:30 e 16:30.
 Os produtos não serão reservados e poderão sofrer alterações na data de entrega.`,
-        buttons: [
-          { text: "OK", variant: "primary", value: "ok", autoClose: true },
-        ],
-      });
+          buttons: [
+            { text: "OK", variant: "primary", value: "ok", autoClose: true },
+          ],
+        });
+      }
 
-      if (order.isBudget) navigate({ to: "/budgets" });
+      if (isBudget) navigate({ to: "/budgets" });
       else navigate({ to: "/orders" });
     } catch (error) {
       toast.error("ATENÇÃO:", handleError(error));
@@ -238,6 +243,40 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
       setIsSaving(false);
       setIsCalculatingFreight(false);
       setIsCalculatingTaxes(false);
+    }
+  }
+
+  // Gera um Pedido novo a partir de uma Simulação já gravada.
+  // Backend cria o pedido, linka os dois (BudgetId/GeneratedOrderId) e marca
+  // a simulação como imutável.
+  async function handleGenerateOrder() {
+    if (!order.id) {
+      toast.warning("Grave a simulação antes de gerar o pedido.");
+      return;
+    }
+    if (order.generatedOrderId) {
+      toast.warning(`Esta simulação já gerou o pedido ${order.generatedOrderId}.`);
+      return;
+    }
+    try {
+      setIsSaving(true);
+      const { data } = await api.post(
+        `/orders/generate-from-budget/${encodeURIComponent(order.id)}`,
+      );
+      onClose();
+      await showAppDialog({
+        type: "success",
+        title: "Pedido Gerado com Sucesso",
+        message: `Gerado o Pedido ${data.orderId} a partir da Simulação ${order.orderId}.`,
+        buttons: [
+          { text: "OK", variant: "primary", value: "ok", autoClose: true },
+        ],
+      });
+      navigate({ to: "/orders" });
+    } catch (error) {
+      toast.error("ATENÇÃO:", handleError(error));
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -487,7 +526,7 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
         orderTotal < selectedPaymentCondition.minOrderValue
       ) {
         setOrderValidationMessage(
-          `Para comprar com a condição de pagamento selecionada, seu pedido deve ser de no mínimo R$ ${formatNumber(selectedPaymentCondition.minOrderValue, 2)}`,
+          `Para comprar com a condição de pagamento selecionada, ${isBudget ? "sua simulação deve ser" : "seu pedido deve ser"} de no mínimo R$ ${formatNumber(selectedPaymentCondition.minOrderValue, 2)}`,
         );
       }
     }
@@ -506,446 +545,502 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
   ]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="min-w-[70%]">
-        <DialogHeader>
-          <DialogTitle>
-            {isEditing ? "Finalizar " : "Resumo de "}{" "}
-            {order.isBudget ? "Simulação" : "Pedido"}
-          </DialogTitle>
-          <DialogDescription></DialogDescription>
-        </DialogHeader>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
-          <div className="flex flex-col space-y-4 mt-2">
-            <div className="grid grid-cols-2 space-x-4">
-              <div className="form-group">
-                <Label>
-                  {order.isBudget ? "Tipo da Simulação" : "Tipo do Pedido"}
-                </Label>
-                <Select
-                  value={order.orderClassificationId.toString()}
-                  onValueChange={(value) => {
-                    setOrder({
-                      ...order,
-                      orderClassificationId: Number(value),
-                    });
-                  }}
-                  disabled={
-                    !isEditing ||
-                    isItemPermissionDisabled("317") ||
-                    order.orderClassificationId == 6 // outlet
-                  }
-                >
-                  <SelectTrigger className="w-full bg-white">
-                    <SelectValue placeholder="Selecione uma opção" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">Venda</SelectItem>
-                    <SelectItem value="2">Venda Cliente Final</SelectItem>
-                    <SelectItem value="3">Bonificação</SelectItem>
-                    <SelectItem value="4">Remessa Consignação</SelectItem>
-                    <SelectItem value="5">Garantia</SelectItem>
-                    <SelectItem value="6" disabled>
-                      Outlet
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        // Bloqueia fechar enquanto grava — evita usuário sair no meio da
+        // submissão e gerar pedido inconsistente / duplicado.
+        if (isSaving) return;
+        if (!open) onClose();
+      }}
+    >
+      <DialogContent
+        className="min-w-[70%]"
+        onEscapeKeyDown={(e) => {
+          if (isSaving) e.preventDefault();
+        }}
+        onPointerDownOutside={(e) => {
+          if (isSaving) e.preventDefault();
+        }}
+        onInteractOutside={(e) => {
+          if (isSaving) e.preventDefault();
+        }}
+      >
+        {/* Overlay de bloqueio enquanto grava — cobre todo o conteúdo do
+            modal e captura cliques/foco. fieldset abaixo já desabilita os
+            controles nativos; o overlay garante a UX visual e impede
+            interações com componentes customizados (Radix Select, etc.). */}
+        {isSaving && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm rounded-lg cursor-wait animate-in fade-in duration-200">
+            <div className="flex flex-col items-center gap-4 px-10 py-8 bg-white shadow-2xl rounded-2xl border border-slate-200 min-w-[280px]">
+              <div className="relative size-14">
+                <div className="absolute inset-0 rounded-full border-4 border-blue-100" />
+                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-600 animate-spin" />
               </div>
-              <div className="form-group">
-                <Label>Nº Pedido Distribuidor</Label>
-                <Input
-                  disabled={!isEditing}
-                  value={order.orderRepId}
-                  onChange={(e) => {
-                    setOrder({ ...order, orderRepId: e.target.value });
-                  }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="form-group">
-                <Label>Nº Whatsapp</Label>
-                <InputMask
-                  value={order.whatAppPhoneNumber}
-                  onChange={(value) => {
-                    setOrder({ ...order, whatAppPhoneNumber: value ?? "" });
-                  }}
-                  disabled={!isEditing}
-                  mask="(00) 00000-0000"
-                />
-              </div>
-            </div>
-            <div className="form-group">
-              <Label>Endereço de Entrega</Label>
-              <SearchCombo
-                disabled={!isEditing || isItemPermissionDisabled("308")}
-                placeholder="Selecione o Endereço de Entrega"
-                staticItems={convertArrayToSearchComboItem(
-                  order.customer?.deliveryLocations ?? [],
-                  "id",
-                  (item) =>
-                    `${item.id} - ${item.address} - ${item.city} - ${item.state}`,
-                )}
-                defaultValue={getSelectedDeliveryLocation()}
-              />
-            </div>
-            <div className="form-group">
-              <Label>Condição de Pagamento</Label>
-              {!isEditing && (
-                <Input
-                  readOnly
-                  value={`${order.paymentConditionId} - ${order.paymentCondition?.name}`}
-                />
-              )}
-              {isEditing && (
-                <SearchCombo
-                  placeholder="Selecione a Condição de Pagamento"
-                  staticItems={paymentConditionsData}
-                  defaultValue={getOrderPaymentCondition()}
-                  onChange={(value: string) => {
-                    handleChangePaymentCondition(value);
-                  }}
-                />
-              )}
-            </div>
-            <div className="form-group">
-              <Label>Estabelecimento</Label>
-              <div className="flex items-center gap-x-2">
-                <Select
-                  value={order.branchId}
-                  onValueChange={(value) => {
-                    setOrder({ ...order, branchId: value });
-                  }}
-                  disabled={!isEditing || isItemPermissionDisabled("309")}
-                >
-                  <SelectTrigger className="w-full bg-white">
-                    <SelectValue placeholder="Selecione uma opção" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1</SelectItem>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="11">11</SelectItem>
-                  </SelectContent>
-                </Select>
-                {order.customer?.branchId !== "1" && (
-                  <Label>
-                    <Checkbox
-                      disabled={!isEditing}
-                      checked={order.branchId == "1"}
-                      onCheckedChange={(checked) => {
-                        if (!!checked) {
-                          setOrder({ ...order, branchId: "1" });
-                        } else {
-                          setOrder({
-                            ...order,
-                            branchId: order.customer?.branchId ?? "1",
-                          });
-                        }
-                      }}
-                    />
-                    Importadora
-                  </Label>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-x-4 ">
-              <div className="form-group">
-                <Label>Faturar em</Label>
-                <DatePicker
-                  defaultValue={order.minBillingDate ?? undefined}
-                  onValueChange={(date) => {
-                    setOrder({ ...order, minBillingDate: date ?? null });
-                  }}
-                  disabled={!isEditing || isItemPermissionDisabled("312")}
-                />
-              </div>
-              <div className="form-group">
-                <Label>Faturar no Máximo até</Label>
-                <DatePicker
-                  defaultValue={order.maxBillingDate ?? undefined}
-                  onValueChange={(date) => {
-                    setOrder({ ...order, maxBillingDate: date ?? null });
-                  }}
-                  disabled={!isEditing || isItemPermissionDisabled("312")}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-x-4 space-y-2">
-              <div className="form-group">
-                <Label>
-                  <Checkbox
-                    disabled={!isEditing || order.orderClassificationId == 6}
-                    checked={order.isParcialBilling}
-                    onCheckedChange={(checked) => {
-                      const newOrder = {
-                        ...order,
-                        isParcialBilling: checked ? true : false,
-                      };
-                      setOrder(newOrder);
-                    }}
-                  />
-                  Fatura Parcial
-                </Label>
-              </div>
-              <div className="form-group">
-                <Label>
-                  <Checkbox
-                    disabled={
-                      !isEditing ||
-                      isItemPermissionDisabled("314") ||
-                      order.orderClassificationId == 6
-                    }
-                    checked={order.freightPaymentId == 3}
-                    onCheckedChange={(checked) => {
-                      const newOrder = {
-                        ...order,
-                        freightPaymentId: checked ? 3 : 1,
-                      };
-                      setOrder(newOrder);
-                    }}
-                  />
-                  Frete Pago
-                </Label>
-              </div>
-              <div className="form-group">
-                <Label>
-                  <Checkbox
-                    disabled={!isEditing || isItemPermissionDisabled("315")}
-                    checked={order.useCustomerCarrier}
-                    onCheckedChange={(checked) => {
-                      const newOrder = {
-                        ...order,
-                        useCustomerCarrier: checked ? true : false,
-                      };
-                      if (checked == true) {
-                        freightAbortControllerRef.current?.abort();
-                        setIsCalculatingFreight(false);
-                        newOrder.freightValue = 0;
-                        newOrder.freightTypeId = 4;
-                        newOrder.carrierId = newOrder.customer?.carrierId ?? 0;
-                      }
-                      setOrder(newOrder);
-                      if (!checked) {
-                        setTimeout(() => {
-                          getFreights();
-                        }, 1000);
-                      }
-                    }}
-                  />
-                  Usa Transportadora do Cliente
-                </Label>
-              </div>
-              <div className="form-group">
-                <Label>
-                  <Checkbox
-                    disabled={!isEditing}
-                    onCheckedChange={(value) => {
-                      if (!!value) {
-                        window.open(
-                          "https://form.jotformz.com/210402780488657",
-                          "_blank",
-                        );
-                      }
-                    }}
-                  />
-                  Enviar Display com o Pedido
-                </Label>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-base font-semibold text-slate-800">
+                  Gravando {isBudget ? "simulação" : "pedido"}
+                </span>
+                <span className="text-xs text-slate-500">
+                  Por favor, aguarde — não feche esta janela.
+                </span>
               </div>
             </div>
           </div>
-          {/* Segunda coluna */}
-          <div className="border-l px-4">
-            {!isEditing && (
-              <div className="mb-2 form-group">
-                <Label>Transportadora</Label>
-                <Input
-                  readOnly
-                  value={`${order.carrier?.id} - ${order.carrier?.abbreviation}`}
+        )}
+        <fieldset disabled={isSaving} className="contents">
+          <DialogHeader>
+            <DialogTitle>
+              {isEditing ? "Finalizar " : "Resumo de "}{" "}
+              {isBudget ? "Simulação" : "Pedido"}
+            </DialogTitle>
+            <DialogDescription></DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+            <div className="flex flex-col space-y-4 mt-2">
+              <div className="grid grid-cols-2 space-x-4">
+                <div className="form-group">
+                  <Label>
+                    {isBudget ? "Tipo da Simulação" : "Tipo do Pedido"}
+                  </Label>
+                  <Select
+                    value={order.orderClassificationId.toString()}
+                    onValueChange={(value) => {
+                      setOrder({
+                        ...order,
+                        orderClassificationId: Number(value),
+                      });
+                    }}
+                    disabled={
+                      !isEditing ||
+                      isItemPermissionDisabled("317") ||
+                      order.orderClassificationId == 6 // outlet
+                    }
+                  >
+                    <SelectTrigger className="w-full bg-white">
+                      <SelectValue placeholder="Selecione uma opção" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">Venda</SelectItem>
+                      <SelectItem value="2">Venda Cliente Final</SelectItem>
+                      <SelectItem value="3">Bonificação</SelectItem>
+                      <SelectItem value="4">Remessa Consignação</SelectItem>
+                      <SelectItem value="5">Garantia</SelectItem>
+                      <SelectItem value="6" disabled>
+                        Outlet
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="form-group">
+                  <Label>
+                    Nº {isBudget ? "Simulação" : "Pedido"} Distribuidor
+                  </Label>
+                  <Input
+                    disabled={!isEditing}
+                    value={order.orderRepId}
+                    onChange={(e) => {
+                      setOrder({ ...order, orderRepId: e.target.value });
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <div className="form-group">
+                  <Label>Nº Whatsapp</Label>
+                  <InputMask
+                    value={order.whatAppPhoneNumber}
+                    onChange={(value) => {
+                      setOrder({ ...order, whatAppPhoneNumber: value ?? "" });
+                    }}
+                    disabled={!isEditing}
+                    mask="(00) 00000-0000"
+                  />
+                </div>
+              </div>
+              <div className="form-group">
+                <Label>Endereço de Entrega</Label>
+                <SearchCombo
+                  disabled={!isEditing || isItemPermissionDisabled("308")}
+                  placeholder="Selecione o Endereço de Entrega"
+                  staticItems={convertArrayToSearchComboItem(
+                    order.customer?.deliveryLocations ?? [],
+                    "id",
+                    (item) =>
+                      `${item.id} - ${item.address} - ${item.city} - ${item.state}`,
+                  )}
+                  defaultValue={getSelectedDeliveryLocation()}
                 />
               </div>
-            )}
-            {isEditing && !order.useCustomerCarrier && (
-              <>
-                {" "}
-                <h3 className="font-semibold text-xl">
-                  Selecione uma opção de Frete
-                </h3>
-                <div>
-                  {isCalculatingFreight && (
-                    <div className="flex items-center justify-center h-[100px] border">
-                      <Loader2Icon className="animate-spin mr-1.5 text-blue-600" />
-                      <span>Calculando Frete. Aguarde...</span>
-                    </div>
+              <div className="form-group">
+                <Label>Condição de Pagamento</Label>
+                {!isEditing && (
+                  <Input
+                    readOnly
+                    value={`${order.paymentConditionId} - ${order.paymentCondition?.name}`}
+                  />
+                )}
+                {isEditing && (
+                  <SearchCombo
+                    placeholder="Selecione a Condição de Pagamento"
+                    staticItems={paymentConditionsData}
+                    defaultValue={getOrderPaymentCondition()}
+                    onChange={(value: string) => {
+                      handleChangePaymentCondition(value);
+                    }}
+                  />
+                )}
+              </div>
+              <div className="form-group">
+                <Label>Estabelecimento</Label>
+                <div className="flex items-center gap-x-2">
+                  <Select
+                    value={order.branchId}
+                    onValueChange={(value) => {
+                      setOrder({ ...order, branchId: value });
+                    }}
+                    disabled={!isEditing || isItemPermissionDisabled("309")}
+                  >
+                    <SelectTrigger className="w-full bg-white">
+                      <SelectValue placeholder="Selecione uma opção" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1</SelectItem>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="11">11</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {order.customer?.branchId !== "1" && (
+                    <Label>
+                      <Checkbox
+                        disabled={!isEditing}
+                        checked={order.branchId == "1"}
+                        onCheckedChange={(checked) => {
+                          if (!!checked) {
+                            setOrder({ ...order, branchId: "1" });
+                          } else {
+                            setOrder({
+                              ...order,
+                              branchId: order.customer?.branchId ?? "1",
+                            });
+                          }
+                        }}
+                      />
+                      Importadora
+                    </Label>
                   )}
-                  {!isCalculatingFreight && (
-                    <FreightTable
-                      data={freightsData}
-                      onRefreshCalc={() => getFreights()}
-                      onValueChange={(carrierId, value) => {
-                        setOrder({ ...order, carrierId, freightValue: value });
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-x-4 ">
+                <div className="form-group">
+                  <Label>Faturar em</Label>
+                  <DatePicker
+                    defaultValue={order.minBillingDate ?? undefined}
+                    onValueChange={(date) => {
+                      setOrder({ ...order, minBillingDate: date ?? null });
+                    }}
+                    disabled={!isEditing || isItemPermissionDisabled("312")}
+                  />
+                </div>
+                <div className="form-group">
+                  <Label>Faturar no Máximo até</Label>
+                  <DatePicker
+                    defaultValue={order.maxBillingDate ?? undefined}
+                    onValueChange={(date) => {
+                      setOrder({ ...order, maxBillingDate: date ?? null });
+                    }}
+                    disabled={!isEditing || isItemPermissionDisabled("312")}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-x-4 space-y-2">
+                <div className="form-group">
+                  <Label>
+                    <Checkbox
+                      disabled={!isEditing || order.orderClassificationId == 6}
+                      checked={order.isParcialBilling}
+                      onCheckedChange={(checked) => {
+                        const newOrder = {
+                          ...order,
+                          isParcialBilling: checked ? true : false,
+                        };
+                        setOrder(newOrder);
                       }}
                     />
-                  )}
+                    Fatura Parcial
+                  </Label>
                 </div>
-              </>
-            )}
-            <div className="bg-neutral-100 px-4 rounded-md py-2 space-y-2">
-              <div className="flex justify-between pr-2">
-                <span>
-                  Sub-Total {order.isBudget ? "da Simulação" : "do Pedido"}:
-                </span>
-                <span>R$ {formatNumber(getSubTotal(), 2)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <Label>% Desconto:</Label>
-                <div className="flex gap-x-1.5 items-center">
-                  <NumericFormat
-                    thousandSeparator="."
-                    decimalSeparator=","
-                    decimalScale={2}
-                    fixedDecimalScale
-                    readOnly={isItemPermissionDisabled("318")}
-                    max={100}
-                    min={0}
-                    maxLength={6}
-                    value={order.discountPercentual ?? 0}
-                    className={cn(
-                      "file:text-foreground text-right placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-8 w-[90px] min-w-0 rounded-md border bg-white px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-100 disabled:border-none disabled:shadow-none",
-                      "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-                      "read-only:bg-neutral-100",
-                      "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-                    )}
-                    onValueChange={(value) =>
-                      handleChangeDiscountPercentual(value.floatValue ?? 0)
-                    }
-                  />
-                  {isEditing && order.orderClassificationId != 6 && (
-                    <AppTooltip message="Desfazer">
-                      <button
-                        className="hover:bg-neutral-200 bg-neutral-50 p-1 rounded border border-neutral-300"
-                        onClick={() => {
-                          handleChangeDiscountPercentual(
-                            order.customer?.discountPercent ?? 0,
+                <div className="form-group">
+                  <Label>
+                    <Checkbox
+                      disabled={
+                        !isEditing ||
+                        isItemPermissionDisabled("314") ||
+                        order.orderClassificationId == 6
+                      }
+                      checked={order.freightPaymentId == 3}
+                      onCheckedChange={(checked) => {
+                        const newOrder = {
+                          ...order,
+                          freightPaymentId: checked ? 3 : 1,
+                        };
+                        setOrder(newOrder);
+                      }}
+                    />
+                    Frete Pago
+                  </Label>
+                </div>
+                <div className="form-group">
+                  <Label>
+                    <Checkbox
+                      disabled={!isEditing || isItemPermissionDisabled("315")}
+                      checked={order.useCustomerCarrier}
+                      onCheckedChange={(checked) => {
+                        const newOrder = {
+                          ...order,
+                          useCustomerCarrier: checked ? true : false,
+                        };
+                        if (checked == true) {
+                          freightAbortControllerRef.current?.abort();
+                          setIsCalculatingFreight(false);
+                          newOrder.freightValue = 0;
+                          newOrder.freightTypeId = 4;
+                          newOrder.carrierId =
+                            newOrder.customer?.carrierId ?? 0;
+                        }
+                        setOrder(newOrder);
+                        if (!checked) {
+                          setTimeout(() => {
+                            getFreights();
+                          }, 1000);
+                        }
+                      }}
+                    />
+                    Usa Transportadora do Cliente
+                  </Label>
+                </div>
+                <div className="form-group">
+                  <Label>
+                    <Checkbox
+                      disabled={!isEditing}
+                      onCheckedChange={(value) => {
+                        if (!!value) {
+                          window.open(
+                            "https://form.jotformz.com/210402780488657",
+                            "_blank",
                           );
-                        }}
-                      >
-                        <Undo2Icon className="size-4" />
-                      </button>
-                    </AppTooltip>
-                  )}
+                        }
+                      }}
+                    />
+                    Enviar Display com {isBudget ? "a Simulação" : "o Pedido"}
+                  </Label>
                 </div>
               </div>
-              {order.orderClassificationId != 6 &&
-                (selectedPaymentCondition?.additionalDiscountPercent ?? 0) >
-                  0 && (
-                  <div className="flex justify-between text-sm bg-orange-100 p-1 rounded">
-                    <Label className="text-orange-600">
-                      % Desconto Adicional:
-                    </Label>
-                    <div className="flex gap-x-1.5 items-center">
-                      <span>{formatNumber(order.additionalDiscount, 2)}%</span>
-                      {/* <Input
+            </div>
+            {/* Segunda coluna */}
+            <div className="border-l px-4">
+              {!isEditing && (
+                <div className="mb-2 form-group">
+                  <Label>Transportadora</Label>
+                  <Input
+                    readOnly
+                    value={`${order.carrier?.id} - ${order.carrier?.abbreviation}`}
+                  />
+                </div>
+              )}
+              {isEditing && !order.useCustomerCarrier && (
+                <>
+                  {" "}
+                  <h3 className="font-semibold text-xl">
+                    Selecione uma opção de Frete
+                  </h3>
+                  <div>
+                    {isCalculatingFreight && (
+                      <div className="flex items-center justify-center h-[100px] border">
+                        <Loader2Icon className="animate-spin mr-1.5 text-blue-600" />
+                        <span>Calculando Frete. Aguarde...</span>
+                      </div>
+                    )}
+                    {!isCalculatingFreight && (
+                      <FreightTable
+                        data={freightsData}
+                        onRefreshCalc={() => getFreights()}
+                        onValueChange={(carrierId, value) => {
+                          setOrder({
+                            ...order,
+                            carrierId,
+                            freightValue: value,
+                          });
+                        }}
+                      />
+                    )}
+                  </div>
+                </>
+              )}
+              <div className="bg-neutral-100 px-4 rounded-md py-2 space-y-2">
+                <div className="flex justify-between pr-2">
+                  <span>
+                    Sub-Total {isBudget ? "da Simulação" : "do Pedido"}:
+                  </span>
+                  <span>R$ {formatNumber(getSubTotal(), 2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <Label>% Desconto:</Label>
+                  <div className="flex gap-x-1.5 items-center">
+                    <NumericFormat
+                      thousandSeparator="."
+                      decimalSeparator=","
+                      decimalScale={2}
+                      fixedDecimalScale
+                      readOnly={isItemPermissionDisabled("318")}
+                      max={100}
+                      min={0}
+                      maxLength={6}
+                      value={order.discountPercentual ?? 0}
+                      className={cn(
+                        "file:text-foreground text-right placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-8 w-[90px] min-w-0 rounded-md border bg-white px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-100 disabled:border-none disabled:shadow-none",
+                        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+                        "read-only:bg-neutral-100",
+                        "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+                      )}
+                      onValueChange={(value) =>
+                        handleChangeDiscountPercentual(value.floatValue ?? 0)
+                      }
+                    />
+                    {isEditing && order.orderClassificationId != 6 && (
+                      <AppTooltip message="Desfazer">
+                        <button
+                          className="hover:bg-neutral-200 bg-neutral-50 p-1 rounded border border-neutral-300"
+                          onClick={() => {
+                            handleChangeDiscountPercentual(
+                              order.customer?.discountPercent ?? 0,
+                            );
+                          }}
+                        >
+                          <Undo2Icon className="size-4" />
+                        </button>
+                      </AppTooltip>
+                    )}
+                  </div>
+                </div>
+                {order.orderClassificationId != 6 &&
+                  (selectedPaymentCondition?.additionalDiscountPercent ?? 0) >
+                    0 && (
+                    <div className="flex justify-between text-sm bg-orange-100 p-1 rounded">
+                      <Label className="text-orange-600">
+                        % Desconto Adicional:
+                      </Label>
+                      <div className="flex gap-x-1.5 items-center">
+                        <span>
+                          {formatNumber(order.additionalDiscount, 2)}%
+                        </span>
+                        {/* <Input
                       value={}
                       readOnly
                       className="max-w-[120px] text-right text-orange-600 font-semibold !opacity-100"
                     /> */}
-                      <Checkbox
-                        defaultChecked={
-                          (selectedPaymentCondition?.additionalDiscountPercent ??
-                            0) > 0
-                        }
-                        onCheckedChange={(checked) => {
-                          setOrder({
-                            ...order,
-                            additionalDiscount: checked
-                              ? (selectedPaymentCondition?.additionalDiscountPercent ??
-                                0)
-                              : 0,
-                          });
-                        }}
-                      />
+                        <Checkbox
+                          defaultChecked={
+                            (selectedPaymentCondition?.additionalDiscountPercent ??
+                              0) > 0
+                          }
+                          onCheckedChange={(checked) => {
+                            setOrder({
+                              ...order,
+                              additionalDiscount: checked
+                                ? (selectedPaymentCondition?.additionalDiscountPercent ??
+                                  0)
+                                : 0,
+                            });
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                )}
-              <div className="flex justify-between pr-2 text-sm">
-                <span>Frete:</span>
-                <span>R$ {formatNumber(order.freightValue, 2)}</span>
-              </div>
-              <div className="flex justify-between pr-2 text-sm">
-                <div className="flex">
-                  <TaxesModal data={taxesData} />
-                  Impostos:
+                  )}
+                <div className="flex justify-between pr-2 text-sm">
+                  <span>Frete:</span>
+                  <span>R$ {formatNumber(order.freightValue, 2)}</span>
                 </div>
-                {isCalculatingTaxes && (
-                  <div className="text-xs min-w-fit flex items-center">
-                    <LoaderIcon className="size-3 animate-spin mr-1" />
-                    Calculando...
+                <div className="flex justify-between pr-2 text-sm">
+                  <div className="flex">
+                    <TaxesModal data={taxesData} />
+                    Impostos:
                   </div>
-                )}
-                {!isCalculatingTaxes && (
-                  <span>R$ {formatNumber(totalTaxes, 2)}</span>
-                )}
-              </div>
-              <div className="flex justify-between font-medium pr-2 bg-emerald-600 rounded-md py-2 px-2 text-white">
-                <span>
-                  {order.isBudget ? "Total da Simulação" : "Total do Pedido"}{" "}
-                  c/Impostos
-                </span>
-                {isCalculatingFreight || isCalculatingTaxes ? (
-                  <span className="size-4 flex items-center justify-center mr-1">
-                    <LoaderIcon className="size-4 animate-spin" />
+                  {isCalculatingTaxes && (
+                    <div className="text-xs min-w-fit flex items-center">
+                      <LoaderIcon className="size-3 animate-spin mr-1" />
+                      Calculando...
+                    </div>
+                  )}
+                  {!isCalculatingTaxes && (
+                    <span>R$ {formatNumber(totalTaxes, 2)}</span>
+                  )}
+                </div>
+                <div className="flex justify-between font-medium pr-2 bg-emerald-600 rounded-md py-2 px-2 text-white">
+                  <span>
+                    {isBudget ? "Total da Simulação" : "Total do Pedido"}{" "}
+                    c/Impostos
                   </span>
-                ) : (
-                  <span>R$ {formatNumber(getTotal(), 2)}</span>
+                  {isCalculatingFreight || isCalculatingTaxes ? (
+                    <span className="size-4 flex items-center justify-center mr-1">
+                      <LoaderIcon className="size-4 animate-spin" />
+                    </span>
+                  ) : (
+                    <span>R$ {formatNumber(getTotal(), 2)}</span>
+                  )}
+                </div>
+
+                {orderValidationMessage && (
+                  <div className="flex items-center justify-center font-medium bg-red-200 text-white p-2">
+                    {orderValidationMessage}
+                  </div>
                 )}
               </div>
-
-              {orderValidationMessage && (
-                <div className="flex items-center justify-center font-medium bg-red-200 text-white p-2">
-                  {orderValidationMessage}
-                </div>
-              )}
             </div>
           </div>
-        </div>
-        <DialogFooter>
-          <Button variant="secondary" onClick={() => onClose()}>
-            Voltar
-          </Button>
-          {order.isBudget && isEditing && (
-            <Button
-              disabled={isCalculatingFreight || isFreightError || isSaving}
-              variant="green"
-              onClick={handleSendOrder}
-              className="text-emerald-900"
-            >
-              {isSaving ? (
-                <div>
-                  <Loader2Icon className="size-4" />
-                </div>
-              ) : (
-                "Gravar Simulação"
-              )}
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => onClose()}>
+              Voltar
             </Button>
-          )}
+            {isBudget && isEditing && (
+              <Button
+                disabled={isSaving}
+                variant="green"
+                onClick={handleSendOrder}
+                className="text-emerald-900"
+              >
+                {isSaving ? (
+                  <div>
+                    <Loader2Icon className="size-4" />
+                  </div>
+                ) : (
+                  "Gravar Simulação"
+                )}
+              </Button>
+            )}
 
-          {isEditing && (
-            <Button
-              onClick={handleSendOrder}
-              disabled={isCalculatingFreight || isCalculatingTaxes || isSaving}
-            >
-              {isSaving ? (
-                <div>
-                  <Loader2Icon className="size-4" />
-                </div>
-              ) : (
-                <span>{order.isBudget ? "Gerar" : "Enviar"} Pedido</span>
-              )}
-            </Button>
-          )}
-        </DialogFooter>
+            {isEditing && (
+              <Button
+                onClick={isBudget ? handleGenerateOrder : handleSendOrder}
+                disabled={
+                  isSaving ||
+                  (!isBudget && (isCalculatingFreight || isCalculatingTaxes)) ||
+                  (isBudget && (!order.id || !!order.generatedOrderId))
+                }
+              >
+                {isSaving ? (
+                  <div>
+                    <Loader2Icon className="size-4" />
+                  </div>
+                ) : (
+                  <span>{isBudget ? "Gerar Pedido" : "Enviar Pedido"}</span>
+                )}
+              </Button>
+            )}
+          </DialogFooter>
+        </fieldset>
       </DialogContent>
     </Dialog>
   );

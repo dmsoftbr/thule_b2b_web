@@ -23,7 +23,7 @@ import { toast } from "sonner";
 const searchFieldsList: ServerTableSearchField[] = [
   {
     id: "orderId",
-    label: "Pedido",
+    label: "Simulação",
   },
   {
     id: "customerAbbreviation",
@@ -189,6 +189,7 @@ function BudgetsPage() {
             fnCancel: handleCancel,
             fnView: handleView,
             fnCopy: handleCopy,
+            isBudget: true,
           })}
           showAddButton
           onAdd={() => handleAdd()}

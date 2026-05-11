@@ -29,13 +29,14 @@ export const AppMenuItem = ({ item, index }: Props) => {
     if (item.children?.length && !item.url) return false;
     if (!item.url) return false;
 
-    // exact match
+    // Match exato (terminação): pathname termina exatamente em item.url
     if (location.pathname.endsWith(item.url)) return true;
 
-    // se o pathname contiver parte do item.url (ex.: último segmento)
-    const parts = item.url.split("/").filter(Boolean);
-    const lastPart = parts.length ? parts[parts.length - 1] : "";
-    if (lastPart && location.pathname.includes(lastPart)) return true;
+    // Match de sub-rota: item.url seguido de "/" no pathname (preserva o
+    // destaque em páginas filhas como /registrations/products/123). O "/" no
+    // sufixo é o que evita que /price-tables/X/products-exception ative o
+    // item /registrations/products via match parcial de segmento.
+    if (location.pathname.includes(item.url + "/")) return true;
 
     return false;
   }

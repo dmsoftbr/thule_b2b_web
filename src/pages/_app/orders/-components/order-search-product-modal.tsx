@@ -14,7 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import type { ProductModel } from "@/models/product.model";
-import { Loader2Icon, MinusIcon, PlusIcon, SearchIcon } from "lucide-react";
+import { MinusIcon, PlusIcon, SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ProductImage } from "@/components/app/product-image";
 import { formatNumber } from "@/lib/number-utils";
@@ -110,7 +110,7 @@ export const OrderSearchProductModal = ({ initialPriceTable }: Props) => {
         taxes: [],
         costValue: 0,
       });
-      toast.success("Produto adicionado no pedido!");
+      toast.success(`Produto adicionado ${order.isBudget ? "na simulação" : "no pedido"}!`);
     }
     setOrder(newOrder);
   }
@@ -268,26 +268,26 @@ export const OrderSearchProductModal = ({ initialPriceTable }: Props) => {
       </DialogTrigger>
       <DialogContent className="min-w-[90%]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            Pesquisar Produtos
-            {isFetching && (
-              <span className="flex items-center gap-1 text-xs font-normal text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
-                <Loader2Icon className="size-3 animate-spin" />
-                Carregando produtos...
-              </span>
-            )}
-          </DialogTitle>
+          <DialogTitle>Pesquisar Produtos</DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col w-full relative">
           {isFetching && (
-            <div className="absolute inset-0 z-40 flex items-center justify-center bg-white/60 backdrop-blur-[1px] rounded-md">
-              <div className="flex items-center gap-2 px-4 py-2 bg-white shadow-md rounded-full border border-blue-200 text-blue-700">
-                <Loader2Icon className="size-4 animate-spin" />
-                <span className="text-sm font-medium">
-                  Buscando produtos...
-                </span>
+            <div className="absolute inset-0 z-40 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm rounded-lg animate-in fade-in duration-200">
+              <div className="flex flex-col items-center gap-4 px-10 py-8 bg-white shadow-2xl rounded-2xl border border-slate-200 min-w-[280px]">
+                <div className="relative size-14">
+                  <div className="absolute inset-0 rounded-full border-4 border-blue-100" />
+                  <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-600 animate-spin" />
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-base font-semibold text-slate-800">
+                    Buscando produtos
+                  </span>
+                  <span className="text-xs text-slate-500">
+                    Por favor, aguarde — estamos consultando o catálogo.
+                  </span>
+                </div>
               </div>
             </div>
           )}

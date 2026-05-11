@@ -12,7 +12,7 @@ import { OrderItemTableRow } from "./order-item-table-row";
 import { useOrder } from "../-context/order-context";
 
 export const OrderItemTable = () => {
-  const { order, getTotalOrderWithDiscount } = useOrder();
+  const { order, isBudget, getTotalOrderWithDiscount } = useOrder();
 
   return (
     <Table className="w-full table-fixed text-xs flex flex-col">
@@ -64,7 +64,7 @@ export const OrderItemTable = () => {
               className="flex items-center justify-center h-10 border"
               colSpan={9}
             >
-              Sem Itens no Pedido
+              Sem Itens {isBudget ? "na Simulação" : "no Pedido"}
             </td>
           </tr>
         )}
