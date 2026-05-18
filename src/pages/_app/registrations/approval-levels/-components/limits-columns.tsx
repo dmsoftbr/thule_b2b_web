@@ -57,7 +57,7 @@ export const limitsColumns = ({
           variant="destructive"
           type="button"
           onClick={() => {
-            console.log(row);
+            //console.log(row);
             fnDelete(row);
           }}
         >

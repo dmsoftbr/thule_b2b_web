@@ -11,7 +11,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useRef, useState, useCallback, useMemo } from "react";
+import {
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronsUpDown, Loader2Icon, PackageSearchIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,22 +37,44 @@ interface Props {
   closeOnSelect?: boolean;
 }
 
-export const ProductsCombo = ({
+// Handle imperativo exposto via ref — permite ao componente pai recolocar o
+// foco no combo após uma seleção (ex.: após adicionar um item ao pedido,
+// voltar o cursor para o trigger para o usuário continuar adicionando).
+export interface ProductsComboHandle {
+  focus: () => void;
+  openAndFocus: () => void;
+}
+
+export const ProductsCombo = forwardRef<ProductsComboHandle, Props>(({
   customerId,
   priceTableId,
   className,
   disabled,
   onSelect,
   closeOnSelect = false,
-}: Props) => {
+}, forwardedRef) => {
   const [isOpen, setIsOpen] = useState(false);
   const [data, setData] = useState<ProductModel[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [value, setValue] = useState("");
   const [searchText, setSearchText] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const triggerButtonRef = useRef<HTMLButtonElement>(null);
   const debounceTimerRef = useRef<number | undefined>(undefined);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  useImperativeHandle(
+    forwardedRef,
+    () => ({
+      focus: () => triggerButtonRef.current?.focus(),
+      openAndFocus: () => {
+        setIsOpen(true);
+        // O foco no input é aplicado pelo useEffect/onOpenAutoFocus quando
+        // isOpen vira true.
+      },
+    }),
+    [],
+  );
 
   // Memoiza o item selecionado
   const selectedItem = useMemo(() => {
@@ -141,6 +171,9 @@ export const ProductsCombo = ({
         keywords={[item.id, item.referenceCode, item.description]}
         className={cn(
           "even:bg-neutral-50 border-t rounded-none",
+          // Item destacado via teclado (cmdk seta data-selected="true").
+          // Cinza claro + borda à esquerda para destacar sobre o zebra striping.
+          "data-[selected=true]:!bg-neutral-200 data-[selected=true]:!text-neutral-900 data-[selected=true]:border-l-4 data-[selected=true]:border-l-neutral-500",
           className,
           value === item.id.toString() && "!bg-blue-100",
         )}
@@ -188,10 +221,86 @@ export const ProductsCombo = ({
     }
   }, []);
 
+  // Foca o input de busca assim que o popover abre — garante que setas
+  // ↑/↓ e Enter já funcionem sem precisar clicar primeiro no campo.
+  useEffect(() => {
+    if (!isOpen) return;
+    // requestAnimationFrame para esperar o Radix montar o PopoverContent.
+    const raf = requestAnimationFrame(() => {
+      searchInputRef.current?.focus();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [isOpen]);
+
+  // Navegação por teclado:
+  //  • Esc fecha; Tab também fecha (não fica preso no popover).
+  //  • Setas ↑/↓ e Enter são tratadas nativamente pelo cmdk.
+  //  • Home/End → primeiro/último item da lista.
+  //  • PageUp/PageDown → salto de 5 em 5 itens.
+  // Para os atalhos que o cmdk não cobre, simulamos teclas de seta dentro do
+  // próprio CommandInput, deixando o cmdk processar a movimentação real.
+  const dispatchArrowKey = useCallback(
+    (key: "ArrowDown" | "ArrowUp", times: number) => {
+      const input = searchInputRef.current;
+      if (!input) return;
+      for (let i = 0; i < times; i++) {
+        const evt = new KeyboardEvent("keydown", {
+          key,
+          code: key,
+          bubbles: true,
+          cancelable: true,
+        });
+        input.dispatchEvent(evt);
+      }
+    },
+    [],
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        handleOpenChange(false);
+        return;
+      }
+      if (e.key === "Tab") {
+        // Fecha ao tabular para fora — evita foco preso.
+        handleOpenChange(false);
+        return;
+      }
+      if (data.length === 0) return;
+
+      if (e.key === "Home") {
+        e.preventDefault();
+        // Anda "para cima" várias vezes para garantir que chega no primeiro.
+        dispatchArrowKey("ArrowUp", data.length);
+        return;
+      }
+      if (e.key === "End") {
+        e.preventDefault();
+        dispatchArrowKey("ArrowDown", data.length);
+        return;
+      }
+      if (e.key === "PageDown") {
+        e.preventDefault();
+        dispatchArrowKey("ArrowDown", Math.min(5, data.length));
+        return;
+      }
+      if (e.key === "PageUp") {
+        e.preventDefault();
+        dispatchArrowKey("ArrowUp", Math.min(5, data.length));
+        return;
+      }
+    },
+    [handleOpenChange, data.length, dispatchArrowKey],
+  );
+
   return (
     <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild disabled={disabled}>
         <Button
+          ref={triggerButtonRef}
           type="button"
           variant="outline"
           role="combobox"
@@ -206,7 +315,17 @@ export const ProductsCombo = ({
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="p-0 w-popover">
+      <PopoverContent
+        className="p-0 w-popover"
+        onKeyDown={handleKeyDown}
+        // Por padrão o Radix devolve foco ao trigger ao fechar; mantemos esse
+        // comportamento, mas evitamos que o autoFocus inicial roube foco do
+        // input dentro do Command.
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          searchInputRef.current?.focus();
+        }}
+      >
         <Command shouldFilter={false}>
           <CommandInput
             ref={searchInputRef}
@@ -248,4 +367,6 @@ export const ProductsCombo = ({
       </PopoverContent>
     </Popover>
   );
-};
+});
+
+ProductsCombo.displayName = "ProductsCombo";

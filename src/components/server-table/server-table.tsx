@@ -414,6 +414,34 @@ export const ServerTable = <T,>({
     setIsLoading(isPending);
   }, [isPending]);
 
+  // Atalho Ctrl+A (ou Cmd+A no Mac) dispara o botão "Adicionar" quando
+  // visível. Sobrepõe o "select all" nativo do navegador apenas quando o foco
+  // não está em um campo de texto/edição — caso contrário, mantém o
+  // comportamento padrão (selecionar todo o texto).
+  useEffect(() => {
+    if (!showAddButton || !onAdd) return;
+
+    const handleAddShortcut = (e: KeyboardEvent) => {
+      const isCtrlA = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a";
+      if (!isCtrlA) return;
+
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName?.toLowerCase();
+      const isEditable =
+        tag === "input" ||
+        tag === "textarea" ||
+        tag === "select" ||
+        target?.isContentEditable;
+      if (isEditable) return;
+
+      e.preventDefault();
+      onAdd();
+    };
+
+    document.addEventListener("keydown", handleAddShortcut);
+    return () => document.removeEventListener("keydown", handleAddShortcut);
+  }, [showAddButton, onAdd]);
+
   // Renderizar conteúdo da tabela (agrupado ou normal)
   const renderTableContent = () => {
     //console.log("renderTableContent chamada");
@@ -700,6 +728,19 @@ export const ServerTable = <T,>({
               </SelectContent>
             </Select>
           )}
+          <div>
+            {showAddButton && (
+              <Button
+                type="button"
+                onClick={() => {
+                  onAdd?.();
+                }}
+                className="w-full md:w-fit"
+              >
+                {addButtonContent}
+              </Button>
+            )}
+          </div>
           <div className="relative flex items-center justify-center w-full">
             <div className="absolute left-3 select-none text-neutral-600">
               <SearchIcon className="size-3" />
@@ -715,17 +756,6 @@ export const ServerTable = <T,>({
           </div>
           <div className="flex gap-x-2">
             {additionalButtons}
-            {showAddButton && (
-              <Button
-                type="button"
-                onClick={() => {
-                  onAdd?.();
-                }}
-                className="w-full md:w-fit"
-              >
-                {addButtonContent}
-              </Button>
-            )}
 
             {showAdvancedFilter && (
               <Button

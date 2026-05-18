@@ -69,3 +69,10 @@ Pages use `FORM_ACTIONS` type (`"ADD" | "EDIT" | "VIEW"`) from `src/@types/form-
 ## Language
 
 Code comments and some UI text are in Portuguese (Brazilian). The codebase is a mix of English (code identifiers, component names) and Portuguese (comments, labels, some file names in reports like `faturamento-cliente`).
+
+### Serena MCP Integration
+
+- Always use the Serena MCP tools (`find_semantic_matches`, `get_semantic_context`) before performing global searches or reading multiple files.
+- If you need to understand the project structure or find where a specific logic is implemented, ask Serena first.
+- Maintain the Serena index updated by using its tools when new files are created.
+- Use Serena to reduce token usage: instead of `cat` on many files, use Serena to pinpoint the exact code blocks needed.

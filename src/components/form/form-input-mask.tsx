@@ -55,7 +55,7 @@ export const FormInputMask = forwardRef<
     defaultValue = "",
     outputType = "text",
   }: FormInputMaskProps<TFieldValues, TName>,
-  ref: unknown
+  ref: unknown,
 ) {
   const localRef = useRef<ElementRef<"input">>(null);
   useEffect(() => {
@@ -94,7 +94,6 @@ export const FormInputMask = forwardRef<
                 value={field.value}
                 onBlur={(event) => {
                   const convertedOutput = handleOutputType(event.target.value);
-                  console.log("CVT", convertedOutput);
                   field.onChange(convertedOutput);
                 }}
                 ref={mergeRefs(localRef, ref)}

@@ -47,17 +47,55 @@ export const AppDialogContainer: React.FC = () => {
 const AppDialogItem: React.FC<{ dialog: AppDialog }> = ({ dialog }) => {
   const { hideAppDialog } = useAppDialog();
   const dialogRef = useRef<HTMLDivElement>(null);
+  const primaryButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Foca no diálogo ao montar para garantir acessibilidade e evitar que o foco fique "preso" no modal de baixo
-  useEffect(() => {
-    dialogRef.current?.focus();
-  }, []);
+  // Índice do botão principal: o primeiro com variant="primary", ou o
+  // primeiro botão da lista caso nenhum esteja marcado como primário.
+  const primaryButtonIndex = (() => {
+    if (!dialog.buttons || dialog.buttons.length === 0) return -1;
+    const i = dialog.buttons.findIndex((b) => b.variant === "primary");
+    return i >= 0 ? i : 0;
+  })();
 
   const handleButtonClick = (button: AppDialogButton) => {
     if (button.autoClose !== false) {
       hideAppDialog(dialog.id, button.value);
     }
   };
+
+  // Foca direto no botão principal ao abrir — permite confirmar com Enter
+  // imediatamente, sem precisar tabular.
+  useEffect(() => {
+    if (primaryButtonRef.current) {
+      primaryButtonRef.current.focus();
+    } else {
+      dialogRef.current?.focus();
+    }
+  }, []);
+
+  // Teclado: Enter confirma (clica no botão principal); Esc fecha o diálogo.
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        hideAppDialog(dialog.id, null);
+        return;
+      }
+      if (e.key === "Enter") {
+        if (primaryButtonIndex < 0) return;
+        const target = e.target as HTMLElement | null;
+        // Se o foco está num outro botão do diálogo, deixa o comportamento
+        // padrão (ativar aquele botão). Caso contrário, dispara o principal.
+        if (target?.tagName === "BUTTON") return;
+        e.preventDefault();
+        const primary = dialog.buttons?.[primaryButtonIndex];
+        if (primary) handleButtonClick(primary);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dialog.id, primaryButtonIndex]);
 
   const getDialogStyles = () => {
     switch (dialog.type) {
@@ -161,8 +199,13 @@ const AppDialogItem: React.FC<{ dialog: AppDialog }> = ({ dialog }) => {
             {dialog.buttons.map((button, index) => (
               <button
                 key={index}
+                ref={index === primaryButtonIndex ? primaryButtonRef : undefined}
                 onClick={() => handleButtonClick(button)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${getButtonStyles(button.variant)}`}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${getButtonStyles(button.variant)} ${
+                  index === primaryButtonIndex
+                    ? "ring-2 ring-offset-2 ring-blue-400 focus:outline-none"
+                    : "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
+                }`}
               >
                 {button.text}
               </button>

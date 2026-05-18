@@ -4,8 +4,10 @@ import type { OrderItemModel } from "@/models/orders/order-item-model";
 import type { OrderModel } from "@/models/orders/order-model";
 import type { OutletCartItem } from "@/models/outlet/outlet-cart-item.model";
 import type { CustomerModel } from "@/models/registrations/customer.model";
+import type { TaxResponseDto } from "@/models/dto/responses/tax-response.model";
 import { ProductsService } from "@/services/registrations/products.service";
 import { RepresentativesService } from "@/services/registrations/representatives.service";
+
 import { toast } from "sonner";
 
 export type OutletOrderData = {
@@ -201,6 +203,119 @@ export const getUserPermissions = async (userId: string) => {
   }
 };
 
+// Calcula os impostos do pedido chamando o endpoint /order-items/calc-item-taxes.
+// Função pura — recebe o order e um AbortSignal opcional, devolve o DTO de impostos
+// (ou undefined se não houver itens / resposta vazia). Quem chamar é responsável
+// por gerenciar loading state, AbortController e tratamento de erro.
+export const calcOrderTaxes = async (
+  order: OrderModel,
+  signal?: AbortSignal,
+): Promise<TaxResponseDto | undefined> => {
+  if (order.items.length == 0) return undefined;
+
+  const payload = {
+    BranchId: order.branchId,
+    SalesType: "N",
+    CustomerId: String(order.customerId),
+    CustomerUnit: "",
+    CustomerIdDelivery: String(order.customerId),
+    CustomerUnitDelivery: "",
+    Currency: 0,
+    Payment: String(order.paymentConditionId),
+    Freight: order.freightValue,
+    ListofProducts: order.items.map((item) => ({
+      ItemId: `${item.sequence + 10}`,
+      ProductId: item.productId,
+      CodRefer: item.referenceCode,
+      Quantity: item.orderQuantity,
+      UnitaryValue: item.inputPrice * (1 - order.discountPercentual / 100.0),
+      TotalValue: item.inputPrice * item.orderQuantity,
+      TES: order.customer?.fiscalOperationId ?? "",
+      ItemDiscountPercentage: 0,
+      PriceTableId: item.priceTableId,
+    })),
+  };
+
+  const { data } = await api.post<TaxResponseDto>(
+    `/order-items/calc-item-taxes`,
+    payload,
+    { signal },
+  );
+
+  console.log("[calcOrderTaxes] resposta da API de impostos:", data);
+  return data;
+};
+
+// Variante de calcOrderTaxes que recebe as propriedades do pedido uma a uma
+// e um único produto. Útil em contextos onde ainda não temos um OrderModel
+// montado (ex.: catálogo / outlet / pré-cálculo de item avulso).
+export type CalcSingleProductTaxesParams = {
+  branchId: string;
+  customerId: number | string;
+  paymentConditionId: number | string;
+  freightValue: number;
+  discountPercentual: number;
+  fiscalOperationId: string;
+  product: {
+    sequence: number;
+    productId: string;
+    referenceCode: string;
+    orderQuantity: number;
+    inputPrice: number;
+    priceTableId: string;
+    itemDiscountPercentage?: number;
+  };
+};
+
+export const calcSingleProductTaxes = async (
+  params: CalcSingleProductTaxesParams,
+  signal?: AbortSignal,
+): Promise<TaxResponseDto | undefined> => {
+  const {
+    branchId,
+    customerId,
+    paymentConditionId,
+    freightValue,
+    fiscalOperationId,
+    product,
+  } = params;
+
+  const payload = {
+    BranchId: branchId,
+    SalesType: "N",
+    CustomerId: String(customerId),
+    CustomerUnit: "",
+    CustomerIdDelivery: String(customerId),
+    CustomerUnitDelivery: "",
+    Currency: 0,
+    Payment: String(paymentConditionId),
+    Freight: freightValue,
+    ListofProducts: [
+      {
+        ItemId: `${product.sequence + 10}`,
+        ProductId: product.productId,
+        CodRefer: product.referenceCode,
+        Quantity: product.orderQuantity,
+        UnitaryValue:
+          product.inputPrice,
+        TotalValue: product.inputPrice * product.orderQuantity,
+        TES: fiscalOperationId,
+        ItemDiscountPercentage: product.itemDiscountPercentage ?? 0,
+        PriceTableId: product.priceTableId,
+      },
+    ],
+  };
+
+  const { data } = await api.post<TaxResponseDto>(
+    `/order-items/calc-item-taxes`,
+    payload,
+    { signal },
+  );
+
+  console.log("[calcSingleProductTaxes] resposta da API de impostos:", data);
+  return data;
+};
+
 export const getAvailabilityColor = (availability: string) => {
   switch (availability) {
     case "C":
@@ -218,42 +333,4 @@ export const getAvailabilityColor = (availability: string) => {
     default:
       return "bg-neutral-200 text-white";
   }
-};
-
-export const getOrderItemTaxes = async (
-  branchId: string,
-  customerId: string,
-  paymentConditionId: string,
-  fiscalOperationId: string,
-  freightValue: number,
-  orderDiscountPercent: number,
-  item: OrderItemModel,
-) => {
-  const payload = {
-    BranchId: branchId,
-    SalesType: "N",
-    CustomerId: customerId,
-    CustomerUnit: "",
-    CustomerIdDelivery: customerId, // Deve ser INT
-    CustomerUnitDelivery: "",
-    Currency: 0,
-    Payment: paymentConditionId,
-    Freight: freightValue,
-    ListofProducts: [
-      {
-        ItemId: `${item.sequence}`,
-        ProductId: item.productId,
-        CodRefer: item.referenceCode,
-        Quantity: item.orderQuantity,
-        UnitaryValue: item.inputPrice * (1 - orderDiscountPercent / 100.0),
-        TotalValue: item.inputPrice * item.orderQuantity,
-        TES: fiscalOperationId,
-        ItemDiscountPercentage: 0,
-        PriceTableId: item.priceTableId,
-      },
-    ],
-  };
-
-  const { data } = await api.post(`/order-items/calc-item-taxes`, payload);
-  return data;
 };

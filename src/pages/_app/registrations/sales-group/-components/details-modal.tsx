@@ -21,10 +21,7 @@ import { toast } from "sonner";
 
 const EMPTY_DATA: TreeNode[] = [];
 
-const IS_ACTIVE_BADGE: Record<
-  number,
-  { text: string; className: string }
-> = {
+const IS_ACTIVE_BADGE: Record<number, { text: string; className: string }> = {
   1: {
     text: "Ativo",
     className: "bg-green-100 text-green-700 border-green-200",
@@ -111,7 +108,7 @@ export const DetailsModal = ({ groupData, isOpen, onClose }: Props) => {
   };
 
   const handleSelectionChange = useCallback((ids: string[]) => {
-    console.log("SELCT", ids);
+    //console.log("SELCT", ids);
     setSelectedIds(ids);
   }, []);
 

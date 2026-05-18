@@ -13,6 +13,8 @@ import { api } from "@/lib/api";
 import { AvailabilityInfo } from "./availability-info";
 import { AppTooltip } from "@/components/layout/app-tooltip";
 import { useOrder } from "../-context/order-context";
+import { OrderItemTaxesModal } from "./order-item-taxes-modal";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
   item: OrderItemModel;
@@ -22,6 +24,28 @@ export const OrderItemTableRow = ({ item }: Props) => {
   const { order, removeItem, updateItem, mode } = useOrder();
 
   const isEditing = mode == "NEW" || mode == "EDIT";
+
+  // Preço unitário c/Desconto:
+  //   (InputPrice / (1 + AliqIPI/100)) * (1 − %DescCliente/100)
+  //   + ValorIPI + ValorICMS-ST
+  // Desembute o IPI já contido no preço, aplica o desconto do cliente sobre o
+  // valor desembutido e soma de volta IPI e ICMS-ST como valores absolutos.
+  // Reaproveitado nos cálculos de Total, Markup e Margem.
+  const getUnitPriceWithDiscount = () => {
+    const findTax = (name: string) =>
+      item.taxes?.find((t) => (t.taxName ?? "").trim().toUpperCase() === name);
+    const ipi = findTax("IPI");
+    const icmsSt = findTax("ICMS-ST");
+    const ipiAliquota = ipi?.taxPercentual ?? 0;
+    const ipiValor = ipi?.taxValue ?? 0;
+    const icmsStValor = icmsSt?.taxValue ?? 0;
+
+    const desembutidoIpi = item.inputPrice / (1 + ipiAliquota / 100);
+    const desembutidoComDesconto =
+      desembutidoIpi * (1 - (order.customer?.discountPercent ?? 0) / 100);
+
+    return desembutidoComDesconto + ipiValor + icmsStValor;
+  };
 
   const handleUpdateQuantity = async (newQuantity: number | undefined) => {
     if (!newQuantity) {
@@ -69,7 +93,7 @@ export const OrderItemTableRow = ({ item }: Props) => {
           {item.product?.description}
         </span>
       </TableCell>
-      <TableCell className="border-r text-right w-[160px]">
+      <TableCell className="border-r text-right w-[155px]">
         <FormInputQty
           plusSlot={<PlusIcon className="size-3" />}
           minusSlot={<MinusIcon className="size-3" />}
@@ -78,14 +102,57 @@ export const OrderItemTableRow = ({ item }: Props) => {
           onValueChange={(value) => handleUpdateQuantity(value ?? 0)}
         />
       </TableCell>
-      <TableCell className="w-[120px] border-r text-right">
+      <TableCell className="w-[110px] border-r text-right">
         {formatNumber(item.suggestPrice, 2)}
       </TableCell>
-      <TableCell className="w-[120px] border-r text-right">
+      <TableCell className="w-[110px] border-r text-right">
         {formatNumber(item.inputPrice, 2)}
       </TableCell>
+      <TableCell className="w-[140px] border-r text-right">
+        {item.isLoadingTaxes ? (
+          <div className="flex items-center justify-end gap-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-5 w-5 rounded-full" />
+          </div>
+        ) : (
+          (() => {
+            // Oculta tributos da reforma (CBS/IBS, incluindo variantes
+            // "IBS Mun" / "IBS UF") na soma exibida — mantidos no state para
+            // envio ao backend; apenas não aparecem ao usuário.
+            const hiddenPrefixes = ["CBS", "IBS"];
+            const visibleTaxes = (item.taxes ?? []).filter((t) => {
+              const name = (t.taxName ?? "").trim().toUpperCase();
+              return !hiddenPrefixes.some(
+                (p) => name === p || name.startsWith(`${p} `),
+              );
+            });
+            const total =
+              visibleTaxes.reduce((acc, t) => acc + (t.taxValue ?? 0), 0) *
+              item.orderQuantity;
+            if (visibleTaxes.length === 0) {
+              return <span className="text-neutral-400">—</span>;
+            }
+            return (
+              <div className="flex items-center justify-end gap-2 tabular-nums">
+                <span>R$ {formatNumber(total, 2)}</span>
+                <OrderItemTaxesModal
+                  productId={item.productId}
+                  taxes={item.taxes}
+                />
+              </div>
+            );
+          })()
+        )}
+      </TableCell>
+
       <TableCell className="w-[120px] border-r text-right">
-        {formatNumber(item.inputPrice * item.orderQuantity, 2)}
+        {item.isLoadingTaxes ? (
+          <div className="flex justify-end">
+            <Skeleton className="h-4 w-20" />
+          </div>
+        ) : (
+          formatNumber(getUnitPriceWithDiscount() * item.orderQuantity, 2)
+        )}
       </TableCell>
       <TableCell className="w-[120px] border-r flex-wrap ">
         {format(item.deliveryDate, "dd/MM/yyyy")}{" "}
@@ -105,23 +172,33 @@ export const OrderItemTableRow = ({ item }: Props) => {
           </Badge>
         </AppTooltip>
       </TableCell>
-
-      <TableCell className="w-[120px] border-r text-right">
-        {formatNumber(
-          item.suggestPrice /
-            (item.priceTablePrice == 0 ? 1 : item.priceTablePrice),
-          2,
+      <TableCell className="w-[100px] border-r text-right">
+        {item.isLoadingTaxes ? (
+          <div className="flex justify-end">
+            <Skeleton className="h-4 w-14" />
+          </div>
+        ) : (
+          <>
+            {formatNumber(
+              (1 -
+                getUnitPriceWithDiscount() /
+                  (item.suggestPrice == 0 ? 1 : item.suggestPrice)) *
+                100,
+              2,
+            )}
+            %
+          </>
         )}
       </TableCell>
-      <TableCell className="w-[120px] border-r text-right">
-        {formatNumber(
-          (1 -
-            item.priceTablePrice /
-              (item.suggestPrice == 0 ? 1 : item.suggestPrice)) *
-            100,
-          2,
+
+      <TableCell className="w-[100px] border-r text-right">
+        {item.isLoadingTaxes ? (
+          <div className="flex justify-end">
+            <Skeleton className="h-4 w-14" />
+          </div>
+        ) : (
+          formatNumber(item.suggestPrice / getUnitPriceWithDiscount(), 2)
         )}
-        %
       </TableCell>
 
       <TableCell className="border-r w-[100px]">

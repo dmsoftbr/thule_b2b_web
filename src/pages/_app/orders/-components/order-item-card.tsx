@@ -14,6 +14,7 @@ import { AvailabilityInfo } from "./availability-info";
 import { getAvailabilityColor } from "../-utils/order-utils";
 import { useOrder } from "../-context/order-context";
 import { useAuth } from "@/hooks/use-auth";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
   data: OrderItemModel;
@@ -24,6 +25,25 @@ export const OrderItemCard = ({ data, className }: Props) => {
   const { updateItem, removeItem, order, mode } = useOrder();
   const { session } = useAuth();
   const isEditing = mode == "NEW" || mode == "EDIT";
+
+  // Preço unitário c/Desconto — mesma fórmula usada em order-item-table-row:
+  //   (InputPrice / (1 + AliqIPI/100)) * (1 − %DescCliente/100)
+  //   + ValorIPI + ValorICMS-ST
+  const getUnitPriceWithDiscount = () => {
+    const findTax = (name: string) =>
+      data.taxes?.find((t) => (t.taxName ?? "").trim().toUpperCase() === name);
+    const ipi = findTax("IPI");
+    const icmsSt = findTax("ICMS-ST");
+    const ipiAliquota = ipi?.taxPercentual ?? 0;
+    const ipiValor = ipi?.taxValue ?? 0;
+    const icmsStValor = icmsSt?.taxValue ?? 0;
+
+    const desembutidoIpi = data.inputPrice / (1 + ipiAliquota / 100);
+    const desembutidoComDesconto =
+      desembutidoIpi * (1 - (order.customer?.discountPercent ?? 0) / 100);
+
+    return desembutidoComDesconto + ipiValor + icmsStValor;
+  };
   const handleUpdateQuantity = async (newQuantity: number | undefined) => {
     // if (!newQuantity) {
     //   onRemoveItem(data);
@@ -98,19 +118,19 @@ export const OrderItemCard = ({ data, className }: Props) => {
                 <p className="text-gray-600 text-sm line-clamp-2">
                   {data.product?.description}
                 </p>
-                <div className="text-sm font-bold text-gray-900">
+                {/* <div className="text-sm font-bold text-gray-900">
                   Tabela de Preço:
                   <Badge variant="destructive" className="ml-1">
                     {data.priceTableId}
                   </Badge>
-                </div>
+                </div> */}
                 <div className="text-lg font-bold text-gray-900">
-                  Preço Sugerido Consumidor: R${" "}
+                  Preço Venda Sugerido Unit.: R${" "}
                   {formatNumber(data.suggestPrice, 2)}
                 </div>
 
                 <div className="text-lg font-bold text-gray-900">
-                  Preço Tabela: R$ {formatNumber(data.inputPrice, 2)}
+                  Preço Compra Unit.: R$ {formatNumber(data.inputPrice, 2)}
                 </div>
 
                 {/* Price and Quantity Controls */}
@@ -128,9 +148,25 @@ export const OrderItemCard = ({ data, className }: Props) => {
                       />
                     </div>
                   </div>
-                  <div className="flex items-center font-bold text-lg">
-                    Total: R${" "}
-                    {formatNumber(data.orderQuantity * data.inputPrice, 2)}
+                  <div className="flex flex-col items-end font-bold text-lg">
+                    {/* <div>
+                      Total: R${" "}
+                      {formatNumber(data.orderQuantity * data.inputPrice, 2)}
+                    </div> */}
+                    <div className="text-emerald-700 text-base flex items-center gap-2">
+                      Total Compra c/ Desconto:{" "}
+                      {data.isLoadingTaxes ? (
+                        <Skeleton className="h-5 w-28" />
+                      ) : (
+                        <span>
+                          R${" "}
+                          {formatNumber(
+                            getUnitPriceWithDiscount() * data.orderQuantity,
+                            2,
+                          )}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 

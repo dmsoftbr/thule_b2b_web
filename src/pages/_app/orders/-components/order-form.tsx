@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { OrderFormItems } from "./order-form-items";
 import { OrderFormHeader } from "./order-form-header";
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SalesChannelModal } from "./sales-channel-modal";
 import { FinishOrderModal } from "./finish-order-modal";
 import { ExportOrder } from "./export-order";
@@ -15,6 +15,21 @@ export const OrderForm = () => {
   const { order, mode, isBudget, clearAll } = useOrder();
 
   const isEditing = mode != "VIEW";
+
+  // Atalho Ctrl+/ (ou Cmd+/) abre o modal de Concluir Pedido / Simulação.
+  // Só dispara se houver itens — espelha a regra do disabled do botão.
+  useEffect(() => {
+    const handleShortcut = (e: KeyboardEvent) => {
+      const isCtrlSlash = (e.ctrlKey || e.metaKey) && e.key === "/";
+      if (!isCtrlSlash) return;
+      if (order.items.length === 0) return;
+      if (showFinishOrderModal) return;
+      e.preventDefault();
+      setShowFinishOrderModal(true);
+    };
+    document.addEventListener("keydown", handleShortcut);
+    return () => document.removeEventListener("keydown", handleShortcut);
+  }, [order.items.length, showFinishOrderModal]);
 
   return (
     <>

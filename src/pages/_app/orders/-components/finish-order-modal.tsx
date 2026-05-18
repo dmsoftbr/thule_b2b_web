@@ -31,7 +31,7 @@ import { formatNumber, roundNumber } from "@/lib/number-utils";
 import { api, handleError } from "@/lib/api";
 import { useEffect, useRef, useState } from "react";
 import { type UserPermissionModel } from "@/models/admin/user-permission.model";
-import { getUserPermissions } from "../-utils/order-utils";
+import { calcOrderTaxes, getUserPermissions } from "../-utils/order-utils";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { Loader2Icon, LoaderIcon, Undo2Icon } from "lucide-react";
@@ -110,6 +110,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               taxName: "COFINS",
               taxPercentual: taxItem.produto.aliquota_cofins,
               taxValue: taxItem.produto.valor_cofins,
+              mva: 0,
             });
 
             //pis
@@ -122,6 +123,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               taxName: "PIS",
               taxPercentual: taxItem.produto.aliquota_pis,
               taxValue: taxItem.produto.valor_pis,
+              mva: 0,
             });
 
             // ipi
@@ -134,6 +136,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               taxName: "IPI",
               taxPercentual: taxItem.produto.aliquota_ipi,
               taxValue: taxItem.produto.valor_ipi,
+              mva: 0,
             });
 
             // csll
@@ -146,6 +149,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               taxName: "CSLL",
               taxPercentual: taxItem.produto.aliquota_csll,
               taxValue: taxItem.produto.valor_csll,
+              mva: 0,
             });
 
             // icms
@@ -158,6 +162,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               taxName: "ICMS",
               taxPercentual: taxItem.produto.aliquota_icms,
               taxValue: taxItem.produto.valor_icms,
+              mva: 0,
             });
 
             // st
@@ -170,6 +175,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               taxName: "ICMS-ST",
               taxPercentual: taxItem.produto.aliquota_st,
               taxValue: taxItem.produto.valor_st,
+              mva: 0,
             });
 
             taxItem.produto.reforma.forEach((taxReforma) => {
@@ -183,6 +189,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                 taxName: taxReforma.tipo_tributo_descricao,
                 taxPercentual: taxReforma.aliquota,
                 taxValue: taxReforma.valor_tributo,
+                mva: 0,
               });
             });
           }
@@ -255,7 +262,9 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
       return;
     }
     if (order.generatedOrderId) {
-      toast.warning(`Esta simulação já gerou o pedido ${order.generatedOrderId}.`);
+      toast.warning(
+        `Esta simulação já gerou o pedido ${order.generatedOrderId}.`,
+      );
       return;
     }
     try {
@@ -451,33 +460,7 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
 
     setIsCalculatingTaxes(true);
     try {
-      const payload = {
-        BranchId: order.branchId,
-        SalesType: "N",
-        CustomerId: String(order.customerId),
-        CustomerUnit: "",
-        CustomerIdDelivery: String(order.customerId),
-        CustomerUnitDelivery: "",
-        Currency: 0,
-        Payment: String(order.paymentConditionId),
-        Freight: order.freightValue,
-        ListofProducts: order.items.map((item) => ({
-          ItemId: `${item.sequence + 10}`,
-          ProductId: item.productId,
-          CodRefer: item.referenceCode,
-          Quantity: item.orderQuantity,
-          UnitaryValue:
-            item.inputPrice * (1 - order.discountPercentual / 100.0),
-          TotalValue: item.inputPrice * item.orderQuantity,
-          TES: order.customer?.fiscalOperationId ?? "",
-          ItemDiscountPercentage: 0,
-          PriceTableId: item.priceTableId,
-        })),
-      };
-
-      const { data } = await api.post(`/order-items/calc-item-taxes`, payload, {
-        signal: abortController.signal,
-      });
+      const data = await calcOrderTaxes(order, abortController.signal);
       if (data) {
         setTaxesData(data);
         setTotalTaxes(data.total_impostos);

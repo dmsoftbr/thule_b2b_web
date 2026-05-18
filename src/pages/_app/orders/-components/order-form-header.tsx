@@ -1,7 +1,11 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useEffect, useRef } from "react";
 
-import { CustomersCombo } from "@/components/app/customers-combo";
+import {
+  CustomersCombo,
+  type CustomersComboHandle,
+} from "@/components/app/customers-combo";
 import { formatNumber } from "@/lib/number-utils";
 import type { CustomerModel } from "@/models/registrations/customer.model";
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
@@ -23,6 +27,17 @@ export const OrderFormHeader = () => {
   const { showAppDialog } = useAppDialog();
   const isEditing = mode == "NEW" || mode == "EDIT";
   const isNew = isEditing && order.orderId == "";
+  const customersComboRef = useRef<CustomersComboHandle>(null);
+
+  // Foca o combo de cliente ao entrar na tela de novo pedido — economiza um
+  // clique e deixa o usuário pronto para Enter/digitar imediatamente.
+  useEffect(() => {
+    if (!isNew) return;
+    const t = setTimeout(() => {
+      customersComboRef.current?.focus();
+    }, 0);
+    return () => clearTimeout(t);
+  }, [isNew]);
 
   function handleChangeCustomer(customer?: CustomerModel) {
     if (!customer) return false;
@@ -103,6 +118,7 @@ export const OrderFormHeader = () => {
             )}
             {isNew && (
               <CustomersCombo
+                ref={customersComboRef}
                 defaultValue={order.customerId || undefined}
                 disabled={!isEditing}
                 onSelect={(customer) => handleChangeCustomer(customer)}

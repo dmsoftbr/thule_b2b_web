@@ -11,7 +11,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useEffect, useState, useCallback, useMemo, memo, useRef } from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  memo,
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronsUpDownIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -85,14 +94,21 @@ const CustomerItem = memo(
         keywords={keywords}
         className={cn(
           "even:bg-neutral-50 border-t rounded-none cursor-pointer",
+          // Item destacado via teclado (cmdk seta data-selected="true").
+          "data-[selected=true]:!bg-neutral-200 data-[selected=true]:!text-neutral-900 data-[selected=true]:border-l-4 data-[selected=true]:border-l-neutral-500",
           isSelected && "!bg-blue-100",
         )}
       >
         <div className="flex flex-col w-full">
-          <div className="w-full flex-1 flex justify-between items-center">
+          <div className="w-full flex-1 flex justify-between items-center gap-2">
             <span className="font-bold text-blue-600">
               {item.id} - {item.abbreviation}
             </span>
+            {(!item.isActive || String(item.creditStatus) === "4") && (
+              <span className="text-[10px] font-semibold uppercase tracking-wide bg-red-100 text-red-700 border border-red-200 rounded px-1.5 py-0.5">
+                Inativo
+              </span>
+            )}
           </div>
           <p className="text-xs text-muted-foreground">
             {upperName} - CPF/CNPJ: {formattedDocument}
@@ -105,14 +121,31 @@ const CustomerItem = memo(
 
 CustomerItem.displayName = "CustomerItem";
 
-export const CustomersCombo = ({
+// Handle imperativo — permite ao componente pai focar/abrir o combo
+// programaticamente (ex.: foco automático ao entrar na tela de novo pedido).
+export interface CustomersComboHandle {
+  focus: () => void;
+  openAndFocus: () => void;
+}
+
+export const CustomersCombo = forwardRef<CustomersComboHandle, Props>(({
   disabled,
   onSelect,
   onPreSelect,
   defaultValue,
   closeOnSelect = false,
-}: Props) => {
+}, forwardedRef) => {
   const [isOpen, setIsOpen] = useState(false);
+  const triggerButtonRef = useRef<HTMLButtonElement>(null);
+
+  useImperativeHandle(
+    forwardedRef,
+    () => ({
+      focus: () => triggerButtonRef.current?.focus(),
+      openAndFocus: () => setIsOpen(true),
+    }),
+    [],
+  );
   const [data, setData] = useState<CustomerModel[]>([]);
   const [value, setValue] = useState(defaultValue);
   const [selectedCustomer, setSelectedCustomer] = useState<
@@ -125,6 +158,7 @@ export const CustomersCombo = ({
   // Usa ref para evitar chamadas duplicadas
   const abortControllerRef = useRef<AbortController | null>(null);
   const isInitialLoadRef = useRef(true);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // useCallback para evitar recriar a função a cada render
   const onSearch = useCallback(
@@ -276,13 +310,82 @@ export const CustomersCombo = ({
     // Limpa o texto de busca ao fechar
     if (!open) {
       setSearchText("");
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     }
   }, []);
+
+  // Foca o input ao abrir — garante que ↑/↓/Enter funcionem sem clicar antes.
+  useEffect(() => {
+    if (!isOpen) return;
+    const raf = requestAnimationFrame(() => {
+      searchInputRef.current?.focus();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [isOpen]);
+
+  // Atalhos extras (Home/End/PageUp/PageDown) que o cmdk não cobre — simula
+  // setas dentro do input para o cmdk processar a navegação real.
+  const dispatchArrowKey = useCallback(
+    (key: "ArrowDown" | "ArrowUp", times: number) => {
+      const input = searchInputRef.current;
+      if (!input) return;
+      for (let i = 0; i < times; i++) {
+        const evt = new KeyboardEvent("keydown", {
+          key,
+          code: key,
+          bubbles: true,
+          cancelable: true,
+        });
+        input.dispatchEvent(evt);
+      }
+    },
+    [],
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        handleOpenChange(false);
+        return;
+      }
+      if (e.key === "Tab") {
+        handleOpenChange(false);
+        return;
+      }
+      if (data.length === 0) return;
+      if (e.key === "Home") {
+        e.preventDefault();
+        dispatchArrowKey("ArrowUp", data.length);
+        return;
+      }
+      if (e.key === "End") {
+        e.preventDefault();
+        dispatchArrowKey("ArrowDown", data.length);
+        return;
+      }
+      if (e.key === "PageDown") {
+        e.preventDefault();
+        dispatchArrowKey("ArrowDown", Math.min(5, data.length));
+        return;
+      }
+      if (e.key === "PageUp") {
+        e.preventDefault();
+        dispatchArrowKey("ArrowUp", Math.min(5, data.length));
+        return;
+      }
+    },
+    [handleOpenChange, data.length, dispatchArrowKey],
+  );
 
   return (
     <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
+          ref={triggerButtonRef}
           disabled={disabled}
           useAnimation={false}
           variant="outline"
@@ -294,9 +397,17 @@ export const CustomersCombo = ({
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="p-0 w-popover">
+      <PopoverContent
+        className="p-0 w-popover"
+        onKeyDown={handleKeyDown}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          searchInputRef.current?.focus();
+        }}
+      >
         <Command shouldFilter={false}>
           <CommandInput
+            ref={searchInputRef}
             placeholder="Procurar..."
             className="h-9"
             onValueChange={setSearchText}
@@ -324,4 +435,6 @@ export const CustomersCombo = ({
       </PopoverContent>
     </Popover>
   );
-};
+});
+
+CustomersCombo.displayName = "CustomersCombo";

@@ -7,4 +7,5 @@ export type OrderItemTaxModel = {
   taxPercentual: number;
   taxBaseReduction: number;
   taxBase: number;
+  mva: number;
 };
