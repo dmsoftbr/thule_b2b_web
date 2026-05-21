@@ -96,6 +96,11 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
       const orderData = { ...order, isBudget, history: [] };
       setIsSaving(true);
 
+      // Os impostos vêm da API calculados sobre o preço de tabela. Aplicamos
+      // o fator de desconto do cliente para que base e valor reflitam o preço
+      // efetivamente cobrado.
+      const discountFactor = 1 - (order.discountPercentual ?? 0) / 100;
+
       orderData.items.forEach((orderItem) => {
         orderItem.taxes = [];
         taxesData?.itens.forEach((taxItem) => {
@@ -105,11 +110,11 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               id: uuid.v4(),
               itemId: orderItem.id,
               orderId: orderItem.orderId,
-              taxBase: taxItem.produto.base_calculo_cofins,
+              taxBase: taxItem.produto.base_calculo_cofins * discountFactor,
               taxBaseReduction: 0,
               taxName: "COFINS",
               taxPercentual: taxItem.produto.aliquota_cofins,
-              taxValue: taxItem.produto.valor_cofins,
+              taxValue: taxItem.produto.valor_cofins * discountFactor,
               mva: 0,
             });
 
@@ -118,11 +123,11 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               id: uuid.v4(),
               itemId: orderItem.id,
               orderId: orderItem.orderId,
-              taxBase: taxItem.produto.base_calculo_pis,
+              taxBase: taxItem.produto.base_calculo_pis * discountFactor,
               taxBaseReduction: 0,
               taxName: "PIS",
               taxPercentual: taxItem.produto.aliquota_pis,
-              taxValue: taxItem.produto.valor_pis,
+              taxValue: taxItem.produto.valor_pis * discountFactor,
               mva: 0,
             });
 
@@ -131,11 +136,11 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               id: uuid.v4(),
               itemId: orderItem.id,
               orderId: orderItem.orderId,
-              taxBase: taxItem.produto.base_calculo_ipi,
+              taxBase: taxItem.produto.base_calculo_ipi * discountFactor,
               taxBaseReduction: 0,
               taxName: "IPI",
               taxPercentual: taxItem.produto.aliquota_ipi,
-              taxValue: taxItem.produto.valor_ipi,
+              taxValue: taxItem.produto.valor_ipi * discountFactor,
               mva: 0,
             });
 
@@ -148,7 +153,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               taxBaseReduction: 0,
               taxName: "CSLL",
               taxPercentual: taxItem.produto.aliquota_csll,
-              taxValue: taxItem.produto.valor_csll,
+              taxValue: taxItem.produto.valor_csll * discountFactor,
               mva: 0,
             });
 
@@ -157,11 +162,11 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               id: uuid.v4(),
               itemId: orderItem.id,
               orderId: orderItem.orderId,
-              taxBase: taxItem.produto.base_calculo_icms,
+              taxBase: taxItem.produto.base_calculo_icms * discountFactor,
               taxBaseReduction: 0,
               taxName: "ICMS",
               taxPercentual: taxItem.produto.aliquota_icms,
-              taxValue: taxItem.produto.valor_icms,
+              taxValue: taxItem.produto.valor_icms * discountFactor,
               mva: 0,
             });
 
@@ -170,11 +175,11 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
               id: uuid.v4(),
               itemId: orderItem.id,
               orderId: orderItem.orderId,
-              taxBase: taxItem.produto.base_calculo_st,
+              taxBase: taxItem.produto.base_calculo_st * discountFactor,
               taxBaseReduction: 0,
               taxName: "ICMS-ST",
               taxPercentual: taxItem.produto.aliquota_st,
-              taxValue: taxItem.produto.valor_st,
+              taxValue: taxItem.produto.valor_st * discountFactor,
               mva: 0,
             });
 
@@ -184,11 +189,11 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
                 id: uuid.v4(),
                 itemId: orderItem.id,
                 orderId: orderItem.orderId,
-                taxBase: taxReforma.base_tributo,
+                taxBase: taxReforma.base_tributo * discountFactor,
                 taxBaseReduction: taxReforma.perc_reducao_governamental,
                 taxName: taxReforma.tipo_tributo_descricao,
                 taxPercentual: taxReforma.aliquota,
-                taxValue: taxReforma.valor_tributo,
+                taxValue: taxReforma.valor_tributo * discountFactor,
                 mva: 0,
               });
             });
@@ -296,27 +301,57 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
     );
   };
 
+  // Total do pedido alinhado à fórmula por linha da OrderItemTable:
+  //   unit = (InputPrice / (1 + AliqIPI/100)) × (1 − %DescCliente/100)
+  //          + ValorIPI + ValorICMS-ST
+  //   itemsTotal = Σ unit × OrderQuantity
+  // Como IPI e ICMS-ST já estão embutidos no itemsTotal, somamos apenas os
+  // demais tributos (totalTaxes − ΣIPI − ΣICMS-ST) para evitar duplicidade.
   const getTotal = () => {
-    let grossValue = order.items.reduce(
-      (accum, b) => (accum += b.orderQuantity * b.inputPrice),
-      0,
-    );
+    const findItemTax = (item: (typeof order.items)[number], name: string) =>
+      item.taxes?.find((t) => (t.taxName ?? "").trim().toUpperCase() === name);
+
+    const discount = order.discountPercentual ?? 0;
+    const discountFactor = 1 - discount / 100;
+    let itemsTotal = order.items.reduce((acc, item) => {
+      const ipi = findItemTax(item, "IPI");
+      const icmsSt = findItemTax(item, "ICMS-ST");
+      const ipiAliquota = ipi?.taxPercentual ?? 0;
+      const ipiValor = ipi?.taxValue ?? 0;
+      const icmsStValor = icmsSt?.taxValue ?? 0;
+      const desembutidoIpi = item.inputPrice / (1 + ipiAliquota / 100);
+      const desembutidoComDesconto = desembutidoIpi * discountFactor;
+      // IPI e ICMS-ST escalam com a base com desconto.
+      const unit =
+        desembutidoComDesconto +
+        ipiValor * discountFactor +
+        icmsStValor * discountFactor;
+      return acc + unit * item.orderQuantity;
+    }, 0);
 
     if (order.additionalDiscount > 0) {
-      grossValue = roundNumber(
-        grossValue - (grossValue * (order?.additionalDiscount ?? 0)) / 100,
+      itemsTotal = roundNumber(
+        itemsTotal - (itemsTotal * (order?.additionalDiscount ?? 0)) / 100,
         2,
       );
     }
 
-    grossValue = roundNumber(
-      grossValue -
-        (grossValue * (order?.discountPercentual ?? 0)) / 100 +
-        (order?.freightValue ?? 0),
+    const embeddedTaxes = order.items.reduce((acc, item) => {
+      const ipi = findItemTax(item, "IPI");
+      const icmsSt = findItemTax(item, "ICMS-ST");
+      return (
+        acc +
+        ((ipi?.taxValue ?? 0) + (icmsSt?.taxValue ?? 0)) *
+          item.orderQuantity *
+          discountFactor
+      );
+    }, 0);
+    const otherTaxes = Math.max(0, totalTaxes - embeddedTaxes);
+
+    return roundNumber(
+      itemsTotal + (order?.freightValue ?? 0) + otherTaxes,
       2,
     );
-
-    return grossValue + totalTaxes;
   };
 
   const getSelectedDeliveryLocation = () => {
@@ -463,7 +498,39 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
       const data = await calcOrderTaxes(order, abortController.signal);
       if (data) {
         setTaxesData(data);
-        setTotalTaxes(data.total_impostos);
+        // Soma os impostos usando o mesmo critério da OrderItemTableRow:
+        // por unidade, agregando COFINS/PIS/IPI/CSLL/ICMS/ICMS-ST + reforma,
+        // excluindo CBS e variantes de IBS, multiplicado pela quantidade.
+        const hiddenPrefixes = ["CBS", "IBS"];
+        // Impostos vêm calculados sobre o preço de tabela; aplicamos o fator
+        // de desconto para refletir o preço efetivamente cobrado.
+        const discountFactor = 1 - (order.discountPercentual ?? 0) / 100;
+        const total = order.items.reduce((acc, orderItem) => {
+          const taxItem = data.itens.find(
+            (t) => t.produto.codigo_produto === orderItem.productId,
+          );
+          if (!taxItem) return acc;
+          const p = taxItem.produto;
+          let perUnit =
+            (p.valor_cofins ?? 0) +
+            (p.valor_pis ?? 0) +
+            (p.valor_ipi ?? 0) +
+            (p.valor_csll ?? 0) +
+            (p.valor_icms ?? 0) +
+            (p.valor_st ?? 0);
+          for (const r of p.reforma ?? []) {
+            const name = (r.tipo_tributo_descricao ?? "")
+              .trim()
+              .toUpperCase();
+            const hidden = hiddenPrefixes.some(
+              (prefix) => name === prefix || name.startsWith(`${prefix} `),
+            );
+            if (hidden) continue;
+            perUnit += r.valor_tributo ?? 0;
+          }
+          return acc + perUnit * discountFactor * (orderItem.orderQuantity ?? 0);
+        }, 0);
+        setTotalTaxes(total);
       } else {
         setTotalTaxes(0);
       }

@@ -91,6 +91,7 @@ import { Route as AppRegistrationsPriceTablesPriceTableIdPricesIndexRouteImport 
 import { Route as AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRouteImport } from './pages/_app/registrations/price-tables/$priceTableId/branches-exception/index'
 import { Route as AppRegistrationsCustomersCustomerIdSalesGroupIndexRouteImport } from './pages/_app/registrations/customers/$customerId/sales-group/index'
 import { Route as AppRegistrationsCustomersCustomerIdPriceTablesIndexRouteImport } from './pages/_app/registrations/customers/$customerId/price-tables/index'
+import { Route as AppAdminUsersUserIdCustomersIndexRouteImport } from './pages/_app/admin/users/$userId/customers/index'
 
 const AppLayoutRoute = AppLayoutRouteImport.update({
   id: '/_app',
@@ -557,6 +558,12 @@ const AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute =
     path: '/registrations/customers/$customerId/price-tables/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
+const AppAdminUsersUserIdCustomersIndexRoute =
+  AppAdminUsersUserIdCustomersIndexRouteImport.update({
+    id: '/admin/users/$userId/customers/',
+    path: '/admin/users/$userId/customers/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
@@ -635,6 +642,7 @@ export interface FileRoutesByFullPath {
   '/registrations/products/$productId': typeof AppRegistrationsProductsProductIdIndexRoute
   '/registrations/sales-group/$groupId': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   '/registrations/sku-messages/$productId': typeof AppRegistrationsSkuMessagesProductIdIndexRoute
+  '/admin/users/$userId/customers': typeof AppAdminUsersUserIdCustomersIndexRoute
   '/registrations/customers/$customerId/price-tables': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
   '/registrations/customers/$customerId/sales-group': typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute
   '/registrations/price-tables/$priceTableId/branches-exception': typeof AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRoute
@@ -718,6 +726,7 @@ export interface FileRoutesByTo {
   '/registrations/products/$productId': typeof AppRegistrationsProductsProductIdIndexRoute
   '/registrations/sales-group/$groupId': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   '/registrations/sku-messages/$productId': typeof AppRegistrationsSkuMessagesProductIdIndexRoute
+  '/admin/users/$userId/customers': typeof AppAdminUsersUserIdCustomersIndexRoute
   '/registrations/customers/$customerId/price-tables': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
   '/registrations/customers/$customerId/sales-group': typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute
   '/registrations/price-tables/$priceTableId/branches-exception': typeof AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRoute
@@ -803,6 +812,7 @@ export interface FileRoutesById {
   '/_app/registrations/products/$productId/': typeof AppRegistrationsProductsProductIdIndexRoute
   '/_app/registrations/sales-group/$groupId/': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   '/_app/registrations/sku-messages/$productId/': typeof AppRegistrationsSkuMessagesProductIdIndexRoute
+  '/_app/admin/users/$userId/customers/': typeof AppAdminUsersUserIdCustomersIndexRoute
   '/_app/registrations/customers/$customerId/price-tables/': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
   '/_app/registrations/customers/$customerId/sales-group/': typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute
   '/_app/registrations/price-tables/$priceTableId/branches-exception/': typeof AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRoute
@@ -888,6 +898,7 @@ export interface FileRouteTypes {
     | '/registrations/products/$productId'
     | '/registrations/sales-group/$groupId'
     | '/registrations/sku-messages/$productId'
+    | '/admin/users/$userId/customers'
     | '/registrations/customers/$customerId/price-tables'
     | '/registrations/customers/$customerId/sales-group'
     | '/registrations/price-tables/$priceTableId/branches-exception'
@@ -971,6 +982,7 @@ export interface FileRouteTypes {
     | '/registrations/products/$productId'
     | '/registrations/sales-group/$groupId'
     | '/registrations/sku-messages/$productId'
+    | '/admin/users/$userId/customers'
     | '/registrations/customers/$customerId/price-tables'
     | '/registrations/customers/$customerId/sales-group'
     | '/registrations/price-tables/$priceTableId/branches-exception'
@@ -1055,6 +1067,7 @@ export interface FileRouteTypes {
     | '/_app/registrations/products/$productId/'
     | '/_app/registrations/sales-group/$groupId/'
     | '/_app/registrations/sku-messages/$productId/'
+    | '/_app/admin/users/$userId/customers/'
     | '/_app/registrations/customers/$customerId/price-tables/'
     | '/_app/registrations/customers/$customerId/sales-group/'
     | '/_app/registrations/price-tables/$priceTableId/branches-exception/'
@@ -1643,6 +1656,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/admin/users/$userId/customers/': {
+      id: '/_app/admin/users/$userId/customers/'
+      path: '/admin/users/$userId/customers'
+      fullPath: '/admin/users/$userId/customers'
+      preLoaderRoute: typeof AppAdminUsersUserIdCustomersIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
   }
 }
 
@@ -1722,6 +1742,7 @@ interface AppLayoutRouteChildren {
   AppRegistrationsProductsProductIdIndexRoute: typeof AppRegistrationsProductsProductIdIndexRoute
   AppRegistrationsSalesGroupGroupIdIndexRoute: typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   AppRegistrationsSkuMessagesProductIdIndexRoute: typeof AppRegistrationsSkuMessagesProductIdIndexRoute
+  AppAdminUsersUserIdCustomersIndexRoute: typeof AppAdminUsersUserIdCustomersIndexRoute
   AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute: typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
   AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute: typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute
   AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRoute: typeof AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRoute
@@ -1828,6 +1849,8 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
     AppRegistrationsSalesGroupGroupIdIndexRoute,
   AppRegistrationsSkuMessagesProductIdIndexRoute:
     AppRegistrationsSkuMessagesProductIdIndexRoute,
+  AppAdminUsersUserIdCustomersIndexRoute:
+    AppAdminUsersUserIdCustomersIndexRoute,
   AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute:
     AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute,
   AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute:

@@ -62,7 +62,14 @@ export const TaxesModal = ({ data }: Props) => {
             </div>
             <div className="px-1">Alíquota</div>
           </div>
-          {data?.TaxesDetail.map((item: any) => (
+          {data?.TaxesDetail.filter((item: any) => {
+            // Oculta tributos da reforma (CBS e variantes de IBS — "IBS",
+            // "IBS Mun", "IBS UF" etc) do modal de impostos calculados.
+            const name = (item?.descricao ?? "").trim().toUpperCase();
+            if (name === "CBS" || name.startsWith("CBS ")) return false;
+            if (name === "IBS" || name.startsWith("IBS ")) return false;
+            return true;
+          }).map((item: any) => (
             <div
               className="grid grid-cols-4 border-b py-1.5 px-1 last:border-b-0 first:border-t text-sm even:bg-neutral-50"
               key={item.descricao}

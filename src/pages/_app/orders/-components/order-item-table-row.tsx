@@ -18,9 +18,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
   item: OrderItemModel;
+  isSelected?: boolean;
+  onSelect?: () => void;
 }
 
-export const OrderItemTableRow = ({ item }: Props) => {
+export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
   const { order, removeItem, updateItem, mode } = useOrder();
 
   const isEditing = mode == "NEW" || mode == "EDIT";
@@ -40,11 +42,19 @@ export const OrderItemTableRow = ({ item }: Props) => {
     const ipiValor = ipi?.taxValue ?? 0;
     const icmsStValor = icmsSt?.taxValue ?? 0;
 
+    const customerDiscount =
+      order.discountPercentual ?? order.customer?.discountPercent ?? 0;
+    const discountFactor = 1 - customerDiscount / 100;
     const desembutidoIpi = item.inputPrice / (1 + ipiAliquota / 100);
-    const desembutidoComDesconto =
-      desembutidoIpi * (1 - (order.customer?.discountPercent ?? 0) / 100);
+    const desembutidoComDesconto = desembutidoIpi * discountFactor;
 
-    return desembutidoComDesconto + ipiValor + icmsStValor;
+    // IPI e ICMS-ST escalam linearmente com a base de cálculo (preço com
+    // desconto), então aplicamos o mesmo fator de desconto sobre os valores.
+    return (
+      desembutidoComDesconto +
+      ipiValor * discountFactor +
+      icmsStValor * discountFactor
+    );
   };
 
   const handleUpdateQuantity = async (newQuantity: number | undefined) => {
@@ -77,7 +87,13 @@ export const OrderItemTableRow = ({ item }: Props) => {
   };
 
   return (
-    <TableRow className="flex w-full even:bg-muted">
+    <TableRow
+      onClick={onSelect}
+      className={cn(
+        "flex w-full even:bg-muted cursor-pointer hover:bg-neutral-200",
+        isSelected && "bg-blue-100 hover:bg-blue-100 even:bg-blue-100",
+      )}
+    >
       <TableCell className="border-r border-l p-1 w-[72px]">
         <ProductImage
           productId={item.productId}
@@ -126,9 +142,14 @@ export const OrderItemTableRow = ({ item }: Props) => {
                 (p) => name === p || name.startsWith(`${p} `),
               );
             });
+            // Impostos seguem a base de cálculo com desconto do cliente.
+            const customerDiscount =
+              order.discountPercentual ?? order.customer?.discountPercent ?? 0;
+            const discountFactor = 1 - customerDiscount / 100;
             const total =
               visibleTaxes.reduce((acc, t) => acc + (t.taxValue ?? 0), 0) *
-              item.orderQuantity;
+              item.orderQuantity *
+              discountFactor;
             if (visibleTaxes.length === 0) {
               return <span className="text-neutral-400">—</span>;
             }
@@ -138,6 +159,7 @@ export const OrderItemTableRow = ({ item }: Props) => {
                 <OrderItemTaxesModal
                   productId={item.productId}
                   taxes={item.taxes}
+                  itemValue={item.inputPrice * discountFactor}
                 />
               </div>
             );
@@ -201,9 +223,9 @@ export const OrderItemTableRow = ({ item }: Props) => {
         )}
       </TableCell>
 
-      <TableCell className="border-r w-[100px]">
+      <TableCell className="border-r w-[60px]">
         {isEditing && (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5 justify-center">
             {/* <Button size="icon" variant="blue">
               <PencilIcon />
             </Button> */}

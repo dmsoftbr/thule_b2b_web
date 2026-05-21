@@ -110,7 +110,9 @@ export const OrderSearchProductModal = ({ initialPriceTable }: Props) => {
         taxes: [],
         costValue: 0,
       });
-      toast.success(`Produto adicionado ${order.isBudget ? "na simulação" : "no pedido"}!`);
+      toast.success(
+        `Produto adicionado ${order.isBudget ? "na simulação" : "no pedido"}!`,
+      );
     }
     setOrder(newOrder);
   }
@@ -184,7 +186,7 @@ export const OrderSearchProductModal = ({ initialPriceTable }: Props) => {
     {
       key: "PrecoTabela",
       dataIndex: "unitPriceInTable",
-      title: "Preço Tabela",
+      title: "Preço Compra Unit.",
       renderItem: (item: ProductModel) => (
         <div className="font-semibold w-full text-right text-blue-600 ">
           {formatNumber(item.unitPriceInTable, 2)}

@@ -705,29 +705,6 @@ export const ServerTable = <T,>({
               </div>
             )}
           <div>{searchSlot}</div>
-          {searchFields.length > 0 && (
-            <Select
-              onValueChange={(e) => {
-                setSearchField(e);
-                const _searchField = searchFields.find((f) => f.id == e);
-                setCustomWhere(_searchField?.customWhere ?? "");
-              }}
-              value={searchField}
-            >
-              <SelectTrigger className="flex-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {searchFields &&
-                  searchFields.length > 0 &&
-                  searchFields.map((item, index) => (
-                    <SelectItem key={index} value={item.id}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-          )}
           <div>
             {showAddButton && (
               <Button
@@ -754,6 +731,29 @@ export const ServerTable = <T,>({
               autoFocus={searchAutoFocus}
             />
           </div>
+          {searchFields.length > 0 && (
+            <Select
+              onValueChange={(e) => {
+                setSearchField(e);
+                const _searchField = searchFields.find((f) => f.id == e);
+                setCustomWhere(_searchField?.customWhere ?? "");
+              }}
+              value={searchField}
+            >
+              <SelectTrigger className="flex-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {searchFields &&
+                  searchFields.length > 0 &&
+                  searchFields.map((item, index) => (
+                    <SelectItem key={index} value={item.id}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          )}
           <div className="flex gap-x-2">
             {additionalButtons}
 

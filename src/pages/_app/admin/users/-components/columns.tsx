@@ -16,21 +16,28 @@ import {
   MoreHorizontalIcon,
   Settings2Icon,
   TrashIcon,
+  UsersIcon,
 } from "lucide-react";
 
 const roleLabel = (role: string) =>
   USER_ROLES.find((r) => r.id === String(role))?.name ?? "";
 
 const relatedLabel = (user: UserModel) => {
-  const ref =
-    String(user.role) === "2"
-      ? user.representative
-      : String(user.role) === "3"
-        ? user.customer
-        : null;
-  if (!ref || !ref.id) return "";
-  const display = ref.abbreviation || ref.name;
-  return `${ref.id} - ${display}`;
+  if (String(user.role) === "2") {
+    const ref = user.representative;
+    if (!ref || !ref.id) return "";
+    return `${ref.id} - ${ref.abbreviation || ref.name}`;
+  }
+  if (String(user.role) === "3") {
+    const list = user.customers ?? [];
+    if (list.length === 0) return "";
+    if (list.length === 1) {
+      const c = list[0];
+      return `${c.id} - ${c.abbreviation || c.name}`;
+    }
+    return `${list.length} clientes vinculados`;
+  }
+  return "";
 };
 
 interface Props {
@@ -38,6 +45,7 @@ interface Props {
   fnDelete: (data: UserModel) => void;
   fnPermissions: (data: UserModel) => void;
   fnChangePassword: (data: UserModel) => void;
+  fnCustomers: (data: UserModel) => void;
 }
 
 export const columns = ({
@@ -45,6 +53,7 @@ export const columns = ({
   fnDelete,
   fnPermissions,
   fnChangePassword,
+  fnCustomers,
 }: Props): ServerTableColumn[] => [
   {
     title: "Código",
@@ -143,6 +152,15 @@ export const columns = ({
             >
               <Settings2Icon className="size-4" />
               Permissões do Usuário
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={row.role != "3"}
+              onClick={() => {
+                fnCustomers(row);
+              }}
+            >
+              <UsersIcon className="size-4" />
+              Clientes Vinculados
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

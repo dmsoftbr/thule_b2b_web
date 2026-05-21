@@ -4,7 +4,7 @@ import {
 } from "@/components/app/products-combo";
 import { Label } from "@/components/ui/label";
 import { OrderItemCard } from "./order-item-card";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { OrderSearchProductModal } from "./order-search-product-modal";
 import { toast } from "sonner";
@@ -36,6 +36,19 @@ import type { Dispatch, SetStateAction } from "react";
 export const OrderFormItems = () => {
   const { order, addItem, mode, setOrder } = useOrder();
   const [showCard, setShowCard] = useState(false);
+  // Em telas < md (Tailwind: 768px) a tabela não cabe — força a visão em
+  // Card. matchMedia reage ao resize da janela em tempo real.
+  const [isSmallScreen, setIsSmallScreen] = useState(
+    typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 767px)").matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const handler = (e: MediaQueryListEvent) => setIsSmallScreen(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  const useCardView = isSmallScreen || showCard;
   const { showAppDialog } = useAppDialog();
   const productsComboRef = useRef<ProductsComboHandle>(null);
   const [priceTable, setPriceTable] = useState<PriceTableModel>(
@@ -345,7 +358,8 @@ export const OrderFormItems = () => {
   //   + ValorIPI + ValorICMS-ST, multiplicado pela quantidade.
   const findItemTax = (item: OrderItemModel, name: string) =>
     item.taxes?.find((t) => (t.taxName ?? "").trim().toUpperCase() === name);
-  const customerDiscount = order.customer?.discountPercent ?? 0;
+  const customerDiscount =
+    order.discountPercentual ?? order.customer?.discountPercent ?? 0;
   const grandTotalWithDiscount = order.items.reduce((acc, item) => {
     const ipi = findItemTax(item, "IPI");
     const icmsSt = findItemTax(item, "ICMS-ST");
@@ -393,7 +407,7 @@ export const OrderFormItems = () => {
                   />
                 </div>
                 <OrderSearchProductModal initialPriceTable={priceTable} />
-                <div className="flex items-center gap-x-1">
+                <div className="hidden md:flex items-center gap-x-1">
                   <AppTooltip
                     message="Ver em Tabela"
                     className="bg-emerald-700"
@@ -436,11 +450,11 @@ export const OrderFormItems = () => {
           </div>
         </div>
       </div>
-      {!showCard && <OrderItemTable />}
-      {showCard && (
+      {!useCardView && <OrderItemTable />}
+      {useCardView && (
         <div
           className={cn(
-            "grid grid-cols-[70%_30%] border-y w-full",
+            "grid grid-cols-1 md:grid-cols-[70%_30%] border-y w-full",
             !order.items && "grid-cols-1 border-0",
           )}
         >

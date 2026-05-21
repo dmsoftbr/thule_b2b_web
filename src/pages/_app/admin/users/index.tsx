@@ -81,6 +81,10 @@ function UsersPageComponent() {
     setShowChangePassword(true);
   };
 
+  const handleCustomers = (data: UserModel) => {
+    navigate({ to: `/admin/users/${data.id}/customers` });
+  };
+
   return (
     <AppPageHeader titleSlot="Manutenção de Usuários">
       <div className="p-2">
@@ -94,6 +98,7 @@ function UsersPageComponent() {
             fnDelete: handleDelete,
             fnPermissions: handlePermissions,
             fnChangePassword: handleChangePassword,
+            fnCustomers: handleCustomers,
           })}
           showAddButton
           onAdd={() => handleAdd()}

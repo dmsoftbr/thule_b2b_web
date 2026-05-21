@@ -8,6 +8,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { formatNumber } from "@/lib/number-utils";
 import type { OrderItemTaxModel } from "@/models/orders/order-item-tax-model";
@@ -15,6 +17,10 @@ import type { OrderItemTaxModel } from "@/models/orders/order-item-tax-model";
 interface Props {
   productId: string;
   taxes: OrderItemTaxModel[] | undefined;
+  // Valor unitário (com desconto do cliente aplicado) enviado ao backend como
+  // UnitaryValue na chamada /order-items/calc-item-taxes — base do cálculo
+  // dos impostos exibidos abaixo.
+  itemValue?: number;
 }
 
 // Tributos da reforma (CBS/IBS) — escondidos da UI, mas mantidos no state
@@ -26,7 +32,7 @@ const isHidden = (taxName: string) => {
   return HIDDEN_PREFIXES.some((p) => name === p || name.startsWith(`${p} `));
 };
 
-export const OrderItemTaxesModal = ({ productId, taxes }: Props) => {
+export const OrderItemTaxesModal = ({ productId, taxes, itemValue }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const visibleTaxes = (taxes ?? []).filter((t) => !isHidden(t.taxName));
   const total = visibleTaxes.reduce((acc, t) => acc + (t.taxValue ?? 0), 0);
@@ -63,6 +69,15 @@ export const OrderItemTaxesModal = ({ productId, taxes }: Props) => {
           <DialogTitle>Impostos do Item — {productId}</DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
+        <div className="form-group">
+          <Label>Base de Cálculo</Label>
+          <Input
+            disabled
+            readOnly
+            value={`R$ ${formatNumber(itemValue ?? 0, 2)}`}
+            className="text-right tabular-nums"
+          />
+        </div>
         <div className="flex flex-col border">
           <div className="grid grid-cols-5 text-sm border-b bg-neutral-200 border-neutral-300 font-semibold">
             <div className="border-r border-neutral-300 px-1">Imposto</div>
@@ -89,9 +104,7 @@ export const OrderItemTaxesModal = ({ productId, taxes }: Props) => {
             >
               <div className="font-medium">{t.taxName}</div>
               <div className="text-right">{formatNumber(t.taxBase, 2)}</div>
-              <div className="text-right">
-                {formatNumber(t.mva ?? 0, 2)}%
-              </div>
+              <div className="text-right">{formatNumber(t.mva ?? 0, 2)}%</div>
               <div className="text-right">
                 {formatNumber(t.taxPercentual, 2)}%
               </div>

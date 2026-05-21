@@ -13,9 +13,11 @@ import { useOrder } from "../-context/order-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AppTooltip } from "@/components/layout/app-tooltip";
 import { InfoIcon } from "lucide-react";
+import { useState } from "react";
 
 export const OrderItemTable = () => {
   const { order, isBudget } = useOrder();
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const anyItemLoadingTaxes = order.items.some((i) => i.isLoadingTaxes);
 
   // Soma do "Total c/Desconto" usando a mesma fórmula da linha:
@@ -23,7 +25,8 @@ export const OrderItemTable = () => {
   //   + ValorIPI + ValorICMS-ST, multiplicado pela quantidade.
   const findTax = (item: OrderItemModel, name: string) =>
     item.taxes?.find((t) => (t.taxName ?? "").trim().toUpperCase() === name);
-  const customerDiscount = order.customer?.discountPercent ?? 0;
+  const customerDiscount =
+    order.discountPercentual ?? order.customer?.discountPercent ?? 0;
   const grandTotalWithDiscount = order.items.reduce((acc, item) => {
     const ipi = findTax(item, "IPI");
     const icmsSt = findTax(item, "ICMS-ST");
@@ -116,7 +119,7 @@ export const OrderItemTable = () => {
               </AppTooltip>
             </div>
           </TableHead>
-          <TableHead className="w-[100px] border flex items-center text-xs text-black">
+          <TableHead className="w-[60px] border flex items-center justify-center text-xs text-black">
             Ações
           </TableHead>
           <TableHead className="w-[17px] max-w-[17px]"></TableHead>
@@ -137,7 +140,14 @@ export const OrderItemTable = () => {
           </tr>
         )}
         {order.items?.map((item: OrderItemModel, index: number) => (
-          <OrderItemTableRow key={index} item={item} />
+          <OrderItemTableRow
+            key={index}
+            item={item}
+            isSelected={selectedIndex === index}
+            onSelect={() =>
+              setSelectedIndex(selectedIndex === index ? null : index)
+            }
+          />
         ))}
       </TableBody>
       <TableFooter className="flex w-full">
@@ -161,8 +171,8 @@ export const OrderItemTable = () => {
               formatNumber(grandTotalWithDiscount, 2)
             )}
           </TableHead>
-          {/* Prev. Entrega (120) + Margem (100) + Markup (100) + Ações (100) = 420 */}
-          <TableHead className="w-[420px] border-[0.5px]"></TableHead>
+          {/* Prev. Entrega (120) + Margem (100) + Markup (100) + Ações (60) = 380 */}
+          <TableHead className="w-[380px] border-[0.5px]"></TableHead>
           <TableHead className="w-[17px]"></TableHead>
         </TableRow>
       </TableFooter>

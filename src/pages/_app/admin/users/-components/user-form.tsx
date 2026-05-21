@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form } from "@/components/ui/form";
 import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { api, handleError } from "@/lib/api";
 import { toast } from "sonner";
 import type { FORM_ACTIONS } from "@/@types/form-actions";
@@ -27,6 +28,7 @@ interface Props {
 export const UserForm = ({ initialData, mode, onClose }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const { showAppDialog } = useAppDialog();
+  const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof UserSchema>>({
     resolver: zodResolver(UserSchema) as Resolver<z.infer<typeof UserSchema>>,
@@ -43,10 +45,13 @@ export const UserForm = ({ initialData, mode, onClose }: Props) => {
 
       setIsLoading(true);
       if (mode == "ADD") {
-        await api.post("/admin/users", data);
+        const { data: created } = await api.post<{ id: string }>(
+          "/admin/users",
+          data,
+        );
         toast.success("Usuário criado com sucesso!");
-        showAppDialog({
-          message: "Senha Inicial é: thule@123",
+        await showAppDialog({
+          message: `Código gerado: ${created?.id}\nSenha Inicial é: thule@123`,
           title: "Atenção",
           type: "warning",
           buttons: [
@@ -58,6 +63,13 @@ export const UserForm = ({ initialData, mode, onClose }: Props) => {
             },
           ],
         });
+
+        // Perfil CLIENTE precisa de ao menos um cliente vinculado — manda
+        // direto para a tela de vínculos logo após criar o usuário.
+        if (String(data.role) === "3" && created?.id) {
+          navigate({ to: `/admin/users/${created.id}/customers` });
+          return;
+        }
       } else {
         await api.patch("/admin/users", data);
         toast.success("Usuário alterado com sucesso!");
@@ -88,12 +100,14 @@ export const UserForm = ({ initialData, mode, onClose }: Props) => {
           )}
           className="space-y-4"
         >
-          <FormInput
-            readOnly={mode != "ADD"}
-            control={form.control}
-            name="id"
-            label="Código"
-          />
+          {mode != "ADD" && (
+            <FormInput
+              readOnly
+              control={form.control}
+              name="id"
+              label="Código"
+            />
+          )}
           <FormInput control={form.control} name="name" label="Nome" />
           <FormInput label="E-mail" control={form.control} name="email" />
           <FormSearchCombo
@@ -105,6 +119,7 @@ export const UserForm = ({ initialData, mode, onClose }: Props) => {
             searchPlaceholder="Buscar Perfil"
           />
           <FormInput
+            className={cn("hidden space-y-2", roleWatch == "1" && "block")}
             label="Domínio da Rede"
             control={form.control}
             name="networkDomain"
@@ -120,18 +135,12 @@ export const UserForm = ({ initialData, mode, onClose }: Props) => {
             placeholder="Selecione o Grupo de Usuário"
             searchPlaceholder="Buscar Grupo de Usuário"
           />
-          <FormSearchCombo
-            className={cn("hidden space-y-2", roleWatch == "3" && "block")}
-            control={form.control}
-            apiEndpoint={`/registrations/customers/search-combo`}
-            queryStringName="search"
-            labelProp={(item) => `${item.id} - ${item.abbreviation}`}
-            valueProp="id"
-            label="Cliente"
-            name="customerId"
-            placeholder="Selecione o Cliente"
-            searchPlaceholder="Buscar Cliente"
-          />
+          {/* {roleWatch == "3" && (
+            <div className="rounded-md border border-blue-200 bg-blue-50 text-blue-900 text-xs px-3 py-2">
+              * Após gravar, abra <strong>Clientes Vinculados</strong> na
+              listagem de usuários para adicionar/remover permissão em Clientes.
+            </div>
+          )} */}
           <FormSearchCombo
             className={cn("hidden space-y-2", roleWatch == "2" && "block")}
             control={form.control}

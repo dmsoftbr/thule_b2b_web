@@ -83,6 +83,46 @@ export const columns = ({
     sortable: false,
   },
   {
+    key: "salesGroup",
+    dataIndex: "salesGroup",
+    title: "Grupos de Venda",
+    renderItem: (customer: any) => (
+      <span>
+        {(customer.salesGroup ?? [])
+          .map((g: any) => g.groupId)
+          .join(", ")}
+      </span>
+    ),
+    sortable: false,
+  },
+  {
+    key: "priceTables",
+    dataIndex: "priceTables",
+    title: "Tabelas de Preço",
+    renderItem: (customer: any) => (
+      <span>
+        {(customer.priceTables ?? [])
+          .map((p: any) => p.id)
+          .join(", ")}
+      </span>
+    ),
+    sortable: false,
+  },
+  {
+    key: "group",
+    dataIndex: "group.name",
+    title: "Grupo do Cliente",
+    renderItem: (customer: any) =>
+      customer.group ? (
+        <span>
+          {customer.group.id} - {customer.group.name}
+        </span>
+      ) : (
+        <span></span>
+      ),
+    sortable: false,
+  },
+  {
     key: "actions",
     dataIndex: "id",
     title: "Ações",

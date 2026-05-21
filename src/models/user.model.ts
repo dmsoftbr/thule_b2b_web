@@ -1,3 +1,4 @@
+import type { CustomerModel } from "./registrations/customer.model";
 import type { UserGroupModel } from "./user-group.model";
 
 export type UserRelatedRef = {
@@ -14,9 +15,8 @@ export type UserModel = {
   networkDomain: string;
   groupId: string;
   representativeId: number;
-  customerId: number;
   isActive: boolean;
   group?: UserGroupModel;
-  customer?: UserRelatedRef;
+  customers: CustomerModel[];
   representative?: UserRelatedRef;
 };
