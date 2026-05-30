@@ -41,8 +41,13 @@ export const PriceTableForm = ({ initialData, mode, onClose }: Props) => {
     try {
       setIsLoading(true);
 
-      await api.patch("/registrations/price-tables", values);
-      toast.success("Tabela de Preço alterada com sucesso!");
+      if (mode == "ADD") {
+        await api.post("/registrations/price-tables", values);
+        toast.success("Tabela de Preço criada com sucesso!");
+      } else {
+        await api.patch("/registrations/price-tables", values);
+        toast.success("Tabela de Preço alterada com sucesso!");
+      }
 
       onClose(true);
       setIsLoading(false);
@@ -76,7 +81,12 @@ export const PriceTableForm = ({ initialData, mode, onClose }: Props) => {
         onSubmit={form.handleSubmit(onSubmit, (errors) => console.log(errors))}
         className="space-y-4"
       >
-        <FormInput readOnly control={form.control} name="id" label="Código" />
+        <FormInput
+          readOnly={mode != "ADD"}
+          control={form.control}
+          name="id"
+          label="Código"
+        />
         <FormInput control={form.control} name="name" label="Descrição" />
         <FormInput
           control={form.control}

@@ -212,7 +212,7 @@ export const CustomersCombo = forwardRef<CustomersComboHandle, Props>(({
     if (!selectedCustomer) return "Selecione o Cliente";
 
     return (
-      <div>
+      <div className="min-w-0 flex-1 truncate text-left">
         {`${selectedCustomer.id} - ${selectedCustomer.abbreviation}`} -{" "}
         <span className="text-xs text-muted-foreground">
           CPF/CNPJ: {selectedFormattedDocument}
@@ -393,7 +393,7 @@ export const CustomersCombo = forwardRef<CustomersComboHandle, Props>(({
           className="w-full justify-between hover:not-disabled:!bg-white disabled:bg-neutral-200"
         >
           {buttonContent}
-          <ChevronsUpDownIcon className="opacity-50" />
+          <ChevronsUpDownIcon className="opacity-50 shrink-0" />
         </Button>
       </PopoverTrigger>
 

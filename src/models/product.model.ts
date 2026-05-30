@@ -21,4 +21,12 @@ export type ProductModel = {
   suggestUnitPrice: number;
   unitPriceInTable: number;
   quantity: number;
+  // Tabela de exceção (resolução feita no backend):
+  isBlockedByException?: boolean;
+  exceptionMarginPercent?: number | null;
+  // Estabelecimentos pelos quais o produto bloqueado PODE ser vendido (1o = sugestão).
+  allowedExceptionBranches?: string[];
+  // Grupo de desconto (tabela de exceção) que cobre o produto. Usado para impedir
+  // misturar produtos de grupos diferentes no mesmo pedido.
+  exceptionTableId?: string | null;
 };

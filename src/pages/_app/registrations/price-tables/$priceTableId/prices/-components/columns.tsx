@@ -30,15 +30,23 @@ export const columns = (): ServerTableColumn[] => [
   },
   {
     title: "Descrição",
-    dataIndex: "name",
-    key: "name",
+    dataIndex: "description",
+    key: "description",
     sortable: true,
+    renderItem: (item: PriceModel) => item.description ?? "",
   },
   {
     title: "Preço",
     dataIndex: "price",
     key: "price",
-    className: "w-60",
+    className: "w-60 text-right",
     sortable: true,
+    renderItem: (item: PriceModel) =>
+      (item.price ?? 0).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+        minimumFractionDigits: 5,
+        maximumFractionDigits: 5,
+      }),
   },
 ];

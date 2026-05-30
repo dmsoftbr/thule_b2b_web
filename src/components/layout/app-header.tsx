@@ -14,7 +14,9 @@ export const AppHeader = () => {
           </div>
           <div className="flex items-center gap-x-10">
             <AppNotificationsDropDown />
-            <AppUserDropDown />
+            {/* Em telas md+ o usuário fica no header; no mobile ele é movido
+                para o rodapé da sidebar (ver AppSideBar). */}
+            <AppUserDropDown className="hidden md:flex" />
           </div>
         </div>
       </header>

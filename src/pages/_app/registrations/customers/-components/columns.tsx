@@ -13,11 +13,13 @@ import { MenuIcon } from "lucide-react";
 interface Props {
   fnPriceTables: (data: CustomerModel) => void;
   fnSalesGroup: (data: CustomerModel) => void;
+  fnDiscountGroups: (data: CustomerModel) => void;
 }
 
 export const columns = ({
   fnPriceTables,
   fnSalesGroup,
+  fnDiscountGroups,
 }: Props): ServerTableColumn[] => [
   {
     key: "id",
@@ -140,6 +142,9 @@ export const columns = ({
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => fnSalesGroup(customer)}>
               Grupos de Venda
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => fnDiscountGroups(customer)}>
+              Grupos de Desconto
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

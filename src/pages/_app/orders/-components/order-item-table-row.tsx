@@ -8,7 +8,15 @@ import { MinusIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { getAvailabilityColor } from "../-utils/order-utils";
+import {
+  calcItemMarginPercent,
+  calcItemMarkup,
+  calcItemTotalWithDiscount,
+  calcItemVisibleTaxesTotal,
+  getAvailabilityColor,
+  getItemDiscountFactor,
+  getVisibleItemTaxes,
+} from "../-utils/order-utils";
 import { api } from "@/lib/api";
 import { AvailabilityInfo } from "./availability-info";
 import { AppTooltip } from "@/components/layout/app-tooltip";
@@ -26,36 +34,6 @@ export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
   const { order, removeItem, updateItem, mode } = useOrder();
 
   const isEditing = mode == "NEW" || mode == "EDIT";
-
-  // Preço unitário c/Desconto:
-  //   (InputPrice / (1 + AliqIPI/100)) * (1 − %DescCliente/100)
-  //   + ValorIPI + ValorICMS-ST
-  // Desembute o IPI já contido no preço, aplica o desconto do cliente sobre o
-  // valor desembutido e soma de volta IPI e ICMS-ST como valores absolutos.
-  // Reaproveitado nos cálculos de Total, Markup e Margem.
-  const getUnitPriceWithDiscount = () => {
-    const findTax = (name: string) =>
-      item.taxes?.find((t) => (t.taxName ?? "").trim().toUpperCase() === name);
-    const ipi = findTax("IPI");
-    const icmsSt = findTax("ICMS-ST");
-    const ipiAliquota = ipi?.taxPercentual ?? 0;
-    const ipiValor = ipi?.taxValue ?? 0;
-    const icmsStValor = icmsSt?.taxValue ?? 0;
-
-    const customerDiscount =
-      order.discountPercentual ?? order.customer?.discountPercent ?? 0;
-    const discountFactor = 1 - customerDiscount / 100;
-    const desembutidoIpi = item.inputPrice / (1 + ipiAliquota / 100);
-    const desembutidoComDesconto = desembutidoIpi * discountFactor;
-
-    // IPI e ICMS-ST escalam linearmente com a base de cálculo (preço com
-    // desconto), então aplicamos o mesmo fator de desconto sobre os valores.
-    return (
-      desembutidoComDesconto +
-      ipiValor * discountFactor +
-      icmsStValor * discountFactor
-    );
-  };
 
   const handleUpdateQuantity = async (newQuantity: number | undefined) => {
     if (!newQuantity) {
@@ -132,34 +110,19 @@ export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
           </div>
         ) : (
           (() => {
-            // Oculta tributos da reforma (CBS/IBS, incluindo variantes
-            // "IBS Mun" / "IBS UF") na soma exibida — mantidos no state para
-            // envio ao backend; apenas não aparecem ao usuário.
-            const hiddenPrefixes = ["CBS", "IBS"];
-            const visibleTaxes = (item.taxes ?? []).filter((t) => {
-              const name = (t.taxName ?? "").trim().toUpperCase();
-              return !hiddenPrefixes.some(
-                (p) => name === p || name.startsWith(`${p} `),
-              );
-            });
-            // Impostos seguem a base de cálculo com desconto do cliente.
-            const customerDiscount =
-              order.discountPercentual ?? order.customer?.discountPercent ?? 0;
-            const discountFactor = 1 - customerDiscount / 100;
-            const total =
-              visibleTaxes.reduce((acc, t) => acc + (t.taxValue ?? 0), 0) *
-              item.orderQuantity *
-              discountFactor;
+            const visibleTaxes = getVisibleItemTaxes(item);
             if (visibleTaxes.length === 0) {
               return <span className="text-neutral-400">—</span>;
             }
             return (
               <div className="flex items-center justify-end gap-2 tabular-nums">
-                <span>R$ {formatNumber(total, 2)}</span>
+                <span>
+                  R$ {formatNumber(calcItemVisibleTaxesTotal(item, order), 2)}
+                </span>
                 <OrderItemTaxesModal
                   productId={item.productId}
                   taxes={item.taxes}
-                  itemValue={item.inputPrice * discountFactor}
+                  itemValue={item.inputPrice * getItemDiscountFactor(item, order)}
                 />
               </div>
             );
@@ -173,7 +136,7 @@ export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
             <Skeleton className="h-4 w-20" />
           </div>
         ) : (
-          formatNumber(getUnitPriceWithDiscount() * item.orderQuantity, 2)
+          formatNumber(calcItemTotalWithDiscount(item, order), 2)
         )}
       </TableCell>
       <TableCell className="w-[120px] border-r flex-wrap ">
@@ -200,16 +163,7 @@ export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
             <Skeleton className="h-4 w-14" />
           </div>
         ) : (
-          <>
-            {formatNumber(
-              (1 -
-                getUnitPriceWithDiscount() /
-                  (item.suggestPrice == 0 ? 1 : item.suggestPrice)) *
-                100,
-              2,
-            )}
-            %
-          </>
+          <>{formatNumber(calcItemMarginPercent(item, order), 2)}%</>
         )}
       </TableCell>
 
@@ -219,7 +173,7 @@ export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
             <Skeleton className="h-4 w-14" />
           </div>
         ) : (
-          formatNumber(item.suggestPrice / getUnitPriceWithDiscount(), 2)
+          formatNumber(calcItemMarkup(item, order), 2)
         )}
       </TableCell>
 

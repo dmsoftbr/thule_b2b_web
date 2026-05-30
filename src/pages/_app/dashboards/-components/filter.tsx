@@ -4,6 +4,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SearchCombo } from "@/components/ui/search-combo";
 import { api } from "@/lib/api";
@@ -16,7 +17,7 @@ import type { ProductGroupModel } from "@/models/registrations/product-group.mod
 import type { RepresentativeModel } from "@/models/representative.model";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDownIcon, FilterIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const MESES = [
   { value: "1", label: "Janeiro" },
@@ -43,6 +44,9 @@ export type DashboardFiltro = {
   ano: number;
   anos: number[];
   meses: number[];
+  /** Filtro por dia do mês: do dia `diaInicial` até o dia `diaFinal`. */
+  diaInicial: number;
+  diaFinal: number;
   paises: string[];
   representantes: number[];
   gerentes: string[];
@@ -60,11 +64,21 @@ interface Props {
 }
 
 export const DashboardsFilter = ({ onAplicar }: Props) => {
+  const anoAtual = new Date().getFullYear();
+  const mesAtual = new Date().getMonth() + 1;
+  // Referências estáveis para os defaults dos combos. Sem o useMemo, um novo
+  // array a cada render faria o SearchCombo resetar a seleção, quebrando a
+  // seleção múltipla (o usuário não conseguiria marcar mais de um ano/mês).
+  const anoDefault = useMemo(() => [String(anoAtual)], [anoAtual]);
+  const mesDefault = useMemo(() => [String(mesAtual)], [mesAtual]);
+
   const [isOpen, setIsOpen] = useState(false);
-  const [anos, setAnos] = useState<number[]>([new Date().getFullYear()]);
-  const [meses, setMeses] = useState<number[]>([
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-  ]);
+  const [anos, setAnos] = useState<number[]>([anoAtual]);
+  // Padrão: somente o mês atual selecionado.
+  const [meses, setMeses] = useState<number[]>([mesAtual]);
+  // Padrão: mês inteiro (dia 1 ao 31).
+  const [diaInicial, setDiaInicial] = useState<number>(1);
+  const [diaFinal, setDiaFinal] = useState<number>(31);
   const [representantes, setRepresentantes] = useState<number[]>([]);
   const [paises, setPaises] = useState<string[]>([]);
   const [gerentes, setGerentes] = useState<string[]>([]);
@@ -142,8 +156,12 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
   const { data: paisesData } = useQuery({
     queryKey: ["filter-paises"],
     queryFn: async () => {
-      const { data } = await api.get("/dashboards-thule/paises");
-      setPaises(data);
+      const { data } = await api.get<{ pais: string }[]>(
+        "/dashboards-thule/paises",
+      );
+      // A API devolve objetos { pais }, mas o filtro espera string[]. Sem o
+      // map, o backend rejeitava o payload (paises[0] não convertível p/ string).
+      setPaises(data.map((p) => p.pais));
       return data;
     },
     refetchOnWindowFocus: false,
@@ -291,12 +309,21 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
   );
 
   const handleAplicar = () => {
-    const anoAtual = new Date().getFullYear();
-    const ano = anos.length > 0 ? Math.max(...anos) : anoAtual;
+    // Sempre ordena os anos do mais velho para o mais novo.
+    const anosOrdenados = [...anos].sort((a, b) => a - b);
+    const ano =
+      anosOrdenados.length > 0
+        ? anosOrdenados[anosOrdenados.length - 1]
+        : anoAtual;
+    // Normaliza o intervalo de dias (1..31) e garante início <= fim.
+    const ini = Math.min(Math.max(diaInicial || 1, 1), 31);
+    const fim = Math.min(Math.max(diaFinal || 31, 1), 31);
     const newFiltro: DashboardFiltro = {
       ano,
-      anos,
+      anos: anosOrdenados,
       meses,
+      diaInicial: Math.min(ini, fim),
+      diaFinal: Math.max(ini, fim),
       paises,
       representantes,
       gerentes,
@@ -312,6 +339,37 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
     onAplicar(newFiltro);
     setIsOpen(false);
   };
+
+  // Traz os dados automaticamente ao abrir a tela, assim que os dados de
+  // referência (que populam os filtros "selecionar todos") estiverem prontos.
+  const initAplicadoRef = useRef(false);
+  useEffect(() => {
+    if (initAplicadoRef.current) return;
+    const prontos =
+      !!clientesData &&
+      !!produtosData &&
+      !!gruposClienteData &&
+      !!gerentesData &&
+      !!paisesData &&
+      !!famComerciaisData &&
+      !!gruposEstoqueData &&
+      !!tiposItemData &&
+      !!representantesData;
+    if (!prontos) return;
+    initAplicadoRef.current = true;
+    handleAplicar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    clientesData,
+    produtosData,
+    gruposClienteData,
+    gerentesData,
+    paisesData,
+    famComerciaisData,
+    gruposEstoqueData,
+    tiposItemData,
+    representantesData,
+  ]);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -335,23 +393,20 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
                 multipleSelect
                 showSelectButtons
                 staticItems={anosItems}
+                defaultValue={anoDefault}
                 onSelectOption={(values) => {
                   const selecionados = values.map((v) => Number(v.value));
-                  setAnos(
-                    selecionados.length > 0
-                      ? selecionados
-                      : [new Date().getFullYear()],
-                  );
+                  setAnos(selecionados.length > 0 ? selecionados : [anoAtual]);
                 }}
               />
             </div>
             <div className="form-group">
               <Label>Mês</Label>
               <SearchCombo
-                selectAllOnLoad
                 staticItems={MESES}
                 multipleSelect
                 showSelectButtons
+                defaultValue={mesDefault}
                 onSelectOption={(values) => {
                   const meses = values.map((mes) => Number(mes.value));
                   setMeses(meses);
@@ -492,7 +547,7 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
                 showValueInSelectedItem
                 onSelectOption={(values) => {
                   const familias = values.map((item) => item.value);
-                  setMarcas(familias);
+                  setFamComerciais(familias);
                 }}
               />
             </div>
@@ -508,9 +563,31 @@ export const DashboardsFilter = ({ onAplicar }: Props) => {
                 staticItems={produtosItems}
                 onSelectOption={(values) => {
                   const prods = values.map((item) => item.value);
-                  setMarcas(prods);
+                  setProdutos(prods);
                 }}
               />
+            </div>
+            <div className="form-group">
+              <Label>Período (dia)</Label>
+              <div className="flex items-center gap-x-2">
+                <Input
+                  type="number"
+                  min={1}
+                  max={31}
+                  value={diaInicial}
+                  aria-label="Do dia"
+                  onChange={(e) => setDiaInicial(Number(e.target.value))}
+                />
+                <span className="text-xs text-muted-foreground">até</span>
+                <Input
+                  type="number"
+                  min={1}
+                  max={31}
+                  value={diaFinal}
+                  aria-label="Até o dia"
+                  onChange={(e) => setDiaFinal(Number(e.target.value))}
+                />
+              </div>
             </div>
             <Button type="button" onClick={() => handleAplicar()}>
               Aplicar

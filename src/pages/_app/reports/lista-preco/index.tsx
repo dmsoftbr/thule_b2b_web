@@ -125,18 +125,47 @@ function RouteComponent() {
           responseType: "blob",
         },
       );
-      const blob = new Blob([response.data], { type: "application/pdf" });
+
+      // Com responseType "blob" um erro do servidor (ex.: 500) também chega
+      // como Blob. Se o conteúdo não for PDF, lê o texto do blob e mostra a
+      // mensagem em vez de abrir um PDF inválido (que renderiza tela preta).
+      const data: Blob = response.data;
+      const isPdf =
+        data.type === "application/pdf" ||
+        data.type === "" ||
+        data.type.startsWith("application/octet-stream");
+      if (!isPdf || data.size === 0) {
+        const text = await data.text();
+        toast.error(text || "Não foi possível gerar o PDF.");
+        return;
+      }
+
+      const blob = new Blob([data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.target = "_blank";
-      link.download = "ListaPreco.pdf"; // Suggest a filename for download
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url); // Clean up the object URL
+      // Abre o PDF em uma nova aba para visualização.
+      const win = window.open(url, "_blank");
+      if (!win) {
+        // Pop-up bloqueado: cai para download via link.
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "ListaPreco.pdf";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      // IMPORTANTE: revogar a URL só depois que a aba/download teve tempo de
+      // carregá-la. Revogar imediatamente fazia a nova aba abrir em branco/preta.
+      setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
     } catch (error) {
-      toast.error(handleError(error));
+      // Em requisições blob, o corpo de erro também vem como Blob — lê o texto
+      // para extrair a mensagem real em vez de exibir "[object Blob]".
+      const errBlob = (error as any)?.response?.data;
+      if (errBlob instanceof Blob) {
+        const text = await errBlob.text();
+        toast.error(text || "Não foi possível gerar o PDF.");
+      } else {
+        toast.error(handleError(error));
+      }
     } finally {
       setIsLoading(false);
     }

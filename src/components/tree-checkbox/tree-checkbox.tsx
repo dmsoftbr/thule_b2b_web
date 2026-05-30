@@ -48,6 +48,15 @@ interface TreeViewProps {
   showSelectAllButtons?: boolean;
   isReadOnly?: boolean;
   isLoading?: boolean;
+  // "subtree" (padrão): marcar um pai marca toda a subárvore (Grupo de Venda).
+  // "node": marca apenas o nó clicado — usado quando cada nó carrega dados
+  // próprios (ex.: margem por nó nas Tabelas de Exceção).
+  selectionMode?: "subtree" | "node";
+  // Clique no rótulo do nó. Quando informado, o rótulo seleciona o nó (para um
+  // painel lateral) em vez de expandir/colapsar.
+  onNodeClick?: (nodeId: string, node: TreeNode) => void;
+  // Nó atualmente ativo (destacado) — combina com onNodeClick.
+  activeNodeId?: string;
 }
 
 interface TreeNodeProps {
@@ -57,6 +66,8 @@ interface TreeNodeProps {
   checkedStates: Map<string, CheckboxState>;
   onToggleExpand: (nodeId: string) => void;
   onToggleCheck: (nodeId: string) => void;
+  onNodeClick?: (nodeId: string, node: TreeNode) => void;
+  activeNodeId?: string;
   searchTerm?: string;
   filteredNodeIds?: Set<string>;
   isReadOnly?: boolean;
@@ -138,6 +149,8 @@ const TreeNodeComponent = ({
   checkedStates,
   onToggleExpand,
   onToggleCheck,
+  onNodeClick,
+  activeNodeId,
   searchTerm,
   filteredNodeIds,
   isReadOnly = false,
@@ -184,12 +197,30 @@ const TreeNodeComponent = ({
     [hasChildren, nodeIdStr, onToggleExpand],
   );
 
+  // Clique no rótulo: seleciona o nó (painel lateral) se onNodeClick existir;
+  // caso contrário mantém o comportamento padrão de expandir/colapsar.
+  const handleLabelClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (onNodeClick) {
+        onNodeClick(nodeIdStr, node);
+      } else {
+        handleExpandToggle(e);
+      }
+    },
+    [onNodeClick, nodeIdStr, node, handleExpandToggle],
+  );
+
   if (!shouldShow) return null;
+
+  const isActive = activeNodeId === nodeIdStr;
 
   return (
     <div className="select-none" id={node.id}>
       <div
-        className="flex items-center py-1 px-2 hover:bg-gray-50 rounded-sm group transition-colors"
+        className={`flex items-center py-1 px-2 rounded-sm group transition-colors ${
+          isActive ? "bg-blue-50 ring-1 ring-blue-300" : "hover:bg-gray-50"
+        }`}
         style={{ paddingLeft: `${paddingLeft + 8}px` }}
       >
         <button
@@ -231,7 +262,7 @@ const TreeNodeComponent = ({
 
         <span
           className="text-sm text-gray-700 flex-1 truncate cursor-pointer flex items-center gap-1.5 min-w-0"
-          onClick={handleExpandToggle}
+          onClick={handleLabelClick}
         >
           <span className="truncate">{highlightedLabel}</span>
           {node.badge && (
@@ -258,6 +289,8 @@ const TreeNodeComponent = ({
               checkedStates={checkedStates}
               onToggleExpand={onToggleExpand}
               onToggleCheck={onToggleCheck}
+              onNodeClick={onNodeClick}
+              activeNodeId={activeNodeId}
               searchTerm={searchTerm}
               filteredNodeIds={filteredNodeIds}
               isReadOnly={isReadOnly}
@@ -280,6 +313,9 @@ export const TreeView: React.FC<TreeViewProps> = ({
   searchPlaceholder = "Buscar...",
   showSelectAllButtons = true,
   isLoading = false,
+  selectionMode = "subtree",
+  onNodeClick,
+  activeNodeId,
 }) => {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -405,6 +441,18 @@ export const TreeView: React.FC<TreeViewProps> = ({
         someChildrenChecked = isSelfChecked;
       }
 
+      // Modo "node": cada nó vale por si. O nó marcado aparece check; ancestrais
+      // com descendentes marcados aparecem indeterminados.
+      if (selectionMode === "node") {
+        const state = {
+          checked: isSelfChecked,
+          indeterminate:
+            !isSelfChecked && (someChildrenChecked || hasIndeterminateChild),
+        };
+        states.set(nodeId, state);
+        return state;
+      }
+
       const finalChecked =
         node.children && node.children.length > 0
           ? allChildrenChecked
@@ -428,7 +476,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
 
     data.forEach((node) => computeVisuals(node));
     return states;
-  }, [checkedNodes, data]);
+  }, [checkedNodes, data, selectionMode]);
 
   // --- TOGGLE CHECK ---
   const handleToggleCheck = useCallback(
@@ -441,6 +489,16 @@ export const TreeView: React.FC<TreeViewProps> = ({
 
       const currentState = checkedStates.get(nodeId);
       const isCurrentlyChecked = currentState?.checked ?? false;
+
+      // Modo "node": alterna apenas o nó clicado, sem propagar para a subárvore
+      // nem re-adicionar ancestrais (cada nó tem dados próprios).
+      if (selectionMode === "node") {
+        if (next.has(nodeId)) next.delete(nodeId);
+        else next.add(nodeId);
+        setCheckedNodes(next);
+        if (onSelectionChange) onSelectionChange(Array.from(next));
+        return;
+      }
 
       const addSubtreeToSet = (n: TreeNode) => {
         next.add(toStr(n.id));
@@ -484,6 +542,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
       isReadOnly,
       checkedStates,
       onSelectionChange,
+      selectionMode,
     ],
   );
 
@@ -607,6 +666,8 @@ export const TreeView: React.FC<TreeViewProps> = ({
                   checkedStates={checkedStates}
                   onToggleExpand={handleToggleExpand}
                   onToggleCheck={handleToggleCheck}
+                  onNodeClick={onNodeClick}
+                  activeNodeId={activeNodeId}
                   searchTerm={searchTerm}
                   filteredNodeIds={searchTerm ? filteredNodeIds : undefined}
                 />

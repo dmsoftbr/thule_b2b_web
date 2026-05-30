@@ -10,6 +10,7 @@ import { formatNumber } from "@/lib/number-utils";
 import type { OrderItemModel } from "@/models/orders/order-item-model";
 import { OrderItemTableRow } from "./order-item-table-row";
 import { useOrder } from "../-context/order-context";
+import { calcOrderItemsTotalWithDiscount } from "../-utils/order-utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AppTooltip } from "@/components/layout/app-tooltip";
 import { InfoIcon } from "lucide-react";
@@ -20,25 +21,8 @@ export const OrderItemTable = () => {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const anyItemLoadingTaxes = order.items.some((i) => i.isLoadingTaxes);
 
-  // Soma do "Total c/Desconto" usando a mesma fórmula da linha:
-  //   (InputPrice / (1 + AliqIPI/100)) * (1 − %DescCliente/100)
-  //   + ValorIPI + ValorICMS-ST, multiplicado pela quantidade.
-  const findTax = (item: OrderItemModel, name: string) =>
-    item.taxes?.find((t) => (t.taxName ?? "").trim().toUpperCase() === name);
-  const customerDiscount =
-    order.discountPercentual ?? order.customer?.discountPercent ?? 0;
-  const grandTotalWithDiscount = order.items.reduce((acc, item) => {
-    const ipi = findTax(item, "IPI");
-    const icmsSt = findTax(item, "ICMS-ST");
-    const ipiAliquota = ipi?.taxPercentual ?? 0;
-    const ipiValor = ipi?.taxValue ?? 0;
-    const icmsStValor = icmsSt?.taxValue ?? 0;
-    const desembutidoIpi = item.inputPrice / (1 + ipiAliquota / 100);
-    const desembutidoComDesconto =
-      desembutidoIpi * (1 - customerDiscount / 100);
-    const unit = desembutidoComDesconto + ipiValor + icmsStValor;
-    return acc + unit * item.orderQuantity;
-  }, 0);
+  // Soma do "Total c/Desconto" — fonte única em order-utils (regra I24).
+  const grandTotalWithDiscount = calcOrderItemsTotalWithDiscount(order);
   const totalQuantity = order.items.reduce(
     (acc, item) => acc + item.orderQuantity,
     0,

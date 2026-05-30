@@ -25,6 +25,10 @@ const searchFieldsList: ServerTableSearchField[] = [
 function PriceTablesPageComponent() {
   const navigate = useNavigate();
 
+  const handleAdd = () => {
+    navigate({ to: `/registrations/price-tables/new-price-table` });
+  };
+
   const handleEdit = (data: PriceTableModel) => {
     navigate({ to: `/registrations/price-tables/${data.id}` });
   };
@@ -58,7 +62,8 @@ function PriceTablesPageComponent() {
             fnShowProductsException: handleProductsException,
             fnShowBranchesException: handleBranchesException,
           })}
-          showAddButton={false}
+          showAddButton
+          onAdd={() => handleAdd()}
           dataUrl="/registrations/price-tables/list-paged"
         />
       </div>

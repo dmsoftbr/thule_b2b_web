@@ -60,7 +60,8 @@ export const SalesChannelModal = () => {
           disabled={order.customerId <= 0}
         >
           <BoxIcon className="size-4" />
-          Produtos do Canal de Venda
+          <span className="hidden sm:inline">Produtos do Canal de Venda</span>
+          <span className="sm:hidden">Canal de Venda</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="min-w-fit">

@@ -27,11 +27,20 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 import { useNavigate } from "@tanstack/react-router";
-import { formatNumber, roundNumber } from "@/lib/number-utils";
+import { formatNumber } from "@/lib/number-utils";
 import { api, handleError } from "@/lib/api";
 import { useEffect, useRef, useState } from "react";
 import { type UserPermissionModel } from "@/models/admin/user-permission.model";
-import { calcOrderTaxes, getUserPermissions } from "../-utils/order-utils";
+import {
+  buildTaxesDetailFromOrderItems,
+  calcItemVisibleTaxesTotal,
+  calcOrderGrossSubtotal,
+  calcOrderTaxes,
+  calcOrderTotalWithTaxes,
+  getItemDiscountFactor,
+  getUserPermissions,
+  withPricingSnapshot,
+} from "../-utils/order-utils";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { Loader2Icon, LoaderIcon, Undo2Icon } from "lucide-react";
@@ -82,9 +91,16 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   const [isCalculatingFreight, setIsCalculatingFreight] = useState(false);
   const [isCalculatingTaxes, setIsCalculatingTaxes] = useState(false);
   const [, setIsFreightError] = useState(false);
-  const [totalTaxes, setTotalTaxes] = useState(0);
   const freightAbortControllerRef = useRef<AbortController | null>(null);
   const taxesAbortControllerRef = useRef<AbortController | null>(null);
+
+  // "Impostos" do pedido = soma dos impostos POR ITEM (mesma fonte e método da
+  // coluna "Impostos" de cada linha — item.taxes). Antes era recalculado aqui
+  // via calcOrderTaxes, o que divergia da tabela (ex.: 395,59 vs 322,01).
+  const totalTaxes = order.items.reduce(
+    (acc, item) => acc + calcItemVisibleTaxesTotal(item, order),
+    0,
+  );
 
   async function handleSendOrder() {
     try {
@@ -96,12 +112,20 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
       const orderData = { ...order, isBudget, history: [] };
       setIsSaving(true);
 
+      // Congela o snapshot de preço calculado (grossItemValue/netItemValue) em
+      // cada item, para o pedido gravar exatamente o valor exibido ao usuário.
+      // Roda ANTES da reescrita de tributos abaixo, pois lê o IPI cru exibido
+      // em tela; cria novos objetos para não mutar o state do contexto.
+      orderData.items = orderData.items.map((it) =>
+        withPricingSnapshot(it, order),
+      );
+
       // Os impostos vêm da API calculados sobre o preço de tabela. Aplicamos
       // o fator de desconto do cliente para que base e valor reflitam o preço
       // efetivamente cobrado.
-      const discountFactor = 1 - (order.discountPercentual ?? 0) / 100;
-
       orderData.items.forEach((orderItem) => {
+        // Itens de grupo de desconto não recebem o desconto padrão (preço já final).
+        const discountFactor = getItemDiscountFactor(orderItem, order);
         orderItem.taxes = [];
         taxesData?.itens.forEach((taxItem) => {
           if (taxItem.produto.codigo_produto == orderItem.productId) {
@@ -250,7 +274,7 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
       if (isBudget) navigate({ to: "/budgets" });
       else navigate({ to: "/orders" });
     } catch (error) {
-      toast.error("ATENÇÃO:", handleError(error));
+      toast.error(`ATENÇÃO: ${handleError(error)}`);
     } finally {
       setIsSaving(false);
       setIsCalculatingFreight(false);
@@ -288,71 +312,15 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
       });
       navigate({ to: "/orders" });
     } catch (error) {
-      toast.error("ATENÇÃO:", handleError(error));
+      toast.error(`ATENÇÃO: ${handleError(error)}`);
     } finally {
       setIsSaving(false);
     }
   }
 
-  const getSubTotal = () => {
-    return order.items.reduce(
-      (accum, b) => (accum += b.orderQuantity * b.inputPrice),
-      0,
-    );
-  };
-
-  // Total do pedido alinhado à fórmula por linha da OrderItemTable:
-  //   unit = (InputPrice / (1 + AliqIPI/100)) × (1 − %DescCliente/100)
-  //          + ValorIPI + ValorICMS-ST
-  //   itemsTotal = Σ unit × OrderQuantity
-  // Como IPI e ICMS-ST já estão embutidos no itemsTotal, somamos apenas os
-  // demais tributos (totalTaxes − ΣIPI − ΣICMS-ST) para evitar duplicidade.
-  const getTotal = () => {
-    const findItemTax = (item: (typeof order.items)[number], name: string) =>
-      item.taxes?.find((t) => (t.taxName ?? "").trim().toUpperCase() === name);
-
-    const discount = order.discountPercentual ?? 0;
-    const discountFactor = 1 - discount / 100;
-    let itemsTotal = order.items.reduce((acc, item) => {
-      const ipi = findItemTax(item, "IPI");
-      const icmsSt = findItemTax(item, "ICMS-ST");
-      const ipiAliquota = ipi?.taxPercentual ?? 0;
-      const ipiValor = ipi?.taxValue ?? 0;
-      const icmsStValor = icmsSt?.taxValue ?? 0;
-      const desembutidoIpi = item.inputPrice / (1 + ipiAliquota / 100);
-      const desembutidoComDesconto = desembutidoIpi * discountFactor;
-      // IPI e ICMS-ST escalam com a base com desconto.
-      const unit =
-        desembutidoComDesconto +
-        ipiValor * discountFactor +
-        icmsStValor * discountFactor;
-      return acc + unit * item.orderQuantity;
-    }, 0);
-
-    if (order.additionalDiscount > 0) {
-      itemsTotal = roundNumber(
-        itemsTotal - (itemsTotal * (order?.additionalDiscount ?? 0)) / 100,
-        2,
-      );
-    }
-
-    const embeddedTaxes = order.items.reduce((acc, item) => {
-      const ipi = findItemTax(item, "IPI");
-      const icmsSt = findItemTax(item, "ICMS-ST");
-      return (
-        acc +
-        ((ipi?.taxValue ?? 0) + (icmsSt?.taxValue ?? 0)) *
-          item.orderQuantity *
-          discountFactor
-      );
-    }, 0);
-    const otherTaxes = Math.max(0, totalTaxes - embeddedTaxes);
-
-    return roundNumber(
-      itemsTotal + (order?.freightValue ?? 0) + otherTaxes,
-      2,
-    );
-  };
+  // Sub-total bruto e total c/impostos — centralizados em order-utils.
+  const getSubTotal = () => calcOrderGrossSubtotal(order);
+  const getTotal = () => calcOrderTotalWithTaxes(order, totalTaxes);
 
   const getSelectedDeliveryLocation = () => {
     if (!order.customer) return undefined;
@@ -495,44 +463,11 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
 
     setIsCalculatingTaxes(true);
     try {
+      // Recalcula apenas para alimentar o detalhamento (TaxesModal). O TOTAL
+      // exibido vem de item.taxes (totalTaxes derivado acima), igual à tabela.
       const data = await calcOrderTaxes(order, abortController.signal);
       if (data) {
         setTaxesData(data);
-        // Soma os impostos usando o mesmo critério da OrderItemTableRow:
-        // por unidade, agregando COFINS/PIS/IPI/CSLL/ICMS/ICMS-ST + reforma,
-        // excluindo CBS e variantes de IBS, multiplicado pela quantidade.
-        const hiddenPrefixes = ["CBS", "IBS"];
-        // Impostos vêm calculados sobre o preço de tabela; aplicamos o fator
-        // de desconto para refletir o preço efetivamente cobrado.
-        const discountFactor = 1 - (order.discountPercentual ?? 0) / 100;
-        const total = order.items.reduce((acc, orderItem) => {
-          const taxItem = data.itens.find(
-            (t) => t.produto.codigo_produto === orderItem.productId,
-          );
-          if (!taxItem) return acc;
-          const p = taxItem.produto;
-          let perUnit =
-            (p.valor_cofins ?? 0) +
-            (p.valor_pis ?? 0) +
-            (p.valor_ipi ?? 0) +
-            (p.valor_csll ?? 0) +
-            (p.valor_icms ?? 0) +
-            (p.valor_st ?? 0);
-          for (const r of p.reforma ?? []) {
-            const name = (r.tipo_tributo_descricao ?? "")
-              .trim()
-              .toUpperCase();
-            const hidden = hiddenPrefixes.some(
-              (prefix) => name === prefix || name.startsWith(`${prefix} `),
-            );
-            if (hidden) continue;
-            perUnit += r.valor_tributo ?? 0;
-          }
-          return acc + perUnit * discountFactor * (orderItem.orderQuantity ?? 0);
-        }, 0);
-        setTotalTaxes(total);
-      } else {
-        setTotalTaxes(0);
       }
     } catch (error) {
       if (abortController.signal.aborted) return;
@@ -763,7 +698,7 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
                   {order.customer?.branchId !== "1" && (
                     <Label>
                       <Checkbox
-                        disabled={!isEditing}
+                        disabled={!isEditing || isItemPermissionDisabled("309")}
                         checked={order.branchId == "1"}
                         onCheckedChange={(checked) => {
                           if (!!checked) {
@@ -776,7 +711,7 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
                           }
                         }}
                       />
-                      Importadora
+                      Trocar Estabelecimento
                     </Label>
                   )}
                 </div>
@@ -1015,7 +950,13 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
                 </div>
                 <div className="flex justify-between pr-2 text-sm">
                   <div className="flex">
-                    <TaxesModal data={taxesData} />
+                    <TaxesModal
+                      data={
+                        isEditing
+                          ? taxesData
+                          : buildTaxesDetailFromOrderItems(order)
+                      }
+                    />
                     Impostos:
                   </div>
                   {isCalculatingTaxes && (

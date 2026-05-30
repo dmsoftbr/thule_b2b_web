@@ -295,6 +295,21 @@ export const MENU_DATA: MenuModel[] = [
         permissionId: "2",
       },
       {
+        id: "75",
+        title: "Grupos de Venda",
+        url: "/registrations/sales-group",
+        icon: "ComponentIcon",
+        permissionId: "4",
+      },
+    ],
+  },
+  {
+    id: "11",
+    title: "Adm. Preços",
+    url: "",
+    icon: "TagIcon",
+    children: [
+      {
         id: "78",
         title: "Tabelas de Preço",
         url: "/registrations/price-tables",
@@ -302,11 +317,11 @@ export const MENU_DATA: MenuModel[] = [
         permissionId: "3",
       },
       {
-        id: "75",
-        title: "Grupos de Venda",
-        url: "/registrations/sales-group",
-        icon: "ComponentIcon",
-        permissionId: "4",
+        id: "79",
+        title: "Grupos de Desconto",
+        url: "/registrations/price-exception-tables",
+        icon: "TableIcon",
+        permissionId: "3",
       },
     ],
   },

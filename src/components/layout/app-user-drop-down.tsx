@@ -16,8 +16,9 @@ import { getInitials } from "@/lib/string-utils";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { getUserRoleName } from "@/lib/user-role-utils";
+import { cn } from "@/lib/utils";
 
-export const AppUserDropDown = () => {
+export const AppUserDropDown = ({ className }: { className?: string }) => {
   const { session } = useAuth();
   const navigate = useNavigate();
 
@@ -38,7 +39,7 @@ export const AppUserDropDown = () => {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="h-12">
+          <Button variant="outline" className={cn("h-12", className)}>
             <Avatar>
               <AvatarImage src="https://github.com/shadcn1.png" />
               <AvatarFallback className="bg-black text-white">

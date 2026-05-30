@@ -65,9 +65,12 @@ export const PERMISSIONS_REGISTRATIONS: PermissionItem[] = [
   { id: "22", label: "Tipo Item", path: "/registrations/item-types" },
   { id: "8", label: "Clientes", path: "/registrations/customers" },
   { id: "2", label: "Cond. de Pagamento", path: "/registrations/payment-conditions" },
-  { id: "3", label: "Tabelas de Preço", path: "/registrations/price-tables" },
   { id: "4", label: "Grupos de Venda", path: "/registrations/sales-group" },
   { id: "5", label: "Avisos", path: "/admin/notices" },
+];
+
+export const PERMISSIONS_PRICE_ADMIN: PermissionItem[] = [
+  { id: "3", label: "Tabelas de Preço", path: "/registrations/price-tables" },
 ];
 
 export const PERMISSIONS_APP_ADMIN: PermissionItem[] = [
@@ -92,6 +95,7 @@ export const PERMISSIONS_SALES: PermissionItem[] = [
   { id: "307", label: "Alterar Condição de Pagamento" },
   { id: "308", label: "Alterar Local de Entrega" },
   { id: "309", label: "Alterar Estabelecimento" },
+  { id: "319", label: "Alterar Representante" },
   { id: "310", label: "Alterar Moeda" },
   { id: "311", label: "Alterar Transportadora" },
   { id: "312", label: "Alterar Datas Mínima/Máxima de Faturamento" },
@@ -112,6 +116,7 @@ export const ALL_PERMISSIONS: PermissionItem[] = [
   ...PERMISSIONS_REPORTS,
   ...PERMISSIONS_APPROVALS,
   ...PERMISSIONS_REGISTRATIONS,
+  ...PERMISSIONS_PRICE_ADMIN,
   ...PERMISSIONS_APP_ADMIN,
   ...PERMISSIONS_SETTINGS,
   ...PERMISSIONS_SALES,

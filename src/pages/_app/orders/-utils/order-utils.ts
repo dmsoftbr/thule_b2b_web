@@ -1,4 +1,5 @@
 import { api, handleError } from "@/lib/api";
+import { roundNumber } from "@/lib/number-utils";
 import type { UserPermissionModel } from "@/models/admin/user-permission.model";
 import type { OrderItemModel } from "@/models/orders/order-item-model";
 import type { OrderModel } from "@/models/orders/order-model";
@@ -228,7 +229,7 @@ export const calcOrderTaxes = async (
       ProductId: item.productId,
       CodRefer: item.referenceCode,
       Quantity: item.orderQuantity,
-      UnitaryValue: item.inputPrice * (1 - order.discountPercentual / 100.0),
+      UnitaryValue: item.inputPrice * getItemDiscountFactor(item, order),
       TotalValue: item.inputPrice * item.orderQuantity,
       TES: order.customer?.fiscalOperationId ?? "",
       ItemDiscountPercentage: 0,
@@ -314,6 +315,250 @@ export const calcSingleProductTaxes = async (
 
   console.log("[calcSingleProductTaxes] resposta da API de impostos:", data);
   return data;
+};
+
+/* ==========================================================================
+ * Motor de cálculo de preço do item — FONTE ÚNICA DA VERDADE
+ * --------------------------------------------------------------------------
+ * Toda a UI (tabela, footer, card e finalização) deve calcular preço/total/
+ * margem/markup por estas funções, em vez de reimplementar a fórmula em cada
+ * tela. Assim o mesmo item nunca exibe valores diferentes em telas diferentes.
+ *
+ * Regra do preço final, conforme a planilha "Simulação Preço" (linha 24 —
+ * "SEM ST e SEM IPI"):
+ *   PreçoFinal = InputPrice × (1 − %DescCliente/100) − ValorIPI
+ * O desconto do cliente incide sobre o preço base; o IPI (já embutido no preço
+ * base) é subtraído como valor absoluto. Durante a edição, item.taxes[].taxValue
+ * está em valor CRU (sem desconto) — por isso o IPI é subtraído cru.
+ * ========================================================================== */
+
+// Prefixos de tributos da reforma (CBS/IBS e variantes "IBS Mun"/"IBS UF")
+// ocultados nas somas exibidas ao usuário — permanecem no state p/ envio.
+export const HIDDEN_TAX_PREFIXES = ["CBS", "IBS"];
+
+export const findItemTax = (item: OrderItemModel, name: string) =>
+  item.taxes?.find(
+    (t) => (t.taxName ?? "").trim().toUpperCase() === name.toUpperCase(),
+  );
+
+// Fator de desconto do cliente (ex.: 0,82 para 18%). Prioriza o desconto do
+// pedido e cai para o cadastro do cliente.
+export const getCustomerDiscountFactor = (order: OrderModel) => {
+  const discount =
+    order.discountPercentual ?? order.customer?.discountPercent ?? 0;
+  return 1 - discount / 100;
+};
+
+// Fator de desconto aplicável a UM item. Itens de grupo de desconto já têm o
+// preço final (margem) embutido no inputPrice, então o desconto padrão do
+// cliente NÃO incide sobre eles (fator 1). Os demais usam o desconto do pedido.
+export const getItemDiscountFactor = (item: OrderItemModel, order: OrderModel) =>
+  item.exceptionMarginPercent != null ? 1 : getCustomerDiscountFactor(order);
+
+// O IPI só é descontado do preço final quando o estabelecimento é "1"
+// (importadora). Para os demais estabelecimentos o IPI NÃO é subtraído.
+export const shouldSubtractIpi = (order: OrderModel) => order.branchId === "1";
+
+// Preço unitário final líquido do item (I24). O IPI só é subtraído quando o
+// estabelecimento é "1" (ver shouldSubtractIpi).
+// Item de grupo de desconto: o inputPrice (preço por margem) JÁ é o preço final
+// — não incide desconto do cliente NEM subtração de IPI. Assim "Preço Compra
+// Unit" e "Total Compra c/ Desconto" ficam iguais em qualquer estabelecimento.
+export const calcUnitPriceWithDiscount = (
+  item: OrderItemModel,
+  order: OrderModel,
+) => {
+  const isDiscountGroup = item.exceptionMarginPercent != null;
+  const ipiValor =
+    !isDiscountGroup && shouldSubtractIpi(order)
+      ? (findItemTax(item, "IPI")?.taxValue ?? 0)
+      : 0;
+  return item.inputPrice * getItemDiscountFactor(item, order) - ipiValor;
+};
+
+// Total do item: preço unitário final × quantidade.
+export const calcItemTotalWithDiscount = (
+  item: OrderItemModel,
+  order: OrderModel,
+) => calcUnitPriceWithDiscount(item, order) * item.orderQuantity;
+
+// "Preço de Compra C/ST e IPI" (coluna G da planilha "Simulação Preço", linha 48):
+//   G = PreçoDeCompra(D) + ICMS-ST + IPI
+// onde D = calcUnitPriceWithDiscount. ST/IPI são os valores CRUS dos tributos
+// do item. Não é exibido como coluna — serve de base para Markup e Margem.
+export const calcItemPriceWithStAndIpi = (
+  item: OrderItemModel,
+  order: OrderModel,
+) => {
+  const st = findItemTax(item, "ICMS-ST")?.taxValue ?? 0;
+  const ipi = findItemTax(item, "IPI")?.taxValue ?? 0;
+  return calcUnitPriceWithDiscount(item, order) + st + ipi;
+};
+
+// Markup = Preço de Venda Sugerido / Preço de Compra C/ST e IPI (G, linha 48).
+export const calcItemMarkup = (item: OrderItemModel, order: OrderModel) => {
+  const g = calcItemPriceWithStAndIpi(item, order);
+  return g === 0 ? 0 : item.suggestPrice / g;
+};
+
+// Margem (%) = (1 − Preço de Compra C/ST e IPI / Preço de Venda Sugerido) × 100
+// (linha 48: "NOVO DESCONTO" = G / PreçoSug).
+export const calcItemMarginPercent = (
+  item: OrderItemModel,
+  order: OrderModel,
+) => {
+  const suggest = item.suggestPrice === 0 ? 1 : item.suggestPrice;
+  return (1 - calcItemPriceWithStAndIpi(item, order) / suggest) * 100;
+};
+
+// Tributos visíveis do item (exclui CBS/IBS da reforma).
+export const getVisibleItemTaxes = (item: OrderItemModel) =>
+  (item.taxes ?? []).filter((t) => {
+    const name = (t.taxName ?? "").trim().toUpperCase();
+    return !HIDDEN_TAX_PREFIXES.some(
+      (p) => name === p || name.startsWith(`${p} `),
+    );
+  });
+
+// Total de tributos visíveis do item (× quantidade × fator de desconto), como
+// exibido na coluna "Impostos" da tabela.
+export const calcItemVisibleTaxesTotal = (
+  item: OrderItemModel,
+  order: OrderModel,
+) =>
+  getVisibleItemTaxes(item).reduce((acc, t) => acc + (t.taxValue ?? 0), 0) *
+  item.orderQuantity *
+  getItemDiscountFactor(item, order);
+
+// Monta o detalhamento de impostos (TaxesDetail) a partir dos tributos já
+// gravados em order.items[].taxes — usado em modo VISUALIZAÇÃO, onde a API de
+// cálculo (calcOrderTaxes) não é chamada e portanto taxesData fica indefinido.
+// Agrega por tipo de imposto somando valor e base com a MESMA fórmula da linha
+// "Impostos" do pedido (× quantidade × fator de desconto), garantindo que o
+// detalhe some exatamente o total exibido. Tributos da reforma (CBS/IBS) são
+// excluídos por getVisibleItemTaxes, coerente com o filtro da própria modal.
+export const buildTaxesDetailFromOrderItems = (
+  order: OrderModel,
+): TaxResponseDto => {
+  const grouped = new Map<
+    string,
+    { descricao: string; valor: number; base_calculo: number; aliquota: number }
+  >();
+
+  order.items.forEach((item) => {
+    const factor = getItemDiscountFactor(item, order);
+    getVisibleItemTaxes(item).forEach((tax) => {
+      const descricao = (tax.taxName ?? "").trim();
+      const key = descricao.toUpperCase();
+      const valor = (tax.taxValue ?? 0) * item.orderQuantity * factor;
+      const base = (tax.taxBase ?? 0) * item.orderQuantity * factor;
+
+      const existing = grouped.get(key);
+      if (existing) {
+        existing.valor += valor;
+        existing.base_calculo += base;
+      } else {
+        grouped.set(key, {
+          descricao,
+          valor,
+          base_calculo: base,
+          aliquota: tax.taxPercentual ?? 0,
+        });
+      }
+    });
+  });
+
+  const TaxesDetail = Array.from(grouped.values()).map((g) => ({
+    imposto: g.descricao,
+    descricao: g.descricao,
+    base_calculo: g.base_calculo,
+    aliquota: g.aliquota,
+    valor: g.valor,
+  }));
+
+  return {
+    seguro: 0,
+    desconto: 0,
+    frete: order.freightValue ?? 0,
+    despesas_acessorias: 0,
+    valor_contabil: 0,
+    valor_mercadoria: 0,
+    base_duplicada: 0,
+    total_impostos: TaxesDetail.reduce((acc, t) => acc + t.valor, 0),
+    total_impostos_sem_incidencia: 0,
+    total_impostos_embutidos: 0,
+    itens: [],
+    TaxesDetail,
+  };
+};
+
+// Soma do "Total c/Desconto" de todos os itens do pedido (footer / cards).
+export const calcOrderItemsTotalWithDiscount = (order: OrderModel) =>
+  order.items.reduce(
+    (acc, item) => acc + calcItemTotalWithDiscount(item, order),
+    0,
+  );
+
+// Sub-total bruto do pedido (Σ InputPrice × Qtde), sem desconto/impostos.
+export const calcOrderGrossSubtotal = (order: OrderModel) =>
+  order.items.reduce((acc, item) => acc + item.inputPrice * item.orderQuantity, 0);
+
+// Congela o snapshot de preço calculado nos campos persistidos do item, para
+// que o pedido gravado carregue o valor exibido ao usuário (sem recálculo
+// posterior). Os tributos continuam sendo gravados em item.taxes (tabela
+// OrderItemTaxes), não aqui. Deve ser chamada ANTES de reescrever item.taxes,
+// pois lê o IPI cru exibido em tela.
+export const withPricingSnapshot = (
+  item: OrderItemModel,
+  order: OrderModel,
+): OrderItemModel => ({
+  ...item,
+  grossItemValue: item.inputPrice * item.orderQuantity,
+  netItemValue: calcItemTotalWithDiscount(item, order),
+});
+
+/* --------------------------------------------------------------------------
+ * Total do pedido COM impostos (valor de fatura exibido na finalização).
+ * ATENÇÃO: é uma grandeza DIFERENTE do "preço final líquido" (I24) exibido por
+ * item — aqui os tributos são SOMADOS de volta. A composição (base desembutida
+ * de IPI + reconciliação p/ não duplicar IPI/ICMS-ST já embutidos) é mantida
+ * idêntica à que estava no finish-order-modal; apenas foi centralizada aqui.
+ * -------------------------------------------------------------------------- */
+export const calcOrderTotalWithTaxes = (
+  order: OrderModel,
+  // Mantido por compatibilidade de assinatura. NÃO é somado ao total: ICMS, PIS
+  // e COFINS são "por dentro" (já embutidos no preço) e CSLL não é tributo de
+  // nota — somá-los seria imposto sobre imposto. Só IPI e ICMS-ST ("por fora")
+  // entram, e já estão em itemsTotal.
+  _totalTaxes: number,
+): number => {
+  let itemsTotal = order.items.reduce((acc, item) => {
+    const discountFactor = getItemDiscountFactor(item, order);
+    const ipi = findItemTax(item, "IPI");
+    const icmsSt = findItemTax(item, "ICMS-ST");
+    const ipiAliquota = ipi?.taxPercentual ?? 0;
+    const ipiValor = ipi?.taxValue ?? 0;
+    const icmsStValor = icmsSt?.taxValue ?? 0;
+    const desembutidoIpi = item.inputPrice / (1 + ipiAliquota / 100);
+    const desembutidoComDesconto = desembutidoIpi * discountFactor;
+    // IPI e ICMS-ST ("por fora") escalam com a base com desconto.
+    const unit =
+      desembutidoComDesconto +
+      ipiValor * discountFactor +
+      icmsStValor * discountFactor;
+    return acc + unit * item.orderQuantity;
+  }, 0);
+
+  if (order.additionalDiscount > 0) {
+    itemsTotal = roundNumber(
+      itemsTotal - (itemsTotal * (order.additionalDiscount ?? 0)) / 100,
+      2,
+    );
+  }
+
+  // Total da nota = produtos (c/ desconto, com IPI e ICMS-ST embutidos) + frete.
+  // ICMS/PIS/COFINS já estão no preço — não são somados de novo.
+  return roundNumber(itemsTotal + (order.freightValue ?? 0), 2);
 };
 
 export const getAvailabilityColor = (availability: string) => {

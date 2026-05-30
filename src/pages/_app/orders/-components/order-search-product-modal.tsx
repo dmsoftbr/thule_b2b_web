@@ -103,6 +103,8 @@ export const OrderSearchProductModal = ({ initialPriceTable }: Props) => {
         netItemValue: 0,
         originalDeliveryDate: new Date(),
         priceTablePrice: product.unitPriceInTable,
+        exceptionMarginPercent: product.exceptionMarginPercent ?? null,
+        exceptionTableId: product.exceptionTableId ?? null,
         referenceCode: product.referenceCode,
         statusId: 1,
         priceTableId: priceTable.id,
@@ -218,9 +220,39 @@ export const OrderSearchProductModal = ({ initialPriceTable }: Props) => {
       renderItem: (product: ProductModel) => (
         <div>
           <Button
+            disabled={product.isBlockedByException}
             onClick={async () => {
               if (!priceTable) {
                 toast.warning("Selecione a Tabela de Preço");
+                return;
+              }
+
+              if (product.isBlockedByException) {
+                const allowedBranch = product.allowedExceptionBranches?.[0];
+                await showAppDialog({
+                  title: "ATENÇÃO",
+                  message: allowedBranch
+                    ? `Para comprar esse produto, altere o estabelecimento para ${allowedBranch}`
+                    : "Produto não disponível para venda neste estabelecimento.",
+                  type: "warning",
+                  buttons: [{ text: "OK", autoClose: true }],
+                });
+                return;
+              }
+
+              // Regra de grupo de desconto: o pedido fica "preso" ao grupo
+              // (tabela de exceção) do primeiro item de grupo de desconto. Não
+              // permite incluir produto fora do grupo selecionado.
+              const orderGroupId =
+                order.items.find((it) => it.exceptionMarginPercent != null)
+                  ?.exceptionTableId ?? null;
+              if (orderGroupId && product.exceptionTableId !== orderGroupId) {
+                await showAppDialog({
+                  title: "ATENÇÃO",
+                  message: "Altere o estabelecimento para comprar este produto",
+                  type: "warning",
+                  buttons: [{ text: "OK", autoClose: true }],
+                });
                 return;
               }
 
@@ -326,6 +358,7 @@ export const OrderSearchProductModal = ({ initialPriceTable }: Props) => {
             additionalInfo={{
               priceTableId: priceTable?.id ?? "",
               customerId: order.customerId ?? 0,
+              branchId: order.branchId ?? "",
             }}
           />
         </div>

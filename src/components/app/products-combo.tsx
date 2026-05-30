@@ -34,6 +34,7 @@ interface Props {
   disabled?: boolean;
   customerId: number;
   priceTableId: string;
+  branchId?: string;
   closeOnSelect?: boolean;
 }
 
@@ -48,6 +49,7 @@ export interface ProductsComboHandle {
 export const ProductsCombo = forwardRef<ProductsComboHandle, Props>(({
   customerId,
   priceTableId,
+  branchId,
   className,
   disabled,
   onSelect,
@@ -107,6 +109,7 @@ export const ProductsCombo = forwardRef<ProductsComboHandle, Props>(({
             search: searchText,
             customerId,
             priceTableId,
+            branchId,
           },
           {
             signal: abortControllerRef.current.signal,
@@ -122,7 +125,7 @@ export const ProductsCombo = forwardRef<ProductsComboHandle, Props>(({
         setIsLoading(false);
       }
     },
-    [customerId, priceTableId],
+    [customerId, priceTableId, branchId],
   );
 
   // Debounce na busca

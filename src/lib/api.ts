@@ -79,11 +79,24 @@ api.interceptors.response.use(
 
 export { api };
 
-export function handleError(error: any) {
+export function handleError(error: any): string {
   if (axios.isAxiosError(error)) {
-    if (error.response?.data.message) return error.response?.data.message;
-    if (error.response?.data) return error.response?.data;
+    const data = error.response?.data;
+    if (data) {
+      if (typeof data === "string") return data;
+      if (data.message) return data.message;
+      // ProblemDetails do ASP.NET: agrega os erros de validação, se houver,
+      // senão usa o título. Nunca retorna o objeto cru (que quebraria o
+      // toast ao tentar renderizar um objeto como filho React).
+      if (data.errors && typeof data.errors === "object") {
+        const msgs = Object.values(data.errors as Record<string, unknown>)
+          .flat()
+          .filter((m): m is string => typeof m === "string");
+        if (msgs.length > 0) return msgs.join(" ");
+      }
+      if (data.title) return data.title;
+    }
     return error.message;
   }
-  return error.message;
+  return error?.message ?? "Erro inesperado";
 }

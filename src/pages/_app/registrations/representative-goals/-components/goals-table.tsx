@@ -511,7 +511,7 @@ export function GoalsTable() {
             className="mt-4"
             variant="blue"
             type="button"
-            onClick={() => setShowGenerateModal(true)}
+            onClick={() => setShowReadjustmentModal(true)}
           >
             <DollarSignIcon className="size-4" />
             Aplicar Reajuste

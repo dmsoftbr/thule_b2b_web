@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -8,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   SearchCombo,
@@ -23,35 +23,40 @@ interface Props {
   customerId: number;
   onClose: (refresh: boolean) => void;
 }
-export const AddPriceTableModal = ({ isOpen, customerId, onClose }: Props) => {
-  const [selectedPriceTableId, setSelectedPriceTableId] = useState("");
-  const [isException, setIsException] = useState(false);
-  const [priceTablesData, setPriceTablesData] = useState<SearchComboItem[]>([]);
+
+export const AddExceptionTableModal = ({
+  isOpen,
+  customerId,
+  onClose,
+}: Props) => {
+  const [selectedTableId, setSelectedTableId] = useState("");
+  const [order, setOrder] = useState<number>(0);
+  const [tablesData, setTablesData] = useState<SearchComboItem[]>([]);
   const [comboKey, setComboKey] = useState(new Date().valueOf());
   const [isLoading, setIsLoading] = useState(false);
+
   const handleSave = async () => {
     const data = {
       customerId,
-      priceTableId: selectedPriceTableId,
-      isException,
+      exceptionTableId: selectedTableId,
+      order,
     };
     try {
-      await api.post(`/registrations/customer-price-tables`, data);
-      toast.success("Tabela de Preço Vinculada");
+      await api.post(`/registrations/customer-price-exception-table`, data);
+      toast.success("Grupo de desconto vinculado");
       onClose(true);
     } catch (error) {
       toast.error(handleError(error));
     }
   };
 
-  const getPriceTables = async () => {
+  const getTables = async () => {
     setIsLoading(true);
     try {
       const { data } = await api.get(
-        `/registrations/price-tables/all?onlyActives=false`,
+        `/registrations/price-exception-tables/all`,
       );
-      const options = convertArrayToSearchComboItem(data, "id", "name", true);
-      setPriceTablesData(options);
+      setTablesData(convertArrayToSearchComboItem(data, "id", "name", true));
     } catch (error) {
       toast.error(handleError(error));
     } finally {
@@ -60,7 +65,7 @@ export const AddPriceTableModal = ({ isOpen, customerId, onClose }: Props) => {
   };
 
   useEffect(() => {
-    getPriceTables();
+    getTables();
     setComboKey(new Date().valueOf());
   }, [isOpen]);
 
@@ -68,24 +73,32 @@ export const AddPriceTableModal = ({ isOpen, customerId, onClose }: Props) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Adicionar Tabela de Preço</DialogTitle>
-          <DialogDescription></DialogDescription>
+          <DialogTitle>Vincular Grupo de Desconto</DialogTitle>
+          <DialogDescription>
+            A ordem define a prioridade: quando o mesmo produto aparece em mais
+            de um grupo do cliente, vence a de maior ordem.
+          </DialogDescription>
         </DialogHeader>
-        <div>
-          <SearchCombo
-            key={comboKey}
-            onChange={(value) => setSelectedPriceTableId(value)}
-            staticItems={priceTablesData}
-            disabled={isLoading}
-          />
-        </div>
-        <div>
-          <Label>
-            <Checkbox
-              onCheckedChange={(checked) => setIsException(!!checked)}
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <Label>Grupo de Desconto</Label>
+            <SearchCombo
+              key={comboKey}
+              onChange={(value) => setSelectedTableId(value)}
+              staticItems={tablesData}
+              disabled={isLoading}
             />
-            Tabela de Excessão
-          </Label>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="order">Ordem (prioridade)</Label>
+            <Input
+              id="order"
+              type="number"
+              min={0}
+              value={order}
+              onChange={(e) => setOrder(Number(e.target.value))}
+            />
+          </div>
         </div>
         <DialogFooter>
           <Button variant="green" onClick={() => handleSave()}>

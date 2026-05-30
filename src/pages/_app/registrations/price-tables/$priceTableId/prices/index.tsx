@@ -3,6 +3,13 @@ import { ServerTable } from "@/components/server-table/server-table";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { columns } from "./-components/columns";
 
+const searchFields = [
+  { id: "ALL", label: "Cód. Longo/Cód. Curto/Descrição" },
+  // { id: "P.ProductId", label: "Código Longo do Produto" },
+  // { id: "PR.ReferenceCode", label: "Cód. Curto" },
+  // { id: "PR.Description", label: "Descrição" },
+];
+
 export const Route = createFileRoute(
   "/_app/registrations/price-tables/$priceTableId/prices/",
 )({
@@ -21,8 +28,10 @@ function PriceTablePricesComponent() {
       <div className="p-2 w-full">
         <ServerTable
           columns={columns()}
-          dataUrl={""}
-          searchFields={[]}
+          dataUrl={`/registrations/prices/list-paged/${priceTableId}`}
+          defaultSearchField="ALL"
+          searchFields={searchFields}
+          additionalInfo={{ priceTableId }}
           showAddButton={false}
         />
       </div>

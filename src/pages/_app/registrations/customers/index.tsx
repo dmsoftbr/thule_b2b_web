@@ -37,6 +37,12 @@ function CustomersPageComponent() {
     navigate({ to: `/registrations/customers/${data.id}/sales-group` });
   };
 
+  const handleDiscountGroups = async (data: CustomerModel) => {
+    navigate({
+      to: `/registrations/customers/${data.id}/price-exception-tables`,
+    });
+  };
+
   return (
     <AppPageHeader titleSlot="Clientes">
       <div className="p-2">
@@ -47,6 +53,7 @@ function CustomersPageComponent() {
           columns={columns({
             fnPriceTables: handlePriceTables,
             fnSalesGroup: handleSalesGroup,
+            fnDiscountGroups: handleDiscountGroups,
           })}
           showAddButton={false}
           dataUrl="/registrations/customers/list-paged"

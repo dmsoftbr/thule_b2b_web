@@ -3,5 +3,6 @@ export type PriceModel = {
   priceTableId: string;
   description?: string;
   referenceCode?: string;
+  name?: string;
   price: number;
 };

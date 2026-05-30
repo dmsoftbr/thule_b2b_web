@@ -13,6 +13,14 @@ import { SearchCombo } from "@/components/ui/search-combo";
 import { usePermissions } from "@/hooks/use-permissions";
 import { NumericFormat } from "react-number-format";
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const OrderFormHeader = () => {
   const {
@@ -24,10 +32,13 @@ export const OrderFormHeader = () => {
     clearItems,
     mode,
     isBudget,
+    setOrder,
   } = useOrder();
   const { showAppDialog } = useAppDialog();
   const { has } = usePermissions();
   const canEditDiscount = has("318");
+  const canEditBranch = has("309");
+  const canEditRepresentative = has("319");
   const isEditing = mode == "NEW" || mode == "EDIT";
   const isNew = isEditing && order.orderId == "";
   const customersComboRef = useRef<CustomersComboHandle>(null);
@@ -47,8 +58,7 @@ export const OrderFormHeader = () => {
     if (customer.creditStatus == "3" || customer.creditStatus == "4") {
       showAppDialog({
         title: "Cliente",
-        message:
-          `Cliente suspenso para implantação de ${isBudget ? "simulações" : "pedidos"}, por favor, entre em contato com a Thule.`,
+        message: `Cliente suspenso para implantação de ${isBudget ? "simulações" : "pedidos"}, por favor, entre em contato com a Thule.`,
         type: "warning",
       });
       return false;
@@ -57,8 +67,7 @@ export const OrderFormHeader = () => {
     if (!customer.salesGroup || customer.salesGroup.length === 0) {
       showAppDialog({
         title: "Cliente",
-        message:
-          `Cliente não possui grupo de venda associado. Não é possível incluir ${isBudget ? "simulação" : "pedido"} para este cliente.`,
+        message: `Cliente não possui grupo de venda associado. Não é possível incluir ${isBudget ? "simulação" : "pedido"} para este cliente.`,
         type: "warning",
       });
       return false;
@@ -90,7 +99,7 @@ export const OrderFormHeader = () => {
     // Se há itens no pedido, pede confirmação
     if (order.items.length > 0) {
       const dialogResult = await showAppDialog({
-        message: `Se trocar o cliente ${isBudget ? "a simulação será redefinida" : "o pedido será redefinido"}`,
+        message: `Se trocar o cliente ${isBudget ? "a atual simulação será apagada" : "o atual pedido será apagado"}`,
         title: "Atenção",
         type: "confirm",
         buttons: [
@@ -113,14 +122,45 @@ export const OrderFormHeader = () => {
     }
   };
 
+  // Troca de estabelecimento: mesmo fluxo da troca de cliente — se houver itens,
+  // pede confirmação e zera o pedido antes de aplicar o novo estabelecimento.
+  const handleChangeBranch = async (branchId: string) => {
+    if (branchId === order.branchId) return;
+
+    // Sem itens, aplica direto
+    if (order.items.length === 0) {
+      setOrder({ ...order, branchId });
+      return;
+    }
+
+    const dialogResult = await showAppDialog({
+      message: `Se trocar o estabelecimento ${isBudget ? "a atual simulação será apagada" : "o atual pedido será apagado"}`,
+      title: "Atenção",
+      type: "confirm",
+      buttons: [
+        { text: "Trocar", variant: "danger", value: true, autoClose: true },
+        {
+          text: "Cancelar",
+          variant: "secondary",
+          value: false,
+          autoClose: true,
+        },
+      ],
+    });
+
+    if (dialogResult) {
+      setOrder({ ...order, branchId, items: [] });
+    }
+  };
+
   return (
     <>
-      <div className=" grid grid-cols-5 gap-x-4 p-2 bg-neutral-50">
-        <div className="space-y-2 col-span-2">
-          <div className="form-group">
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-x-4 gap-y-3 p-2 bg-neutral-50">
+        <div className="space-y-2 sm:col-span-2 min-w-0">
+          <div className="form-group min-w-0">
             <Label>Cliente</Label>
             {(!isEditing || !isNew) && (
-              <div className="text-sm border px-2.5 rounded-md py-1.5 bg-neutral-100 text-black font-medium">
+              <div className="truncate text-sm border px-2.5 rounded-md py-1.5 bg-neutral-100 text-black font-medium">
                 {`${order.customerId} - ${order.customer?.abbreviation}`}
                 {" - "}
                 <span className="text-xs text-muted-foreground">
@@ -149,7 +189,7 @@ export const OrderFormHeader = () => {
               apiEndpoint="/registrations/representatives/all"
               labelProp="abbreviation"
               valueProp="id"
-              disabled={!isEditing}
+              disabled={!isEditing || !canEditRepresentative}
               showValueInSelectedItem
             />
           </div>
@@ -158,6 +198,10 @@ export const OrderFormHeader = () => {
           <div className="form-group">
             <Label>% Desconto</Label>
             <NumericFormat
+              // Força o remount ao trocar de cliente para o campo ressincronizar
+              // com o desconto do cliente — o react-number-format (controlado)
+              // não atualiza o valor exibido após o usuário já ter digitado.
+              key={`discount-${order.customerId}`}
               thousandSeparator="."
               decimalSeparator=","
               decimalScale={2}
@@ -179,6 +223,41 @@ export const OrderFormHeader = () => {
                 setDiscountPercentual(v);
               }}
             />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <div className="form-group">
+            <Label>Estabelecimento</Label>
+            <div className="flex items-center gap-x-2">
+              <Select
+                value={order.branchId}
+                onValueChange={(value) => handleChangeBranch(value)}
+                disabled
+              >
+                <SelectTrigger className="w-full bg-white">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="11">11</SelectItem>
+                </SelectContent>
+              </Select>
+              <Label className="whitespace-nowrap">
+                <Checkbox
+                  disabled={!isEditing || !canEditBranch}
+                  checked={order.branchId == "1"}
+                  onCheckedChange={(checked) => {
+                    if (!!checked) {
+                      handleChangeBranch("1");
+                    } else {
+                      handleChangeBranch(order.customer?.branchId ?? "1");
+                    }
+                  }}
+                />
+                Trocar Estabelecimento
+              </Label>
+            </div>
           </div>
         </div>
       </div>

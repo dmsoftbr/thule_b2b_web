@@ -11,7 +11,10 @@ import { formatNumber } from "@/lib/number-utils";
 import { api } from "@/lib/api";
 import { AppTooltip } from "@/components/layout/app-tooltip";
 import { AvailabilityInfo } from "./availability-info";
-import { getAvailabilityColor } from "../-utils/order-utils";
+import {
+  calcItemTotalWithDiscount,
+  getAvailabilityColor,
+} from "../-utils/order-utils";
 import { useOrder } from "../-context/order-context";
 import { useAuth } from "@/hooks/use-auth";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,24 +29,6 @@ export const OrderItemCard = ({ data, className }: Props) => {
   const { session } = useAuth();
   const isEditing = mode == "NEW" || mode == "EDIT";
 
-  // Preço unitário c/Desconto — mesma fórmula usada em order-item-table-row:
-  //   (InputPrice / (1 + AliqIPI/100)) * (1 − %DescCliente/100)
-  //   + ValorIPI + ValorICMS-ST
-  const getUnitPriceWithDiscount = () => {
-    const findTax = (name: string) =>
-      data.taxes?.find((t) => (t.taxName ?? "").trim().toUpperCase() === name);
-    const ipi = findTax("IPI");
-    const icmsSt = findTax("ICMS-ST");
-    const ipiAliquota = ipi?.taxPercentual ?? 0;
-    const ipiValor = ipi?.taxValue ?? 0;
-    const icmsStValor = icmsSt?.taxValue ?? 0;
-
-    const desembutidoIpi = data.inputPrice / (1 + ipiAliquota / 100);
-    const desembutidoComDesconto =
-      desembutidoIpi * (1 - (order.customer?.discountPercent ?? 0) / 100);
-
-    return desembutidoComDesconto + ipiValor + icmsStValor;
-  };
   const handleUpdateQuantity = async (newQuantity: number | undefined) => {
     // if (!newQuantity) {
     //   onRemoveItem(data);
@@ -161,7 +146,7 @@ export const OrderItemCard = ({ data, className }: Props) => {
                         <span>
                           R${" "}
                           {formatNumber(
-                            getUnitPriceWithDiscount() * data.orderQuantity,
+                            calcItemTotalWithDiscount(data, order),
                             2,
                           )}
                         </span>

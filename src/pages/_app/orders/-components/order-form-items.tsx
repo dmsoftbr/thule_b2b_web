@@ -13,7 +13,9 @@ import { formatNumber } from "@/lib/number-utils";
 import { cn } from "@/lib/utils";
 import {
   NEW_ORDER_ITEM_EMPTY,
+  calcOrderItemsTotalWithDiscount,
   calcSingleProductTaxes,
+  getItemDiscountFactor,
 } from "../-utils/order-utils";
 import { api } from "@/lib/api";
 import * as uuid from "uuid";
@@ -85,6 +87,36 @@ export const OrderFormItems = () => {
     }
     if (!product) return;
 
+    if (product.isBlockedByException) {
+      const allowedBranch = product.allowedExceptionBranches?.[0];
+      await showAppDialog({
+        title: "ATENÇÃO",
+        message: allowedBranch
+          ? `Para comprar esse produto, altere o estabelecimento para ${allowedBranch}`
+          : "Produto não disponível para venda neste estabelecimento.",
+        type: "warning",
+        buttons: [{ text: "OK", autoClose: true }],
+      });
+      return;
+    }
+
+    // Regra de grupo de desconto: assim que o pedido tem um item de grupo de
+    // desconto, ele fica "preso" a esse grupo (tabela de exceção). Não permite
+    // incluir produto que não pertence ao grupo selecionado — seguindo a regra
+    // de nó pai marcado/filho desmarcado, já resolvida no backend (exceptionTableId).
+    const orderGroupId =
+      order.items.find((it) => it.exceptionMarginPercent != null)
+        ?.exceptionTableId ?? null;
+    if (orderGroupId && product.exceptionTableId !== orderGroupId) {
+      await showAppDialog({
+        title: "ATENÇÃO",
+        message: "Altere o estabelecimento para comprar este produto",
+        type: "warning",
+        buttons: [{ text: "OK", autoClose: true }],
+      });
+      return;
+    }
+
     const { data } = await api.get<SkuMessageModel | null>(
       `/registrations/sku-messages/id/${encodeURIComponent(product.id)}`,
     );
@@ -143,11 +175,12 @@ export const OrderFormItems = () => {
       return;
     }
 
-    // Quando o cliente está definido, o branchId do pedido deve refletir o do
-    // cliente. Sincroniza no state se ainda estiver defasado. Como ~60% dos
-    // clientes na base estão com BranchId vazio, faz fallback para "1" (mesma
-    // convenção usada em finish-order-modal.tsx).
-    const effectiveBranchId = order.customer.branchId || "1";
+    // Respeita o estabelecimento escolhido pelo usuário no cabeçalho. Só faz
+    // fallback para o branch do cliente (ou "1") quando o pedido ainda está sem
+    // estabelecimento definido. Como ~60% dos clientes na base estão com
+    // BranchId vazio, o "1" garante um valor válido (mesma convenção usada em
+    // finish-order-modal.tsx).
+    const effectiveBranchId = order.branchId || order.customer.branchId || "1";
     if (order.branchId !== effectiveBranchId) {
       setOrder({ ...order, branchId: effectiveBranchId });
     }
@@ -195,6 +228,8 @@ export const OrderFormItems = () => {
       inputPrice: product.unitPriceInTable,
       suggestPrice: product.suggestUnitPrice,
       priceTablePrice: product.unitPriceInTable,
+      exceptionMarginPercent: product.exceptionMarginPercent ?? null,
+      exceptionTableId: product.exceptionTableId ?? null,
       grossItemValue: product.unitPriceInTable * 1,
       orderQuantity: 1,
       sequence: newSequence,
@@ -348,30 +383,8 @@ export const OrderFormItems = () => {
     }, 0);
   }
 
-  const orderTotal = order.items.reduce(
-    (acc, b) => acc + b.inputPrice * b.orderQuantity,
-    0,
-  );
-
-  // Total c/Desconto — mesma fórmula usada no footer da OrderItemTable:
-  //   (InputPrice / (1 + AliqIPI/100)) * (1 − %DescCliente/100)
-  //   + ValorIPI + ValorICMS-ST, multiplicado pela quantidade.
-  const findItemTax = (item: OrderItemModel, name: string) =>
-    item.taxes?.find((t) => (t.taxName ?? "").trim().toUpperCase() === name);
-  const customerDiscount =
-    order.discountPercentual ?? order.customer?.discountPercent ?? 0;
-  const grandTotalWithDiscount = order.items.reduce((acc, item) => {
-    const ipi = findItemTax(item, "IPI");
-    const icmsSt = findItemTax(item, "ICMS-ST");
-    const ipiAliquota = ipi?.taxPercentual ?? 0;
-    const ipiValor = ipi?.taxValue ?? 0;
-    const icmsStValor = icmsSt?.taxValue ?? 0;
-    const desembutidoIpi = item.inputPrice / (1 + ipiAliquota / 100);
-    const desembutidoComDesconto =
-      desembutidoIpi * (1 - customerDiscount / 100);
-    const unit = desembutidoComDesconto + ipiValor + icmsStValor;
-    return acc + unit * item.orderQuantity;
-  }, 0);
+  // Total c/desconto — fonte única em order-utils (regra I24).
+  const grandTotalWithDiscount = calcOrderItemsTotalWithDiscount(order);
   const anyItemLoadingTaxes = order.items.some((i) => i.isLoadingTaxes);
 
   const sortedItems = order.items.sort((a, b) => a.sequence - b.sequence);
@@ -396,13 +409,17 @@ export const OrderFormItems = () => {
                     onSelectOption={(opt) => setPriceTable(opt[0].extra)}
                   />
                 </div>
-                <div className="flex-1 form-group">
+                {/* Combo de seleção rápida de produto: oculto em telas
+                    estreitas (< lg / 1024px). Nesses casos o usuário adiciona
+                    produtos pelo modal de pesquisa (OrderSearchProductModal). */}
+                <div className="hidden lg:block flex-1 form-group">
                   <Label>Pesquisar Produto para Adicionar</Label>
                   <ProductsCombo
                     ref={productsComboRef}
                     onSelect={handleAddItem}
                     priceTableId={order.customer?.priceTables[0].id ?? ""}
                     customerId={order.customerId}
+                    branchId={order.branchId || order.customer?.branchId || ""}
                     closeOnSelect
                   />
                 </div>
@@ -492,7 +509,17 @@ export const OrderFormItems = () => {
               </div>
               <div className="text-green-600 font-semibold">
                 Desconto: R${" "}
-                {formatNumber(orderTotal * (order.discountPercentual / 100), 2)}
+                {formatNumber(
+                  order.items.reduce(
+                    (acc, it) =>
+                      acc +
+                      it.inputPrice *
+                        it.orderQuantity *
+                        (1 - getItemDiscountFactor(it, order)),
+                    0,
+                  ),
+                  2,
+                )}
               </div>
             </div>
           )}

@@ -49,6 +49,7 @@ import { Route as AppRegistrationsSalesGroupIndexRouteImport } from './pages/_ap
 import { Route as AppRegistrationsRepresentativeGoalsIndexRouteImport } from './pages/_app/registrations/representative-goals/index'
 import { Route as AppRegistrationsProductsIndexRouteImport } from './pages/_app/registrations/products/index'
 import { Route as AppRegistrationsPriceTablesIndexRouteImport } from './pages/_app/registrations/price-tables/index'
+import { Route as AppRegistrationsPriceExceptionTablesIndexRouteImport } from './pages/_app/registrations/price-exception-tables/index'
 import { Route as AppRegistrationsPaymentConditionsIndexRouteImport } from './pages/_app/registrations/payment-conditions/index'
 import { Route as AppRegistrationsItemTypesIndexRouteImport } from './pages/_app/registrations/item-types/index'
 import { Route as AppRegistrationsCustomersIndexRouteImport } from './pages/_app/registrations/customers/index'
@@ -62,6 +63,8 @@ import { Route as AppAdminUserGroupsIndexRouteImport } from './pages/_app/admin/
 import { Route as AppAdminSettingsIndexRouteImport } from './pages/_app/admin/settings/index'
 import { Route as AppRegistrationsSkuMessagesNewSkuMessageRouteImport } from './pages/_app/registrations/sku-messages/new-sku-message'
 import { Route as AppRegistrationsSalesGroupNewGroupRouteImport } from './pages/_app/registrations/sales-group/new-group'
+import { Route as AppRegistrationsPriceTablesNewPriceTableRouteImport } from './pages/_app/registrations/price-tables/new-price-table'
+import { Route as AppRegistrationsPriceExceptionTablesNewTableRouteImport } from './pages/_app/registrations/price-exception-tables/new-table'
 import { Route as AppRegistrationsItemTypesNewItemTypeRouteImport } from './pages/_app/registrations/item-types/new-item-type'
 import { Route as AppRegistrationsApprovalLevelsNewLevelRouteImport } from './pages/_app/registrations/approval-levels/new-level'
 import { Route as AppMobileLinksNewLinkRouteImport } from './pages/_app/mobile/links/new-link'
@@ -72,6 +75,7 @@ import { Route as AppRegistrationsSkuMessagesProductIdIndexRouteImport } from '.
 import { Route as AppRegistrationsSalesGroupGroupIdIndexRouteImport } from './pages/_app/registrations/sales-group/$groupId/index'
 import { Route as AppRegistrationsProductsProductIdIndexRouteImport } from './pages/_app/registrations/products/$productId/index'
 import { Route as AppRegistrationsPriceTablesPriceTableIdIndexRouteImport } from './pages/_app/registrations/price-tables/$priceTableId/index'
+import { Route as AppRegistrationsPriceExceptionTablesIdIndexRouteImport } from './pages/_app/registrations/price-exception-tables/$id/index'
 import { Route as AppRegistrationsPaymentConditionsConditionIdIndexRouteImport } from './pages/_app/registrations/payment-conditions/$conditionId/index'
 import { Route as AppRegistrationsItemTypesTypeIdIndexRouteImport } from './pages/_app/registrations/item-types/$typeId/index'
 import { Route as AppRegistrationsApprovalLevelsLevelIdIndexRouteImport } from './pages/_app/registrations/approval-levels/$levelId/index'
@@ -91,6 +95,7 @@ import { Route as AppRegistrationsPriceTablesPriceTableIdPricesIndexRouteImport 
 import { Route as AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRouteImport } from './pages/_app/registrations/price-tables/$priceTableId/branches-exception/index'
 import { Route as AppRegistrationsCustomersCustomerIdSalesGroupIndexRouteImport } from './pages/_app/registrations/customers/$customerId/sales-group/index'
 import { Route as AppRegistrationsCustomersCustomerIdPriceTablesIndexRouteImport } from './pages/_app/registrations/customers/$customerId/price-tables/index'
+import { Route as AppRegistrationsCustomersCustomerIdPriceExceptionTablesIndexRouteImport } from './pages/_app/registrations/customers/$customerId/price-exception-tables/index'
 import { Route as AppAdminUsersUserIdCustomersIndexRouteImport } from './pages/_app/admin/users/$userId/customers/index'
 
 const AppLayoutRoute = AppLayoutRouteImport.update({
@@ -309,6 +314,12 @@ const AppRegistrationsPriceTablesIndexRoute =
     path: '/registrations/price-tables/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
+const AppRegistrationsPriceExceptionTablesIndexRoute =
+  AppRegistrationsPriceExceptionTablesIndexRouteImport.update({
+    id: '/registrations/price-exception-tables/',
+    path: '/registrations/price-exception-tables/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 const AppRegistrationsPaymentConditionsIndexRoute =
   AppRegistrationsPaymentConditionsIndexRouteImport.update({
     id: '/registrations/payment-conditions/',
@@ -382,6 +393,18 @@ const AppRegistrationsSalesGroupNewGroupRoute =
     path: '/registrations/sales-group/new-group',
     getParentRoute: () => AppLayoutRoute,
   } as any)
+const AppRegistrationsPriceTablesNewPriceTableRoute =
+  AppRegistrationsPriceTablesNewPriceTableRouteImport.update({
+    id: '/registrations/price-tables/new-price-table',
+    path: '/registrations/price-tables/new-price-table',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppRegistrationsPriceExceptionTablesNewTableRoute =
+  AppRegistrationsPriceExceptionTablesNewTableRouteImport.update({
+    id: '/registrations/price-exception-tables/new-table',
+    path: '/registrations/price-exception-tables/new-table',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
 const AppRegistrationsItemTypesNewItemTypeRoute =
   AppRegistrationsItemTypesNewItemTypeRouteImport.update({
     id: '/registrations/item-types/new-item-type',
@@ -438,6 +461,12 @@ const AppRegistrationsPriceTablesPriceTableIdIndexRoute =
   AppRegistrationsPriceTablesPriceTableIdIndexRouteImport.update({
     id: '/registrations/price-tables/$priceTableId/',
     path: '/registrations/price-tables/$priceTableId/',
+    getParentRoute: () => AppLayoutRoute,
+  } as any)
+const AppRegistrationsPriceExceptionTablesIdIndexRoute =
+  AppRegistrationsPriceExceptionTablesIdIndexRouteImport.update({
+    id: '/registrations/price-exception-tables/$id/',
+    path: '/registrations/price-exception-tables/$id/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
 const AppRegistrationsPaymentConditionsConditionIdIndexRoute =
@@ -558,6 +587,14 @@ const AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute =
     path: '/registrations/customers/$customerId/price-tables/',
     getParentRoute: () => AppLayoutRoute,
   } as any)
+const AppRegistrationsCustomersCustomerIdPriceExceptionTablesIndexRoute =
+  AppRegistrationsCustomersCustomerIdPriceExceptionTablesIndexRouteImport.update(
+    {
+      id: '/registrations/customers/$customerId/price-exception-tables/',
+      path: '/registrations/customers/$customerId/price-exception-tables/',
+      getParentRoute: () => AppLayoutRoute,
+    } as any,
+  )
 const AppAdminUsersUserIdCustomersIndexRoute =
   AppAdminUsersUserIdCustomersIndexRouteImport.update({
     id: '/admin/users/$userId/customers/',
@@ -593,6 +630,8 @@ export interface FileRoutesByFullPath {
   '/mobile/links/new-link': typeof AppMobileLinksNewLinkRoute
   '/registrations/approval-levels/new-level': typeof AppRegistrationsApprovalLevelsNewLevelRoute
   '/registrations/item-types/new-item-type': typeof AppRegistrationsItemTypesNewItemTypeRoute
+  '/registrations/price-exception-tables/new-table': typeof AppRegistrationsPriceExceptionTablesNewTableRoute
+  '/registrations/price-tables/new-price-table': typeof AppRegistrationsPriceTablesNewPriceTableRoute
   '/registrations/sales-group/new-group': typeof AppRegistrationsSalesGroupNewGroupRoute
   '/registrations/sku-messages/new-sku-message': typeof AppRegistrationsSkuMessagesNewSkuMessageRoute
   '/admin/settings': typeof AppAdminSettingsIndexRoute
@@ -606,6 +645,7 @@ export interface FileRoutesByFullPath {
   '/registrations/customers': typeof AppRegistrationsCustomersIndexRoute
   '/registrations/item-types': typeof AppRegistrationsItemTypesIndexRoute
   '/registrations/payment-conditions': typeof AppRegistrationsPaymentConditionsIndexRoute
+  '/registrations/price-exception-tables': typeof AppRegistrationsPriceExceptionTablesIndexRoute
   '/registrations/price-tables': typeof AppRegistrationsPriceTablesIndexRoute
   '/registrations/products': typeof AppRegistrationsProductsIndexRoute
   '/registrations/representative-goals': typeof AppRegistrationsRepresentativeGoalsIndexRoute
@@ -638,11 +678,13 @@ export interface FileRoutesByFullPath {
   '/registrations/approval-levels/$levelId': typeof AppRegistrationsApprovalLevelsLevelIdIndexRoute
   '/registrations/item-types/$typeId': typeof AppRegistrationsItemTypesTypeIdIndexRoute
   '/registrations/payment-conditions/$conditionId': typeof AppRegistrationsPaymentConditionsConditionIdIndexRoute
+  '/registrations/price-exception-tables/$id': typeof AppRegistrationsPriceExceptionTablesIdIndexRoute
   '/registrations/price-tables/$priceTableId': typeof AppRegistrationsPriceTablesPriceTableIdIndexRoute
   '/registrations/products/$productId': typeof AppRegistrationsProductsProductIdIndexRoute
   '/registrations/sales-group/$groupId': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   '/registrations/sku-messages/$productId': typeof AppRegistrationsSkuMessagesProductIdIndexRoute
   '/admin/users/$userId/customers': typeof AppAdminUsersUserIdCustomersIndexRoute
+  '/registrations/customers/$customerId/price-exception-tables': typeof AppRegistrationsCustomersCustomerIdPriceExceptionTablesIndexRoute
   '/registrations/customers/$customerId/price-tables': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
   '/registrations/customers/$customerId/sales-group': typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute
   '/registrations/price-tables/$priceTableId/branches-exception': typeof AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRoute
@@ -677,6 +719,8 @@ export interface FileRoutesByTo {
   '/mobile/links/new-link': typeof AppMobileLinksNewLinkRoute
   '/registrations/approval-levels/new-level': typeof AppRegistrationsApprovalLevelsNewLevelRoute
   '/registrations/item-types/new-item-type': typeof AppRegistrationsItemTypesNewItemTypeRoute
+  '/registrations/price-exception-tables/new-table': typeof AppRegistrationsPriceExceptionTablesNewTableRoute
+  '/registrations/price-tables/new-price-table': typeof AppRegistrationsPriceTablesNewPriceTableRoute
   '/registrations/sales-group/new-group': typeof AppRegistrationsSalesGroupNewGroupRoute
   '/registrations/sku-messages/new-sku-message': typeof AppRegistrationsSkuMessagesNewSkuMessageRoute
   '/admin/settings': typeof AppAdminSettingsIndexRoute
@@ -690,6 +734,7 @@ export interface FileRoutesByTo {
   '/registrations/customers': typeof AppRegistrationsCustomersIndexRoute
   '/registrations/item-types': typeof AppRegistrationsItemTypesIndexRoute
   '/registrations/payment-conditions': typeof AppRegistrationsPaymentConditionsIndexRoute
+  '/registrations/price-exception-tables': typeof AppRegistrationsPriceExceptionTablesIndexRoute
   '/registrations/price-tables': typeof AppRegistrationsPriceTablesIndexRoute
   '/registrations/products': typeof AppRegistrationsProductsIndexRoute
   '/registrations/representative-goals': typeof AppRegistrationsRepresentativeGoalsIndexRoute
@@ -722,11 +767,13 @@ export interface FileRoutesByTo {
   '/registrations/approval-levels/$levelId': typeof AppRegistrationsApprovalLevelsLevelIdIndexRoute
   '/registrations/item-types/$typeId': typeof AppRegistrationsItemTypesTypeIdIndexRoute
   '/registrations/payment-conditions/$conditionId': typeof AppRegistrationsPaymentConditionsConditionIdIndexRoute
+  '/registrations/price-exception-tables/$id': typeof AppRegistrationsPriceExceptionTablesIdIndexRoute
   '/registrations/price-tables/$priceTableId': typeof AppRegistrationsPriceTablesPriceTableIdIndexRoute
   '/registrations/products/$productId': typeof AppRegistrationsProductsProductIdIndexRoute
   '/registrations/sales-group/$groupId': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   '/registrations/sku-messages/$productId': typeof AppRegistrationsSkuMessagesProductIdIndexRoute
   '/admin/users/$userId/customers': typeof AppAdminUsersUserIdCustomersIndexRoute
+  '/registrations/customers/$customerId/price-exception-tables': typeof AppRegistrationsCustomersCustomerIdPriceExceptionTablesIndexRoute
   '/registrations/customers/$customerId/price-tables': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
   '/registrations/customers/$customerId/sales-group': typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute
   '/registrations/price-tables/$priceTableId/branches-exception': typeof AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRoute
@@ -763,6 +810,8 @@ export interface FileRoutesById {
   '/_app/mobile/links/new-link': typeof AppMobileLinksNewLinkRoute
   '/_app/registrations/approval-levels/new-level': typeof AppRegistrationsApprovalLevelsNewLevelRoute
   '/_app/registrations/item-types/new-item-type': typeof AppRegistrationsItemTypesNewItemTypeRoute
+  '/_app/registrations/price-exception-tables/new-table': typeof AppRegistrationsPriceExceptionTablesNewTableRoute
+  '/_app/registrations/price-tables/new-price-table': typeof AppRegistrationsPriceTablesNewPriceTableRoute
   '/_app/registrations/sales-group/new-group': typeof AppRegistrationsSalesGroupNewGroupRoute
   '/_app/registrations/sku-messages/new-sku-message': typeof AppRegistrationsSkuMessagesNewSkuMessageRoute
   '/_app/admin/settings/': typeof AppAdminSettingsIndexRoute
@@ -776,6 +825,7 @@ export interface FileRoutesById {
   '/_app/registrations/customers/': typeof AppRegistrationsCustomersIndexRoute
   '/_app/registrations/item-types/': typeof AppRegistrationsItemTypesIndexRoute
   '/_app/registrations/payment-conditions/': typeof AppRegistrationsPaymentConditionsIndexRoute
+  '/_app/registrations/price-exception-tables/': typeof AppRegistrationsPriceExceptionTablesIndexRoute
   '/_app/registrations/price-tables/': typeof AppRegistrationsPriceTablesIndexRoute
   '/_app/registrations/products/': typeof AppRegistrationsProductsIndexRoute
   '/_app/registrations/representative-goals/': typeof AppRegistrationsRepresentativeGoalsIndexRoute
@@ -808,11 +858,13 @@ export interface FileRoutesById {
   '/_app/registrations/approval-levels/$levelId/': typeof AppRegistrationsApprovalLevelsLevelIdIndexRoute
   '/_app/registrations/item-types/$typeId/': typeof AppRegistrationsItemTypesTypeIdIndexRoute
   '/_app/registrations/payment-conditions/$conditionId/': typeof AppRegistrationsPaymentConditionsConditionIdIndexRoute
+  '/_app/registrations/price-exception-tables/$id/': typeof AppRegistrationsPriceExceptionTablesIdIndexRoute
   '/_app/registrations/price-tables/$priceTableId/': typeof AppRegistrationsPriceTablesPriceTableIdIndexRoute
   '/_app/registrations/products/$productId/': typeof AppRegistrationsProductsProductIdIndexRoute
   '/_app/registrations/sales-group/$groupId/': typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   '/_app/registrations/sku-messages/$productId/': typeof AppRegistrationsSkuMessagesProductIdIndexRoute
   '/_app/admin/users/$userId/customers/': typeof AppAdminUsersUserIdCustomersIndexRoute
+  '/_app/registrations/customers/$customerId/price-exception-tables/': typeof AppRegistrationsCustomersCustomerIdPriceExceptionTablesIndexRoute
   '/_app/registrations/customers/$customerId/price-tables/': typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
   '/_app/registrations/customers/$customerId/sales-group/': typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute
   '/_app/registrations/price-tables/$priceTableId/branches-exception/': typeof AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRoute
@@ -849,6 +901,8 @@ export interface FileRouteTypes {
     | '/mobile/links/new-link'
     | '/registrations/approval-levels/new-level'
     | '/registrations/item-types/new-item-type'
+    | '/registrations/price-exception-tables/new-table'
+    | '/registrations/price-tables/new-price-table'
     | '/registrations/sales-group/new-group'
     | '/registrations/sku-messages/new-sku-message'
     | '/admin/settings'
@@ -862,6 +916,7 @@ export interface FileRouteTypes {
     | '/registrations/customers'
     | '/registrations/item-types'
     | '/registrations/payment-conditions'
+    | '/registrations/price-exception-tables'
     | '/registrations/price-tables'
     | '/registrations/products'
     | '/registrations/representative-goals'
@@ -894,11 +949,13 @@ export interface FileRouteTypes {
     | '/registrations/approval-levels/$levelId'
     | '/registrations/item-types/$typeId'
     | '/registrations/payment-conditions/$conditionId'
+    | '/registrations/price-exception-tables/$id'
     | '/registrations/price-tables/$priceTableId'
     | '/registrations/products/$productId'
     | '/registrations/sales-group/$groupId'
     | '/registrations/sku-messages/$productId'
     | '/admin/users/$userId/customers'
+    | '/registrations/customers/$customerId/price-exception-tables'
     | '/registrations/customers/$customerId/price-tables'
     | '/registrations/customers/$customerId/sales-group'
     | '/registrations/price-tables/$priceTableId/branches-exception'
@@ -933,6 +990,8 @@ export interface FileRouteTypes {
     | '/mobile/links/new-link'
     | '/registrations/approval-levels/new-level'
     | '/registrations/item-types/new-item-type'
+    | '/registrations/price-exception-tables/new-table'
+    | '/registrations/price-tables/new-price-table'
     | '/registrations/sales-group/new-group'
     | '/registrations/sku-messages/new-sku-message'
     | '/admin/settings'
@@ -946,6 +1005,7 @@ export interface FileRouteTypes {
     | '/registrations/customers'
     | '/registrations/item-types'
     | '/registrations/payment-conditions'
+    | '/registrations/price-exception-tables'
     | '/registrations/price-tables'
     | '/registrations/products'
     | '/registrations/representative-goals'
@@ -978,11 +1038,13 @@ export interface FileRouteTypes {
     | '/registrations/approval-levels/$levelId'
     | '/registrations/item-types/$typeId'
     | '/registrations/payment-conditions/$conditionId'
+    | '/registrations/price-exception-tables/$id'
     | '/registrations/price-tables/$priceTableId'
     | '/registrations/products/$productId'
     | '/registrations/sales-group/$groupId'
     | '/registrations/sku-messages/$productId'
     | '/admin/users/$userId/customers'
+    | '/registrations/customers/$customerId/price-exception-tables'
     | '/registrations/customers/$customerId/price-tables'
     | '/registrations/customers/$customerId/sales-group'
     | '/registrations/price-tables/$priceTableId/branches-exception'
@@ -1018,6 +1080,8 @@ export interface FileRouteTypes {
     | '/_app/mobile/links/new-link'
     | '/_app/registrations/approval-levels/new-level'
     | '/_app/registrations/item-types/new-item-type'
+    | '/_app/registrations/price-exception-tables/new-table'
+    | '/_app/registrations/price-tables/new-price-table'
     | '/_app/registrations/sales-group/new-group'
     | '/_app/registrations/sku-messages/new-sku-message'
     | '/_app/admin/settings/'
@@ -1031,6 +1095,7 @@ export interface FileRouteTypes {
     | '/_app/registrations/customers/'
     | '/_app/registrations/item-types/'
     | '/_app/registrations/payment-conditions/'
+    | '/_app/registrations/price-exception-tables/'
     | '/_app/registrations/price-tables/'
     | '/_app/registrations/products/'
     | '/_app/registrations/representative-goals/'
@@ -1063,11 +1128,13 @@ export interface FileRouteTypes {
     | '/_app/registrations/approval-levels/$levelId/'
     | '/_app/registrations/item-types/$typeId/'
     | '/_app/registrations/payment-conditions/$conditionId/'
+    | '/_app/registrations/price-exception-tables/$id/'
     | '/_app/registrations/price-tables/$priceTableId/'
     | '/_app/registrations/products/$productId/'
     | '/_app/registrations/sales-group/$groupId/'
     | '/_app/registrations/sku-messages/$productId/'
     | '/_app/admin/users/$userId/customers/'
+    | '/_app/registrations/customers/$customerId/price-exception-tables/'
     | '/_app/registrations/customers/$customerId/price-tables/'
     | '/_app/registrations/customers/$customerId/sales-group/'
     | '/_app/registrations/price-tables/$priceTableId/branches-exception/'
@@ -1362,6 +1429,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRegistrationsPriceTablesIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/registrations/price-exception-tables/': {
+      id: '/_app/registrations/price-exception-tables/'
+      path: '/registrations/price-exception-tables'
+      fullPath: '/registrations/price-exception-tables'
+      preLoaderRoute: typeof AppRegistrationsPriceExceptionTablesIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/registrations/payment-conditions/': {
       id: '/_app/registrations/payment-conditions/'
       path: '/registrations/payment-conditions'
@@ -1453,6 +1527,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRegistrationsSalesGroupNewGroupRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/registrations/price-tables/new-price-table': {
+      id: '/_app/registrations/price-tables/new-price-table'
+      path: '/registrations/price-tables/new-price-table'
+      fullPath: '/registrations/price-tables/new-price-table'
+      preLoaderRoute: typeof AppRegistrationsPriceTablesNewPriceTableRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/registrations/price-exception-tables/new-table': {
+      id: '/_app/registrations/price-exception-tables/new-table'
+      path: '/registrations/price-exception-tables/new-table'
+      fullPath: '/registrations/price-exception-tables/new-table'
+      preLoaderRoute: typeof AppRegistrationsPriceExceptionTablesNewTableRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/registrations/item-types/new-item-type': {
       id: '/_app/registrations/item-types/new-item-type'
       path: '/registrations/item-types/new-item-type'
@@ -1521,6 +1609,13 @@ declare module '@tanstack/react-router' {
       path: '/registrations/price-tables/$priceTableId'
       fullPath: '/registrations/price-tables/$priceTableId'
       preLoaderRoute: typeof AppRegistrationsPriceTablesPriceTableIdIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/registrations/price-exception-tables/$id/': {
+      id: '/_app/registrations/price-exception-tables/$id/'
+      path: '/registrations/price-exception-tables/$id'
+      fullPath: '/registrations/price-exception-tables/$id'
+      preLoaderRoute: typeof AppRegistrationsPriceExceptionTablesIdIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/registrations/payment-conditions/$conditionId/': {
@@ -1656,6 +1751,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
+    '/_app/registrations/customers/$customerId/price-exception-tables/': {
+      id: '/_app/registrations/customers/$customerId/price-exception-tables/'
+      path: '/registrations/customers/$customerId/price-exception-tables'
+      fullPath: '/registrations/customers/$customerId/price-exception-tables'
+      preLoaderRoute: typeof AppRegistrationsCustomersCustomerIdPriceExceptionTablesIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
     '/_app/admin/users/$userId/customers/': {
       id: '/_app/admin/users/$userId/customers/'
       path: '/admin/users/$userId/customers'
@@ -1693,6 +1795,8 @@ interface AppLayoutRouteChildren {
   AppMobileLinksNewLinkRoute: typeof AppMobileLinksNewLinkRoute
   AppRegistrationsApprovalLevelsNewLevelRoute: typeof AppRegistrationsApprovalLevelsNewLevelRoute
   AppRegistrationsItemTypesNewItemTypeRoute: typeof AppRegistrationsItemTypesNewItemTypeRoute
+  AppRegistrationsPriceExceptionTablesNewTableRoute: typeof AppRegistrationsPriceExceptionTablesNewTableRoute
+  AppRegistrationsPriceTablesNewPriceTableRoute: typeof AppRegistrationsPriceTablesNewPriceTableRoute
   AppRegistrationsSalesGroupNewGroupRoute: typeof AppRegistrationsSalesGroupNewGroupRoute
   AppRegistrationsSkuMessagesNewSkuMessageRoute: typeof AppRegistrationsSkuMessagesNewSkuMessageRoute
   AppAdminSettingsIndexRoute: typeof AppAdminSettingsIndexRoute
@@ -1706,6 +1810,7 @@ interface AppLayoutRouteChildren {
   AppRegistrationsCustomersIndexRoute: typeof AppRegistrationsCustomersIndexRoute
   AppRegistrationsItemTypesIndexRoute: typeof AppRegistrationsItemTypesIndexRoute
   AppRegistrationsPaymentConditionsIndexRoute: typeof AppRegistrationsPaymentConditionsIndexRoute
+  AppRegistrationsPriceExceptionTablesIndexRoute: typeof AppRegistrationsPriceExceptionTablesIndexRoute
   AppRegistrationsPriceTablesIndexRoute: typeof AppRegistrationsPriceTablesIndexRoute
   AppRegistrationsProductsIndexRoute: typeof AppRegistrationsProductsIndexRoute
   AppRegistrationsRepresentativeGoalsIndexRoute: typeof AppRegistrationsRepresentativeGoalsIndexRoute
@@ -1738,11 +1843,13 @@ interface AppLayoutRouteChildren {
   AppRegistrationsApprovalLevelsLevelIdIndexRoute: typeof AppRegistrationsApprovalLevelsLevelIdIndexRoute
   AppRegistrationsItemTypesTypeIdIndexRoute: typeof AppRegistrationsItemTypesTypeIdIndexRoute
   AppRegistrationsPaymentConditionsConditionIdIndexRoute: typeof AppRegistrationsPaymentConditionsConditionIdIndexRoute
+  AppRegistrationsPriceExceptionTablesIdIndexRoute: typeof AppRegistrationsPriceExceptionTablesIdIndexRoute
   AppRegistrationsPriceTablesPriceTableIdIndexRoute: typeof AppRegistrationsPriceTablesPriceTableIdIndexRoute
   AppRegistrationsProductsProductIdIndexRoute: typeof AppRegistrationsProductsProductIdIndexRoute
   AppRegistrationsSalesGroupGroupIdIndexRoute: typeof AppRegistrationsSalesGroupGroupIdIndexRoute
   AppRegistrationsSkuMessagesProductIdIndexRoute: typeof AppRegistrationsSkuMessagesProductIdIndexRoute
   AppAdminUsersUserIdCustomersIndexRoute: typeof AppAdminUsersUserIdCustomersIndexRoute
+  AppRegistrationsCustomersCustomerIdPriceExceptionTablesIndexRoute: typeof AppRegistrationsCustomersCustomerIdPriceExceptionTablesIndexRoute
   AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute: typeof AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute
   AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute: typeof AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute
   AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRoute: typeof AppRegistrationsPriceTablesPriceTableIdBranchesExceptionIndexRoute
@@ -1780,6 +1887,10 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
     AppRegistrationsApprovalLevelsNewLevelRoute,
   AppRegistrationsItemTypesNewItemTypeRoute:
     AppRegistrationsItemTypesNewItemTypeRoute,
+  AppRegistrationsPriceExceptionTablesNewTableRoute:
+    AppRegistrationsPriceExceptionTablesNewTableRoute,
+  AppRegistrationsPriceTablesNewPriceTableRoute:
+    AppRegistrationsPriceTablesNewPriceTableRoute,
   AppRegistrationsSalesGroupNewGroupRoute:
     AppRegistrationsSalesGroupNewGroupRoute,
   AppRegistrationsSkuMessagesNewSkuMessageRoute:
@@ -1797,6 +1908,8 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppRegistrationsItemTypesIndexRoute: AppRegistrationsItemTypesIndexRoute,
   AppRegistrationsPaymentConditionsIndexRoute:
     AppRegistrationsPaymentConditionsIndexRoute,
+  AppRegistrationsPriceExceptionTablesIndexRoute:
+    AppRegistrationsPriceExceptionTablesIndexRoute,
   AppRegistrationsPriceTablesIndexRoute: AppRegistrationsPriceTablesIndexRoute,
   AppRegistrationsProductsIndexRoute: AppRegistrationsProductsIndexRoute,
   AppRegistrationsRepresentativeGoalsIndexRoute:
@@ -1841,6 +1954,8 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
     AppRegistrationsItemTypesTypeIdIndexRoute,
   AppRegistrationsPaymentConditionsConditionIdIndexRoute:
     AppRegistrationsPaymentConditionsConditionIdIndexRoute,
+  AppRegistrationsPriceExceptionTablesIdIndexRoute:
+    AppRegistrationsPriceExceptionTablesIdIndexRoute,
   AppRegistrationsPriceTablesPriceTableIdIndexRoute:
     AppRegistrationsPriceTablesPriceTableIdIndexRoute,
   AppRegistrationsProductsProductIdIndexRoute:
@@ -1851,6 +1966,8 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
     AppRegistrationsSkuMessagesProductIdIndexRoute,
   AppAdminUsersUserIdCustomersIndexRoute:
     AppAdminUsersUserIdCustomersIndexRoute,
+  AppRegistrationsCustomersCustomerIdPriceExceptionTablesIndexRoute:
+    AppRegistrationsCustomersCustomerIdPriceExceptionTablesIndexRoute,
   AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute:
     AppRegistrationsCustomersCustomerIdPriceTablesIndexRoute,
   AppRegistrationsCustomersCustomerIdSalesGroupIndexRoute:

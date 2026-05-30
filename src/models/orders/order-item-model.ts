@@ -26,6 +26,12 @@ export type OrderItemModel = {
   netItemValue: number;
   suggestPrice: number;
   costValue: number;
+  // Margem (%) quando o item veio de um grupo de desconto. Quando preenchido,
+  // o inputPrice já é o preço final e o desconto padrão do cliente NÃO incide.
+  exceptionMarginPercent?: number | null;
+  // Grupo de desconto (tabela de exceção) ao qual o item pertence. O pedido fica
+  // "preso" a este grupo: não pode misturar produtos de grupos diferentes.
+  exceptionTableId?: string | null;
   product: ProductModel;
   taxes: OrderItemTaxModel[];
   priceTable: PriceTableModel;

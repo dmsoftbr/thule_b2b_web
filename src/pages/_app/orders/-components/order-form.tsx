@@ -39,14 +39,14 @@ export const OrderForm = () => {
       >
         <OrderFormHeader />
         <OrderFormItems />
-        <div className="absolute bottom-0 right-0 left-0 bg-neutral-100 border-t px-2 py-2 flex items-center justify-between">
-          <div className="flex gap-x-2">
+        <div className="absolute bottom-0 right-0 left-0 bg-neutral-100 border-t px-2 py-2 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-2">
             {/* <DiscountMatrizModal /> */}
             <SalesChannelModal />
 
             {!isEditing && <ExportOrder />}
           </div>
-          <div className="flex items-center justify-center gap-x-2">
+          <div className="flex items-center justify-end gap-x-2 ml-auto">
             <Button
               variant="outline"
               size="sm"

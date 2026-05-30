@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Logo } from "@/components/ui/logo";
 import { AppMenuItem } from "./app-menu-item";
+import { AppUserDropDown } from "./app-user-drop-down";
 import { MENU_DATA } from "@/menu/menu-data";
 import logoThule from "@/assets/images/thule_logo.png";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -63,8 +64,11 @@ export const AppSideBar = () => {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="flex items-start pl-6 justify-center border-t border-t-zinc-600 bg-zinc-800 min-h-20">
-        <div className="relative">
+      <SidebarFooter className="flex flex-col items-stretch gap-3 px-4 justify-center border-t border-t-zinc-600 bg-zinc-800 min-h-20">
+        {/* Usuário só aparece aqui em telas mobile; no desktop ele fica no
+            header (ver AppHeader). */}
+        <AppUserDropDown className="md:hidden h-12 w-full justify-start bg-zinc-700 text-white border-zinc-600 hover:bg-zinc-600 hover:text-white" />
+        <div className="relative flex justify-center">
           <Logo inverse />
         </div>
       </SidebarFooter>
