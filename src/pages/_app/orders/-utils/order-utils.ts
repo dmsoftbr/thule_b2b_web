@@ -5,9 +5,13 @@ import type { OrderItemModel } from "@/models/orders/order-item-model";
 import type { OrderModel } from "@/models/orders/order-model";
 import type { OutletCartItem } from "@/models/outlet/outlet-cart-item.model";
 import type { CustomerModel } from "@/models/registrations/customer.model";
+import type { ProductModel } from "@/models/product.model";
+import type { PriceTableModel } from "@/models/registrations/price-table.model";
 import type { TaxResponseDto } from "@/models/dto/responses/tax-response.model";
 import { ProductsService } from "@/services/registrations/products.service";
 import { RepresentativesService } from "@/services/registrations/representatives.service";
+import * as uuid from "uuid";
+import type { Dispatch, SetStateAction } from "react";
 
 import { toast } from "sonner";
 
@@ -316,6 +320,182 @@ export const calcSingleProductTaxes = async (
   console.log("[calcSingleProductTaxes] resposta da API de impostos:", data);
   return data;
 };
+
+/* --------------------------------------------------------------------------
+ * Adiciona um produto ao pedido — FONTE ÚNICA da inclusão de item.
+ * Calcula data de entrega, CFOP e dispara o cálculo de impostos em segundo
+ * plano (marcando isLoadingTaxes). Usado tanto pelo combo de produtos
+ * (order-form-items) quanto pelo modal de pesquisa (order-search-product-modal),
+ * para que ambos os caminhos tragam os impostos de cada item.
+ * Recebe o setOrder funcional (do useState) para evitar stale closure.
+ * ------------------------------------------------------------------------ */
+export async function addProductToOrder(params: {
+  product: ProductModel;
+  quantity: number;
+  priceTable: PriceTableModel;
+  order: OrderModel;
+  setOrder: Dispatch<SetStateAction<OrderModel>>;
+}): Promise<void> {
+  const { product, quantity, priceTable, order, setOrder } = params;
+  const orderQuantity = quantity < 1 ? 1 : quantity;
+
+  // Respeita o estabelecimento escolhido no cabeçalho; só faz fallback para o
+  // branch do cliente (ou "1") quando o pedido ainda está sem estabelecimento.
+  const effectiveBranchId = order.branchId || order.customer?.branchId || "1";
+  if (order.branchId !== effectiveBranchId) {
+    setOrder((prev) => ({ ...prev, branchId: effectiveBranchId }));
+  }
+
+  // Data de entrega.
+  const { data: deliveryData } = await api.post(`/stock/caculate-delivery-date`, {
+    orderId: order.id,
+    customerAbbreviation: order.customerAbbreviation,
+    productId: product.id,
+    quantity: orderQuantity,
+  });
+
+  // Matriz de CFOP -> fiscalOperationId do item.
+  // ATENÇÃO: o endpoint responde text/plain com o CFOP cru (sem aspas). Quando
+  // o CFOP é só dígitos (ex.: "510201" — 64 dos 261 da MatrizCfop), o axios
+  // roda JSON.parse e o transforma em NÚMERO. Como fiscalOperationId é string
+  // (e o backend rejeita número na gravação), coagimos para string abaixo.
+  const fiscalOperationForOrder = order.customer?.fiscalOperationId;
+  const { data: cfopData } = await api.post(`/order-items/matriz-cfop-item`, {
+    branchId: effectiveBranchId,
+    customerAbbreviation: order.customer?.abbreviation,
+    productId: product.id,
+    fiscalOperationId: fiscalOperationForOrder,
+  });
+  const fiscalOperationId = String(cfopData ?? "");
+
+  const newItemId = uuid.v4();
+  const newSequence = order.items.length + 10;
+
+  const newOrderItem: OrderItemModel = {
+    ...NEW_ORDER_ITEM_EMPTY,
+    ...product,
+    id: newItemId,
+    productId: product.id,
+    product,
+    deliveryDate: deliveryData.estimatedDate,
+    availability: deliveryData.availbility,
+    inputPrice: product.unitPriceInTable,
+    suggestPrice: product.suggestUnitPrice,
+    priceTablePrice: product.unitPriceInTable,
+    exceptionMarginPercent: product.exceptionMarginPercent ?? null,
+    exceptionTableId: product.exceptionTableId ?? null,
+    grossItemValue: product.unitPriceInTable * orderQuantity,
+    orderQuantity,
+    sequence: newSequence,
+    taxes: [],
+    isLoadingTaxes: true,
+    priceTable,
+    priceTableId: priceTable.id,
+    costValue: 0,
+    fiscalOperationId,
+  };
+
+  // Adiciona o item (append imutável — sem stale closure).
+  setOrder((prev) => ({ ...prev, items: [...prev.items, newOrderItem] }));
+
+  // Recupera os impostos em segundo plano. Na adição o pedido ainda pode não
+  // ter condição de pagamento; usa a condição padrão do cliente.
+  const paymentConditionForTaxes =
+    order.customer?.paymentConditionId ?? order.paymentConditionId;
+
+  try {
+    const taxesResponse = await calcSingleProductTaxes({
+      branchId: effectiveBranchId,
+      customerId: order.customerId,
+      paymentConditionId: paymentConditionForTaxes,
+      freightValue: order.freightValue,
+      discountPercentual: order.discountPercentual,
+      fiscalOperationId: fiscalOperationForOrder ?? "",
+      product: {
+        sequence: newSequence,
+        productId: product.id,
+        referenceCode: product.referenceCode ?? "",
+        orderQuantity,
+        inputPrice: product.unitPriceInTable,
+        priceTableId: priceTable.id,
+        itemDiscountPercentage: order.customer?.discountPercent ?? 0,
+      },
+    });
+
+    // Compara normalizado (trim + lower) — Datasul/Progress costuma devolver
+    // códigos com padding ou caixa diferente.
+    const normalize = (s?: string) => (s ?? "").trim().toLowerCase();
+    const target = normalize(product.id);
+    const taxItem = taxesResponse?.itens?.find(
+      (t) => normalize(t.produto.codigo_produto) === target,
+    );
+    if (!taxItem) {
+      setOrder((prev) => ({
+        ...prev,
+        items: prev.items.map((it) =>
+          it.id === newItemId ? { ...it, isLoadingTaxes: false } : it,
+        ),
+      }));
+      return;
+    }
+
+    const p = taxItem.produto;
+    const orderId = order.id ?? "";
+    const base = (
+      taxName: string,
+      taxBase: number,
+      taxPercentual: number,
+      taxValue: number,
+    ) => ({
+      id: uuid.v4(),
+      itemId: newItemId,
+      orderId,
+      taxBase,
+      taxBaseReduction: 0,
+      taxName,
+      taxPercentual,
+      taxValue,
+      mva: 0,
+    });
+    const itemTaxes: OrderItemModel["taxes"] = [
+      base("COFINS", p.base_calculo_cofins, p.aliquota_cofins, p.valor_cofins),
+      base("PIS", p.base_calculo_pis, p.aliquota_pis, p.valor_pis),
+      base("IPI", p.base_calculo_ipi, p.aliquota_ipi, p.valor_ipi),
+      base("CSLL", 0, p.aliquota_csll, p.valor_csll),
+      base("ICMS", p.base_calculo_icms, p.aliquota_icms, p.valor_icms),
+      base("ICMS-ST", p.base_calculo_st, p.aliquota_st, p.valor_st),
+      ...(p.reforma ?? []).map((r): OrderItemModel["taxes"][number] => ({
+        id: uuid.v4(),
+        itemId: newItemId,
+        orderId,
+        taxBase: r.base_tributo,
+        taxBaseReduction: r.perc_reducao_governamental,
+        taxName: r.tipo_tributo_descricao,
+        taxPercentual: r.aliquota,
+        taxValue: r.valor_tributo,
+        mva: 0,
+      })),
+    ];
+
+    setOrder((prev) => ({
+      ...prev,
+      items: prev.items.map((it) =>
+        it.id === newItemId
+          ? { ...it, taxes: itemTaxes, isLoadingTaxes: false }
+          : it,
+      ),
+    }));
+  } catch (err) {
+    console.error("[taxes] falha no cálculo", err);
+    // Limpa o loading mesmo em erro — senão o skeleton fica preso na tela.
+    setOrder((prev) => ({
+      ...prev,
+      items: prev.items.map((it) =>
+        it.id === newItemId ? { ...it, isLoadingTaxes: false } : it,
+      ),
+    }));
+  }
+}
 
 /* ==========================================================================
  * Motor de cálculo de preço do item — FONTE ÚNICA DA VERDADE

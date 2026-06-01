@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/search-combo";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { FreightTable } from "./freight-table";
+import { FreightTable, FreightTableSkeleton } from "./freight-table";
 import { NumericFormat } from "react-number-format";
 import { cn } from "@/lib/utils";
 import {
@@ -90,7 +90,7 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
 
   const [isCalculatingFreight, setIsCalculatingFreight] = useState(false);
   const [isCalculatingTaxes, setIsCalculatingTaxes] = useState(false);
-  const [, setIsFreightError] = useState(false);
+  const [isFreightError, setIsFreightError] = useState(false);
   const freightAbortControllerRef = useRef<AbortController | null>(null);
   const taxesAbortControllerRef = useRef<AbortController | null>(null);
 
@@ -116,9 +116,14 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
       // cada item, para o pedido gravar exatamente o valor exibido ao usuário.
       // Roda ANTES da reescrita de tributos abaixo, pois lê o IPI cru exibido
       // em tela; cria novos objetos para não mutar o state do contexto.
-      orderData.items = orderData.items.map((it) =>
-        withPricingSnapshot(it, order),
-      );
+      orderData.items = orderData.items.map((it) => ({
+        ...withPricingSnapshot(it, order),
+        // Rede de segurança: o CFOP vem do endpoint matriz-cfop-item como
+        // text/plain e, sendo só dígitos, o axios o converte em número. O
+        // backend exige string em fiscalOperationId — garante a coerção aqui
+        // independentemente de como o item entrou no pedido.
+        fiscalOperationId: String(it.fiscalOperationId ?? ""),
+      }));
 
       // Os impostos vêm da API calculados sobre o preço de tabela. Aplicamos
       // o fator de desconto do cliente para que base e valor reflitam o preço
@@ -443,6 +448,10 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
           freightValue: sortedCarriers[0].freightValue,
           carrierId: sortedCarriers[0].carrierId,
         });
+      } else {
+        // Retorno vazio do TOTVS é tratado como falha (exibe a tela de erro
+        // com o botão de tentar novamente, não o skeleton infinito).
+        setIsFreightError(true);
       }
     } catch (error) {
       if (abortController.signal.aborted) return;
@@ -842,15 +851,17 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
                     Selecione uma opção de Frete
                   </h3>
                   <div>
-                    {isCalculatingFreight && (
-                      <div className="flex items-center justify-center h-[100px] border">
-                        <Loader2Icon className="animate-spin mr-1.5 text-blue-600" />
-                        <span>Calculando Frete. Aguarde...</span>
-                      </div>
-                    )}
-                    {!isCalculatingFreight && (
+                    {/* Skeleton enquanto consulta o frete (e no estado inicial,
+                        antes do fetch começar). A tela de erro só aparece em
+                        falha real (isFreightError), evitando o "flash" de erro
+                        enquanto os dados ainda não chegaram. */}
+                    {isCalculatingFreight ||
+                    (!isFreightError && freightsData.length === 0) ? (
+                      <FreightTableSkeleton />
+                    ) : (
                       <FreightTable
                         data={freightsData}
+                        selectedCarrierId={order.carrierId}
                         onRefreshCalc={() => getFreights()}
                         onValueChange={(carrierId, value) => {
                           setOrder({

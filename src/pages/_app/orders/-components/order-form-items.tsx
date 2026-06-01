@@ -12,13 +12,11 @@ import { EmptyOrder } from "./empty-order";
 import { formatNumber } from "@/lib/number-utils";
 import { cn } from "@/lib/utils";
 import {
-  NEW_ORDER_ITEM_EMPTY,
+  addProductToOrder,
   calcOrderItemsTotalWithDiscount,
-  calcSingleProductTaxes,
   getItemDiscountFactor,
 } from "../-utils/order-utils";
 import { api } from "@/lib/api";
-import * as uuid from "uuid";
 import { OrderItemTable } from "./order-item-table";
 import { useOrder } from "../-context/order-context";
 import { SearchCombo } from "@/components/ui/search-combo";
@@ -36,7 +34,7 @@ import type { SkuMessageModel } from "@/models/registrations/sku-message.model";
 import type { Dispatch, SetStateAction } from "react";
 
 export const OrderFormItems = () => {
-  const { order, addItem, mode, setOrder } = useOrder();
+  const { order, mode, setOrder } = useOrder();
   const [showCard, setShowCard] = useState(false);
   // Em telas < md (Tailwind: 768px) a tabela não cabe — força a visão em
   // Card. matchMedia reage ao resize da janela em tempo real.
@@ -175,199 +173,17 @@ export const OrderFormItems = () => {
       return;
     }
 
-    // Respeita o estabelecimento escolhido pelo usuário no cabeçalho. Só faz
-    // fallback para o branch do cliente (ou "1") quando o pedido ainda está sem
-    // estabelecimento definido. Como ~60% dos clientes na base estão com
-    // BranchId vazio, o "1" garante um valor válido (mesma convenção usada em
-    // finish-order-modal.tsx).
-    const effectiveBranchId = order.branchId || order.customer.branchId || "1";
-    if (order.branchId !== effectiveBranchId) {
-      setOrder({ ...order, branchId: effectiveBranchId });
-    }
-
-    // chama a
-    // api que calcula data de entrega
-
-    var params = {
-      orderId: order.id,
-      customerAbbreviation: order.customerAbbreviation,
-      productId: product.id,
+    // Inclusão do item (data de entrega + CFOP + cálculo de impostos em
+    // segundo plano) — fonte única em order-utils, compartilhada com o modal
+    // de pesquisa de produtos.
+    await addProductToOrder({
+      product,
       quantity: 1,
-    };
-    const { data: deliveryData } = await api.post(
-      `/stock/caculate-delivery-date`,
-      params,
-    );
-
-    const fiscalOperationForOrder = order.customer.fiscalOperationId;
-
-    // chama api de matriz de cfop — usa effectiveBranchId direto (o setOrder
-    // acima é assíncrono e a closure ainda enxergaria o valor antigo).
-    var paramsCFOP = {
-      branchId: effectiveBranchId,
-      customerAbbreviation: order.customer.abbreviation,
-      productId: product.id,
-      fiscalOperationId: fiscalOperationForOrder,
-    };
-    const { data: cfopData } = await api.post(
-      `/order-items/matriz-cfop-item`,
-      paramsCFOP,
-    );
-
-    const newItemId = uuid.v4();
-    const newSequence = order.items.length + 10;
-
-    const newOrderItem: OrderItemModel = {
-      ...NEW_ORDER_ITEM_EMPTY,
-      ...product,
-      id: newItemId,
-      productId: product.id,
-      product: product,
-      deliveryDate: deliveryData.estimatedDate,
-      availability: deliveryData.availbility,
-      inputPrice: product.unitPriceInTable,
-      suggestPrice: product.suggestUnitPrice,
-      priceTablePrice: product.unitPriceInTable,
-      exceptionMarginPercent: product.exceptionMarginPercent ?? null,
-      exceptionTableId: product.exceptionTableId ?? null,
-      grossItemValue: product.unitPriceInTable * 1,
-      orderQuantity: 1,
-      sequence: newSequence,
-      taxes: [],
-      isLoadingTaxes: true,
       priceTable,
-      priceTableId: priceTable.id,
-      costValue: 0,
-      fiscalOperationId: cfopData,
-    };
-
-    addItem(newOrderItem);
-    // Guarda o id final atribuído pelo addItem (que muta item.id = uuid.v4()).
-    const finalItemId = newOrderItem.id;
-
-    // Recupera os impostos do produto em segundo plano. Se falhar, o item já
-    // foi adicionado sem impostos — eles serão recalculados na finalização.
-    // Na adição de item, o pedido ainda pode não ter condição de pagamento
-    // escolhida. Usa a condição padrão do cliente para o cálculo de impostos.
-    const paymentConditionForTaxes =
-      order.customer?.paymentConditionId ?? order.paymentConditionId;
-
-    console.log("[taxes] solicitando cálculo", {
-      productId: product.id,
-      paymentConditionId: paymentConditionForTaxes,
-      branchId: effectiveBranchId,
-      customerId: order.customerId,
+      order,
+      setOrder: setOrder as unknown as Dispatch<SetStateAction<OrderModel>>,
     });
-    calcSingleProductTaxes({
-      branchId: effectiveBranchId,
-      customerId: order.customerId,
-      paymentConditionId: paymentConditionForTaxes,
-      freightValue: order.freightValue,
-      discountPercentual: order.discountPercentual,
-      fiscalOperationId: fiscalOperationForOrder ?? "",
-      product: {
-        sequence: newSequence,
-        productId: product.id,
-        referenceCode: product.referenceCode ?? "",
-        orderQuantity: 1,
-        inputPrice: product.unitPriceInTable,
-        priceTableId: priceTable.id,
-        itemDiscountPercentage: order.customer?.discountPercent ?? 0,
-      },
-    })
-      .then((taxesResponse) => {
-        console.log("[taxes] resposta recebida", taxesResponse);
-        // Compara normalizado (trim + lower) — Datasul/Progress costuma
-        // devolver códigos com padding ou caixa diferente.
-        const normalize = (s?: string) => (s ?? "").trim().toLowerCase();
-        const target = normalize(product.id);
-        const taxItem = taxesResponse?.itens?.find(
-          (t) => normalize(t.produto.codigo_produto) === target,
-        );
-        if (!taxItem) {
-          console.warn(
-            "[taxes] nenhum item encontrado na resposta para",
-            product.id,
-            "— itens recebidos:",
-            taxesResponse?.itens?.map((t) => t.produto.codigo_produto),
-          );
-          return;
-        }
 
-        const p = taxItem.produto;
-        const orderId = order.id ?? "";
-        const base = (
-          taxName: string,
-          taxBase: number,
-          taxPercentual: number,
-          taxValue: number,
-        ) => ({
-          id: uuid.v4(),
-          itemId: newOrderItem.id,
-          orderId,
-          taxBase,
-          taxBaseReduction: 0,
-          taxName,
-          taxPercentual,
-          taxValue,
-          mva: 0,
-        });
-        const itemTaxes: OrderItemModel["taxes"] = [
-          base(
-            "COFINS",
-            p.base_calculo_cofins,
-            p.aliquota_cofins,
-            p.valor_cofins,
-          ),
-          base("PIS", p.base_calculo_pis, p.aliquota_pis, p.valor_pis),
-          base("IPI", p.base_calculo_ipi, p.aliquota_ipi, p.valor_ipi),
-          base("CSLL", 0, p.aliquota_csll, p.valor_csll),
-          base("ICMS", p.base_calculo_icms, p.aliquota_icms, p.valor_icms),
-          base("ICMS-ST", p.base_calculo_st, p.aliquota_st, p.valor_st),
-          ...(p.reforma ?? []).map((r): OrderItemModel["taxes"][number] => ({
-            id: uuid.v4(),
-            itemId: finalItemId,
-            orderId,
-            taxBase: r.base_tributo,
-            taxBaseReduction: r.perc_reducao_governamental,
-            taxName: r.tipo_tributo_descricao,
-            taxPercentual: r.aliquota,
-            taxValue: r.valor_tributo,
-            mva: 0,
-          })),
-        ];
-
-        console.log("[taxes] aplicando ao item", finalItemId, itemTaxes);
-        // Usa setOrder funcional para evitar stale closure logo após o addItem.
-        // O setOrder exposto pelo contexto está tipado como `(order) => void`,
-        // mas internamente é o setter do useState, que aceita updater funcional.
-        // O cast abaixo é seguro em runtime.
-        const setOrderFn = setOrder as unknown as Dispatch<
-          SetStateAction<OrderModel>
-        >;
-        setOrderFn((prev) => ({
-          ...prev,
-          items: prev.items.map((it) =>
-            it.id === finalItemId
-              ? { ...it, taxes: itemTaxes, isLoadingTaxes: false }
-              : it,
-          ),
-        }));
-      })
-      .catch((err) => {
-        console.error("[taxes] falha no cálculo", err);
-        // Limpa o estado de loading mesmo em caso de erro — caso contrário o
-        // skeleton ficaria preso na tela.
-        const setOrderFn = setOrder as unknown as Dispatch<
-          SetStateAction<OrderModel>
-        >;
-        setOrderFn((prev) => ({
-          ...prev,
-          items: prev.items.map((it) =>
-            it.id === finalItemId ? { ...it, isLoadingTaxes: false } : it,
-          ),
-        }));
-      });
     toast.success(
       `Produto adicionado ${order.isBudget ? "à simulação" : "ao pedido"}`,
       {

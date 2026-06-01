@@ -15,14 +15,15 @@ import {
 } from "@/components/ui/dialog";
 import type { ProductModel } from "@/models/product.model";
 import { MinusIcon, PlusIcon, SearchIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { ProductImage } from "@/components/app/product-image";
 import { formatNumber } from "@/lib/number-utils";
 import { useOrder } from "../-context/order-context";
 import type { PriceTableModel } from "@/models/registrations/price-table.model";
+import type { OrderModel } from "@/models/orders/order-model";
 import { SearchCombo } from "@/components/ui/search-combo";
 import { AppTooltip } from "@/components/layout/app-tooltip";
-import * as uuid from "uuid";
+import { addProductToOrder } from "../-utils/order-utils";
 import { toast } from "sonner";
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
@@ -58,7 +59,7 @@ export const OrderSearchProductModal = ({ initialPriceTable }: Props) => {
       setTableToken(new Date().valueOf());
     }
   }, [isOpen, order.customerId, priceTable?.id]);
-  function handleAddItemToOrder(
+  async function handleAddItemToOrder(
     priceTable: PriceTableModel,
     product: ProductModel,
     orderQuantity: number,
@@ -70,53 +71,39 @@ export const OrderSearchProductModal = ({ initialPriceTable }: Props) => {
     if (!orderQuantity) orderQuantity = 1;
     if (orderQuantity == 0) orderQuantity = 1;
 
-    const newOrder = { ...order, items: [...order.items] };
-    const existingItemIndex = newOrder.items.findIndex(
+    // setOrder do contexto é o setter do useState (aceita updater funcional em
+    // runtime), apesar de tipado como (order) => void.
+    const setOrderFn = setOrder as unknown as Dispatch<
+      SetStateAction<OrderModel>
+    >;
+
+    const existingItemIndex = order.items.findIndex(
       (f) => f.productId == product.id,
     );
 
     if (existingItemIndex >= 0) {
-      newOrder.items[existingItemIndex] = {
-        ...newOrder.items[existingItemIndex],
-        orderQuantity,
-      };
+      setOrderFn((prev) => ({
+        ...prev,
+        items: prev.items.map((it) =>
+          it.productId == product.id ? { ...it, orderQuantity } : it,
+        ),
+      }));
       toast.success("Quantidade atualizada!");
-    } else {
-      newOrder.items.push({
-        availability: "C",
-        deliveryDate: new Date(),
-        sequence: 0,
-        orderId: order.id,
-        product: product,
-        productId: product.id,
-        orderQuantity,
-        grossItemValue: orderQuantity * product.unitPriceInTable,
-        inputPrice: product.unitPriceInTable,
-        suggestPrice: product.suggestUnitPrice,
-        allocatedQuantity: 0,
-        comments: "",
-        customerAbbreviation: order.customerAbbreviation,
-        deliveredQuantity: 0,
-        fiscalOperationId: "",
-        id: uuid.v4(),
-        ncm: "",
-        netItemValue: 0,
-        originalDeliveryDate: new Date(),
-        priceTablePrice: product.unitPriceInTable,
-        exceptionMarginPercent: product.exceptionMarginPercent ?? null,
-        exceptionTableId: product.exceptionTableId ?? null,
-        referenceCode: product.referenceCode,
-        statusId: 1,
-        priceTableId: priceTable.id,
-        priceTable,
-        taxes: [],
-        costValue: 0,
-      });
-      toast.success(
-        `Produto adicionado ${order.isBudget ? "na simulação" : "no pedido"}!`,
-      );
+      return;
     }
-    setOrder(newOrder);
+
+    // Mesma inclusão usada pelo combo de produtos: calcula data de entrega,
+    // CFOP e dispara o cálculo de impostos de cada item.
+    await addProductToOrder({
+      product,
+      quantity: orderQuantity,
+      priceTable,
+      order,
+      setOrder: setOrderFn,
+    });
+    toast.success(
+      `Produto adicionado ${order.isBudget ? "na simulação" : "no pedido"}!`,
+    );
   }
 
   const columns: ServerTableColumn[] = [

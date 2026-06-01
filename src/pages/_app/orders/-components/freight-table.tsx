@@ -8,12 +8,43 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatNumber } from "@/lib/number-utils";
 import type { CalcFreightsResposeDto } from "@/models/dto/responses/calculated-freights-response.model";
 import { useEffect, useState } from "react";
 
+// Loading state da tabela de fretes — exibido enquanto consulta o TOTVS, no
+// lugar da mensagem de erro (que só deve aparecer em falha real).
+export const FreightTableSkeleton = () => {
+  return (
+    <div className="border rounded-md overflow-hidden">
+      <div className="flex items-center gap-3 px-3 py-2 bg-neutral-100 border-b">
+        <Skeleton className="h-4 w-4 rounded-full" />
+        <Skeleton className="h-4 w-28" />
+        <Skeleton className="h-4 w-20 ml-auto" />
+        <Skeleton className="h-4 w-16" />
+      </div>
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center gap-3 px-3 py-3 border-b last:border-b-0"
+        >
+          <Skeleton className="h-4 w-4 rounded-full" />
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-4 w-10 ml-auto" />
+          <Skeleton className="h-4 w-20" />
+        </div>
+      ))}
+    </div>
+  );
+};
+
 interface Props {
   data: CalcFreightsResposeDto[];
+  // Transportadora selecionada (fonte da verdade no pai: order.carrierId).
+  // Componente é controlado por ela para refletir a opção marcada — inclusive
+  // a mais barata, selecionada automaticamente após o cálculo do frete.
+  selectedCarrierId?: number;
   onRefreshCalc: () => void;
   onValueChange: (
     carrierId: number,
@@ -22,11 +53,14 @@ interface Props {
   ) => void;
 }
 
-export const FreightTable = ({ data, onRefreshCalc, onValueChange }: Props) => {
+export const FreightTable = ({
+  data,
+  selectedCarrierId,
+  onRefreshCalc,
+  onValueChange,
+}: Props) => {
   const [hasFreeFreight, setHasFreeFreight] = useState(false);
-  const [selectedCarrier, setSelectedCarrier] = useState(
-    data.length > 0 ? data[0].carrierId.toString() : "",
-  );
+  const selectedCarrier = selectedCarrierId?.toString() ?? "";
 
   const handleValueChange = (carrierId: string) => {
     const selectedOpt = data.find((f) => f.carrierId == Number(carrierId));
@@ -35,7 +69,6 @@ export const FreightTable = ({ data, onRefreshCalc, onValueChange }: Props) => {
       selectedOpt?.freightValue ?? 0,
       selectedOpt?.deliveryDays ?? 0,
     );
-    setSelectedCarrier(carrierId);
   };
 
   useEffect(() => {
@@ -63,7 +96,7 @@ export const FreightTable = ({ data, onRefreshCalc, onValueChange }: Props) => {
   return (
     <div>
       <RadioGroup
-        defaultValue={selectedCarrier}
+        value={selectedCarrier}
         onValueChange={(value) => {
           handleValueChange(value);
         }}

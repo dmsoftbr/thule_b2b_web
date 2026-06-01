@@ -14,12 +14,24 @@ import { calcOrderItemsTotalWithDiscount } from "../-utils/order-utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AppTooltip } from "@/components/layout/app-tooltip";
 import { InfoIcon } from "lucide-react";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 export const OrderItemTable = () => {
   const { order, isBudget } = useOrder();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const anyItemLoadingTaxes = order.items.some((i) => i.isLoadingTaxes);
+
+  // O corpo da tabela rola na vertical e a barra de rolagem consome largura
+  // interna (scrollbar-gutter: stable). Cabeçalho e rodapé não rolam, então
+  // medimos essa largura e a reservamos como padding neles, mantendo as linhas
+  // de grade das colunas alinhadas entre header/body/footer.
+  const bodyRef = useRef<HTMLTableSectionElement>(null);
+  const [scrollbarWidth, setScrollbarWidth] = useState(0);
+  useLayoutEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    setScrollbarWidth(el.offsetWidth - el.clientWidth);
+  }, [order.items.length]);
 
   // Soma do "Total c/Desconto" — fonte única em order-utils (regra I24).
   const grandTotalWithDiscount = calcOrderItemsTotalWithDiscount(order);
@@ -31,7 +43,10 @@ export const OrderItemTable = () => {
   return (
     <Table className="w-full table-fixed text-xs flex flex-col">
       <TableHeader className="flex">
-        <TableRow className="flex w-full hover:bg-neutral-300 bg-neutral-300">
+        <TableRow
+          className="flex w-full hover:bg-neutral-300 bg-neutral-300"
+          style={{ paddingRight: scrollbarWidth }}
+        >
           <TableHead className="w-[72px] border flex items-center text-xs text-black">
             Imagem
           </TableHead>
@@ -106,12 +121,12 @@ export const OrderItemTable = () => {
           <TableHead className="w-[60px] border flex items-center justify-center text-xs text-black">
             Ações
           </TableHead>
-          <TableHead className="w-[17px] max-w-[17px]"></TableHead>
         </TableRow>
       </TableHeader>
       <TableBody
-        className="flex flex-col overflow-y-visible w-full"
-        style={{ maxHeight: "230px" }}
+        ref={bodyRef}
+        className="flex flex-col overflow-y-auto w-full"
+        style={{ maxHeight: "calc(100vh - 400px)", scrollbarGutter: "stable" }}
       >
         {order.items.length == 0 && (
           <tr className="h-10">
@@ -134,8 +149,11 @@ export const OrderItemTable = () => {
           />
         ))}
       </TableBody>
-      <TableFooter className="flex w-full">
-        <TableRow className="flex w-full bg-neutral-300 align-middle text-sm hover:bg-neutral-300 font-semibold">
+      <TableFooter className="flex w-full sticky bottom-0 z-10">
+        <TableRow
+          className="flex w-full bg-neutral-300 align-middle text-sm hover:bg-neutral-300 font-semibold"
+          style={{ paddingRight: scrollbarWidth }}
+        >
           {/* Imagem (72) + Produto (flex-1) — label "Total" */}
           <TableHead className="w-[72px] border-[0.5px] flex items-center justify-center">
             Total
@@ -157,7 +175,6 @@ export const OrderItemTable = () => {
           </TableHead>
           {/* Prev. Entrega (120) + Margem (100) + Markup (100) + Ações (60) = 380 */}
           <TableHead className="w-[380px] border-[0.5px]"></TableHead>
-          <TableHead className="w-[17px]"></TableHead>
         </TableRow>
       </TableFooter>
     </Table>
