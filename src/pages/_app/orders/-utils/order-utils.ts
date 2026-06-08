@@ -602,21 +602,32 @@ export const getVisibleItemTaxes = (item: OrderItemModel) =>
 
 // Total de tributos visíveis do item (× quantidade × fator de desconto), como
 // exibido na coluna "Impostos" da tabela.
+//
+// applyDiscountFactor: durante a EDIÇÃO os tributos em memória estão CRUS (sem
+// desconto — ver addProductToOrder), então o fator é aplicado aqui. Na
+// VISUALIZAÇÃO os tributos vêm do banco JÁ com o desconto embutido (handleSendOrder
+// grava taxValue × discountFactor); reaplicar o fator descontaria em dobro e
+// mostraria impostos menores do que no momento da inclusão. Por isso o chamador
+// passa false em modo visualização.
 export const calcItemVisibleTaxesTotal = (
   item: OrderItemModel,
   order: OrderModel,
+  applyDiscountFactor: boolean = true,
 ) =>
   getVisibleItemTaxes(item).reduce((acc, t) => acc + (t.taxValue ?? 0), 0) *
   item.orderQuantity *
-  getItemDiscountFactor(item, order);
+  (applyDiscountFactor ? getItemDiscountFactor(item, order) : 1);
 
 // Monta o detalhamento de impostos (TaxesDetail) a partir dos tributos já
 // gravados em order.items[].taxes — usado em modo VISUALIZAÇÃO, onde a API de
 // cálculo (calcOrderTaxes) não é chamada e portanto taxesData fica indefinido.
-// Agrega por tipo de imposto somando valor e base com a MESMA fórmula da linha
-// "Impostos" do pedido (× quantidade × fator de desconto), garantindo que o
-// detalhe some exatamente o total exibido. Tributos da reforma (CBS/IBS) são
-// excluídos por getVisibleItemTaxes, coerente com o filtro da própria modal.
+// Agrega por tipo de imposto somando valor e base (× quantidade), garantindo que
+// o detalhe some exatamente o total exibido na linha "Impostos". Os tributos
+// gravados JÁ vêm com o desconto embutido (handleSendOrder grava taxValue ×
+// discountFactor), então NÃO se reaplica o fator aqui — coerente com
+// calcItemVisibleTaxesTotal(..., applyDiscountFactor=false) usado na mesma tela.
+// Tributos da reforma (CBS/IBS) são excluídos por getVisibleItemTaxes, coerente
+// com o filtro da própria modal.
 export const buildTaxesDetailFromOrderItems = (
   order: OrderModel,
 ): TaxResponseDto => {
@@ -626,12 +637,11 @@ export const buildTaxesDetailFromOrderItems = (
   >();
 
   order.items.forEach((item) => {
-    const factor = getItemDiscountFactor(item, order);
     getVisibleItemTaxes(item).forEach((tax) => {
       const descricao = (tax.taxName ?? "").trim();
       const key = descricao.toUpperCase();
-      const valor = (tax.taxValue ?? 0) * item.orderQuantity * factor;
-      const base = (tax.taxBase ?? 0) * item.orderQuantity * factor;
+      const valor = (tax.taxValue ?? 0) * item.orderQuantity;
+      const base = (tax.taxBase ?? 0) * item.orderQuantity;
 
       const existing = grouped.get(key);
       if (existing) {

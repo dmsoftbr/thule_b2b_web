@@ -97,8 +97,10 @@ export const FinishOrderModal = ({ isOpen, onClose }: Props) => {
   // "Impostos" do pedido = soma dos impostos POR ITEM (mesma fonte e método da
   // coluna "Impostos" de cada linha — item.taxes). Antes era recalculado aqui
   // via calcOrderTaxes, o que divergia da tabela (ex.: 395,59 vs 322,01).
+  // applyDiscountFactor=isEditing: na visualização os tributos gravados já
+  // incluem o desconto (não reaplicar — senão desconta em dobro).
   const totalTaxes = order.items.reduce(
-    (acc, item) => acc + calcItemVisibleTaxesTotal(item, order),
+    (acc, item) => acc + calcItemVisibleTaxesTotal(item, order, isEditing),
     0,
   );
 
@@ -400,6 +402,7 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
   const getFreights = async () => {
     if (!isEditing) return;
     if (order.useCustomerCarrier) return;
+    if (order.freightPaymentId == 3) return;
 
     freightAbortControllerRef.current?.abort();
     const abortController = new AbortController();
@@ -502,13 +505,22 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
     if (isOpen) {
       getPaymentConditions();
       getPermissions();
-      getFreights();
     }
     return () => {
       freightAbortControllerRef.current?.abort();
       taxesAbortControllerRef.current?.abort();
     };
   }, [isOpen]);
+
+  // Recalcula o frete sempre que o modal abre ou os flags que afetam o frete
+  // mudam. Reage ao estado ATUAL do order (evita o stale closure que existia no
+  // setTimeout dos checkboxes). getFreights já sai cedo nos modos "Usa
+  // Transportadora do Cliente" e "Frete Pago", e ao calcular já seleciona/grava
+  // a transportadora mais barata (sortedCarriers[0]).
+  useEffect(() => {
+    if (!isOpen) return;
+    getFreights();
+  }, [isOpen, order.useCustomerCarrier, order.freightPaymentId]);
 
   useEffect(() => {
     setOrderValidationMessage("");
@@ -780,6 +792,14 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
                           ...order,
                           freightPaymentId: checked ? 3 : 1,
                         };
+                        if (checked == true) {
+                          freightAbortControllerRef.current?.abort();
+                          setIsCalculatingFreight(false);
+                          newOrder.freightValue = 0;
+                          newOrder.freightTypeId = 4;
+                          newOrder.carrierId =
+                            newOrder.customer?.carrierId ?? 0;
+                        }
                         setOrder(newOrder);
                       }}
                     />
@@ -805,11 +825,6 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
                             newOrder.customer?.carrierId ?? 0;
                         }
                         setOrder(newOrder);
-                        if (!checked) {
-                          setTimeout(() => {
-                            getFreights();
-                          }, 1000);
-                        }
                       }}
                     />
                     Usa Transportadora do Cliente
@@ -844,7 +859,9 @@ Os produtos não serão reservados e poderão sofrer alterações na data de ent
                   />
                 </div>
               )}
-              {isEditing && !order.useCustomerCarrier && (
+              {isEditing &&
+                !order.useCustomerCarrier &&
+                order.freightPaymentId != 3 && (
                 <>
                   {" "}
                   <h3 className="font-semibold text-xl">

@@ -35,6 +35,8 @@ export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
 
   const isEditing = mode == "NEW" || mode == "EDIT";
 
+  const isDiscountGroup = item.exceptionMarginPercent != null;
+
   const handleUpdateQuantity = async (newQuantity: number | undefined) => {
     if (!newQuantity) {
       removeItem(item);
@@ -81,7 +83,12 @@ export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
           className="hover:bg-neutral-100 cursor-pointer max-w-[64px] max-h-[64px]"
         />
       </TableCell>
-      <TableCell className="flex-1 border-r flex flex-col justify-center">
+      <TableCell
+        className={cn(
+          "flex-1 border-r flex flex-col justify-center",
+          isDiscountGroup && "bg-yellow-50",
+        )}
+      >
         <span className="font-semibold text-blue-600">{item.productId}</span>
         <span className="break-normal whitespace-normal">
           {item.product?.description}
@@ -117,7 +124,11 @@ export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
             return (
               <div className="flex items-center justify-end gap-2 tabular-nums">
                 <span>
-                  R$ {formatNumber(calcItemVisibleTaxesTotal(item, order), 2)}
+                  R${" "}
+                  {formatNumber(
+                    calcItemVisibleTaxesTotal(item, order, isEditing),
+                    2,
+                  )}
                 </span>
                 <OrderItemTaxesModal
                   productId={item.productId}

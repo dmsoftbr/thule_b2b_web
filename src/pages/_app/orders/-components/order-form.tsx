@@ -16,6 +16,10 @@ export const OrderForm = () => {
 
   const isEditing = mode != "VIEW";
 
+  // Enquanto algum item está calculando impostos, o pedido ainda não tem os
+  // valores finais — bloqueia cancelar e concluir até o cálculo terminar.
+  const anyItemLoadingTaxes = order.items.some((i) => i.isLoadingTaxes);
+
   // Atalho Ctrl+/ (ou Cmd+/) abre o modal de Concluir Pedido / Simulação.
   // Só dispara se houver itens — espelha a regra do disabled do botão.
   useEffect(() => {
@@ -23,13 +27,14 @@ export const OrderForm = () => {
       const isCtrlSlash = (e.ctrlKey || e.metaKey) && e.key === "/";
       if (!isCtrlSlash) return;
       if (order.items.length === 0) return;
+      if (anyItemLoadingTaxes) return;
       if (showFinishOrderModal) return;
       e.preventDefault();
       setShowFinishOrderModal(true);
     };
     document.addEventListener("keydown", handleShortcut);
     return () => document.removeEventListener("keydown", handleShortcut);
-  }, [order.items.length, showFinishOrderModal]);
+  }, [order.items.length, showFinishOrderModal, anyItemLoadingTaxes]);
 
   return (
     <>
@@ -50,6 +55,7 @@ export const OrderForm = () => {
             <Button
               variant="outline"
               size="sm"
+              disabled={anyItemLoadingTaxes}
               onClick={() => {
                 clearAll();
                 navigate({ to: isBudget ? "/budgets" : "/orders" });
@@ -59,7 +65,7 @@ export const OrderForm = () => {
             </Button>
 
             <Button
-              disabled={order.items.length == 0}
+              disabled={order.items.length == 0 || anyItemLoadingTaxes}
               size="sm"
               type="button"
               onClick={() => setShowFinishOrderModal(true)}

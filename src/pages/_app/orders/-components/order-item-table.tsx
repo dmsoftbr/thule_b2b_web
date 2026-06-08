@@ -41,7 +41,7 @@ export const OrderItemTable = () => {
   );
 
   return (
-    <Table className="w-full table-fixed text-xs flex flex-col">
+    <Table className="w-full table-fixed text-xs flex flex-col [&_th]:shrink-0 [&_th]:min-w-0 [&_td]:shrink-0 [&_td]:min-w-0">
       <TableHeader className="flex">
         <TableRow
           className="flex w-full hover:bg-neutral-300 bg-neutral-300"
