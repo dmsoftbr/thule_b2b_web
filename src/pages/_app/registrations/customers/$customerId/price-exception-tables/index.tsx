@@ -42,9 +42,13 @@ function CustomerIdPriceExceptionTablesPageComponent() {
 
   const handleDelete = async (data: CustomerPriceExceptionTableModel) => {
     try {
-      await api.delete(
-        `/registrations/customer-price-exception-table/${encodeURIComponent(data.customerId)}/${encodeURIComponent(data.exceptionTableId)}`,
-      );
+      // O exceptionTableId é um código livre (pode conter ".", "/" etc.). Enviar
+      // a chave no corpo via POST evita que o WAF/IIS bloqueie o verbo DELETE com
+      // o código no path (erro 405).
+      await api.post(`/registrations/customer-price-exception-table/delete`, {
+        customerId: data.customerId,
+        exceptionTableId: data.exceptionTableId,
+      });
       setTableToken(new Date().valueOf());
     } catch (error) {
       toast.error(handleError(error));
