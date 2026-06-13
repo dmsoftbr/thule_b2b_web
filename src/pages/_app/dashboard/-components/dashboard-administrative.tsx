@@ -17,7 +17,7 @@ import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 import { useEffect, useRef, useState } from "react";
 import IMask from "imask";
 import type { RepresentativeModel } from "@/models/representative.model";
-import { api } from "@/lib/api";
+import { api, handleError } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import type { DashboardFilter } from "../types/dashboard-filter";
 import { toast } from "sonner";
@@ -48,12 +48,19 @@ export const DashboardAdministrative = () => {
   const { data: representativesData } = useQuery({
     queryKey: ["representatives"],
     queryFn: async () => {
-      const { data } = await api.get<RepresentativeModel[]>(
-        "/registrations/representatives/all",
-      );
-      const allReps = data.map((rep) => rep.id);
-      setFilter({ ...filter, representatives: allReps });
-      return data;
+      // Erro tratado aqui (e não via estado de erro da query) para evitar
+      // os retries padrão do React Query disparando vários toasts.
+      try {
+        const { data } = await api.get<RepresentativeModel[]>(
+          "/registrations/representatives/all",
+        );
+        const allReps = data.map((rep) => rep.id);
+        setFilter({ ...filter, representatives: allReps });
+        return data;
+      } catch (error) {
+        toast.error(handleError(error));
+        return [];
+      }
     },
   });
 
@@ -90,23 +97,29 @@ export const DashboardAdministrative = () => {
 
   const handleApplyFilter = async () => {
     setIsLoading(true);
-    const { data } = await api.post(`/dashboards/dashboard1`, filter);
-    if (data) {
-      setGrossRevenue(data.grossRevenue);
-      setPercGrossRevenue(data.percGrossRevenue);
+    try {
+      const { data } = await api.post(`/dashboards/dashboard1`, filter);
+      if (data) {
+        setGrossRevenue(data.grossRevenue);
+        setPercGrossRevenue(data.percGrossRevenue);
 
-      setOrderQuantity(data.orderQuantity);
-      setPercOrderQuantity(data.percOrderQuantity);
+        setOrderQuantity(data.orderQuantity);
+        setPercOrderQuantity(data.percOrderQuantity);
 
-      setAverageTicket(data.averageTicket);
-      setPercAverageTicket(data.percAverageTicket);
+        setAverageTicket(data.averageTicket);
+        setPercAverageTicket(data.percAverageTicket);
 
-      setAnnualRevenue(data.annualRevenue);
-      setPercAnnualRevenue(data.percAnnualRevenue);
-      setFamilies(data.families);
-      setRepresentatives(data.representatives);
+        setAnnualRevenue(data.annualRevenue);
+        setPercAnnualRevenue(data.percAnnualRevenue);
+        setFamilies(data.families);
+        setRepresentatives(data.representatives);
+      }
+    } catch (error) {
+      toast.error(handleError(error));
+    } finally {
+      // Sem o finally, uma falha na chamada deixava o dashboard preso no spinner.
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (

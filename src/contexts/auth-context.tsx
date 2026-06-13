@@ -8,6 +8,11 @@ import {
 } from "react";
 import eventBus from "@/lib/event-bus";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  api,
+  refreshAccessToken,
+  setAccessToken,
+} from "@/lib/api";
 
 interface AuthContextType {
   isPending: boolean;
@@ -26,47 +31,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isPending, setIsPending] = useState(true);
   const queryClient = useQueryClient();
 
+  // O access token já foi guardado em memória (setAccessToken) pelo fluxo de login;
+  // aqui só persistimos o perfil no estado do contexto.
   const login = (userData: SessionModel) => {
     setSession(userData);
-    localStorage.setItem("b2b@session", JSON.stringify(userData));
     queryClient.invalidateQueries({ queryKey: ["permissions"] });
   };
 
   const logout = () => {
+    // Revoga o refresh no servidor e limpa o cookie. Mantém o access token em memória
+    // até a requisição partir (o interceptor anexa o Bearer) e só então o zera — evita
+    // um refresh desnecessário logo antes de revogar. Falha de rede não impede o logout
+    // local: o estado é limpo de qualquer forma.
+    api
+      .post("/auth/logout")
+      .catch(() => {})
+      .finally(() => setAccessToken(null));
     setSession(null);
-    localStorage.removeItem("b2b@session");
     queryClient.removeQueries({ queryKey: ["permissions"] });
   };
 
   useEffect(() => {
-    // Carrega a sessão inicial do localStorage
-    const localSessionJson = localStorage.getItem("b2b@session");
-    if (localSessionJson) {
-      try {
-        const localSession = JSON.parse(localSessionJson);
-        setSession(localSession);
-      } catch (error) {
-        console.error("Failed to parse session from localStorage", error);
-        localStorage.removeItem("b2b@session");
-      }
-    }
-    setIsPending(false);
+    let cancelled = false;
 
-    // Listener para quando o token for atualizado pelo interceptor
-    const handleSessionRefreshed = (newSession: SessionModel) => {
-      setSession(newSession);
+    // Bootstrap: a memória zera a cada reload. Tenta um refresh silencioso (cookie
+    // HttpOnly) para reidratar a sessão; se ok, busca o perfil em /auth/me.
+    const bootstrap = async () => {
+      try {
+        await refreshAccessToken();
+        const { data } = await api.get<SessionModel["user"]>("/auth/me");
+        if (!cancelled) setSession({ user: data });
+      } catch {
+        if (!cancelled) {
+          setAccessToken(null);
+          setSession(null);
+        }
+      } finally {
+        if (!cancelled) setIsPending(false);
+      }
     };
 
-    // Listener para quando o refresh token falhar
+    bootstrap();
+
+    // Logout global disparado pelo interceptor quando o refresh falha.
     const handleLogout = () => {
+      setAccessToken(null);
       setSession(null);
     };
 
-    eventBus.on("sessionRefreshed", handleSessionRefreshed);
     eventBus.on("logout", handleLogout);
-
     return () => {
-      eventBus.remove("sessionRefreshed", handleSessionRefreshed);
+      cancelled = true;
       eventBus.remove("logout", handleLogout);
     };
   }, []);

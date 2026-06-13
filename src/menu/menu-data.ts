@@ -234,10 +234,24 @@ export const MENU_DATA: MenuModel[] = [
   {
     id: "6",
     title: "Aprovações",
-    url: "/approvals",
+    url: "",
     icon: "CircleCheckIcon",
-    children: [],
-    permissionId: "9",
+    children: [
+      {
+        id: "61",
+        title: "Pedidos",
+        url: "/approvals",
+        icon: "CircleCheckIcon",
+        permissionId: "9",
+      },
+      {
+        id: "62",
+        title: "MLA",
+        url: "/mla",
+        icon: "CircleCheckIcon",
+        permissionId: "23",
+      },
+    ],
   },
   {
     id: "7",
@@ -246,13 +260,6 @@ export const MENU_DATA: MenuModel[] = [
     icon: "FolderIcon",
     children: [
       {
-        id: "71",
-        title: "Metas Representantes",
-        url: "/registrations/representative-goals",
-        icon: "UsersIcon",
-        permissionId: "1",
-      },
-      {
         id: "73",
         title: "Alçadas de Aprovação",
         url: "/registrations/approval-levels",
@@ -260,11 +267,18 @@ export const MENU_DATA: MenuModel[] = [
         permissionId: "6",
       },
       {
-        id: "74",
-        title: "Produtos",
-        icon: "BoxIcon",
-        url: "/registrations/products",
-        permissionId: "7",
+        id: "77",
+        title: "Cond. de Pagamento",
+        url: "/registrations/payment-conditions",
+        icon: "DollarSignIcon",
+        permissionId: "2",
+      },      
+      {
+        id: "76",
+        title: "Clientes",
+        url: "/registrations/customers",
+        icon: "UsersIcon",
+        permissionId: "8",
       },
       {
         id: "741",
@@ -274,33 +288,30 @@ export const MENU_DATA: MenuModel[] = [
         permissionId: "21",
       },
       {
+        id: "71",
+        title: "Metas Representantes",
+        url: "/registrations/representative-goals",
+        icon: "UsersIcon",
+        permissionId: "1",
+      },
+      
+      {
+        id: "74",
+        title: "Produtos",
+        icon: "BoxIcon",
+        url: "/registrations/products",
+        permissionId: "7",
+      },
+     
+      {
         id: "740",
         title: "Tipo Item",
         icon: "BoxIcon",
         url: "/registrations/item-types",
         permissionId: "22",
       },
-      {
-        id: "76",
-        title: "Clientes",
-        url: "/registrations/customers",
-        icon: "UsersIcon",
-        permissionId: "8",
-      },
-      {
-        id: "77",
-        title: "Cond. de Pagamento",
-        url: "/registrations/payment-conditions",
-        icon: "DollarSignIcon",
-        permissionId: "2",
-      },
-      {
-        id: "75",
-        title: "Grupos de Venda",
-        url: "/registrations/sales-group",
-        icon: "ComponentIcon",
-        permissionId: "4",
-      },
+      
+      
     ],
   },
   {
@@ -309,17 +320,25 @@ export const MENU_DATA: MenuModel[] = [
     url: "",
     icon: "TagIcon",
     children: [
-      {
-        id: "78",
-        title: "Tabelas de Preço",
-        url: "/registrations/price-tables",
-        icon: "TableIcon",
-        permissionId: "3",
-      },
+     
       {
         id: "79",
         title: "Grupos de Desconto",
         url: "/registrations/price-exception-tables",
+        icon: "TableIcon",
+        permissionId: "3",
+      },
+      {
+        id: "75",
+        title: "Grupos de Venda",
+        url: "/registrations/sales-group",
+        icon: "ComponentIcon",
+        permissionId: "4",
+      },
+       {
+        id: "78",
+        title: "Tabelas de Preço",
+        url: "/registrations/price-tables",
         icon: "TableIcon",
         permissionId: "3",
       },

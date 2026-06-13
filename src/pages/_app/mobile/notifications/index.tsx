@@ -6,6 +6,7 @@ import {
 } from "@/components/server-table/server-table";
 import type { MobileNotificationModel } from "@/models/mobile/notification.model";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import { useState } from "react";
 import { columns } from "./-components/columns";
 import { MobileNotificationsService } from "@/services/mobile/notifications.service";
@@ -23,6 +24,7 @@ const searchFieldsList: ServerTableSearchField[] = [
 
 export const Route = createFileRoute("/_app/mobile/notifications/")({
   component: MobileNotificationsPageComponent,
+  pendingComponent: TableSkeleton,
 });
 
 function MobileNotificationsPageComponent() {

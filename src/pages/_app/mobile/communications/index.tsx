@@ -7,6 +7,7 @@ import {
 import type { MobileCommunicationModel } from "@/models/mobile/communication.model";
 import { MobileCommunicationsService } from "@/services/mobile/communications.service";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import { useState } from "react";
 import { columns } from "./-components/columns";
 
@@ -23,6 +24,7 @@ const searchFieldsList: ServerTableSearchField[] = [
 
 export const Route = createFileRoute("/_app/mobile/communications/")({
   component: MobileCommunicationsPageComponent,
+  pendingComponent: TableSkeleton,
 });
 
 function MobileCommunicationsPageComponent() {

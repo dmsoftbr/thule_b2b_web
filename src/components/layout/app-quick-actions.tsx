@@ -1,6 +1,7 @@
 import { QuickActionStock } from "./app-quick-action-stock";
 import { AppQuickActionNewOrder } from "./app-quick-action-new-order";
 import { QuickActionNewBudget } from "./app-quick-action-new-budget";
+import { QuickActionMla } from "./app-quick-action-mla";
 
 export const AppQuickActions = () => {
   return (
@@ -8,6 +9,7 @@ export const AppQuickActions = () => {
       <QuickActionStock />
       <AppQuickActionNewOrder />
       <QuickActionNewBudget />
+      <QuickActionMla />
     </div>
   );
 };

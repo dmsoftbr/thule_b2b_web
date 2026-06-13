@@ -9,6 +9,7 @@ import React, {
 import { NumericFormat, type NumericFormatProps } from "react-number-format";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface Props extends Omit<NumericFormatProps, "value" | "onValueChange"> {
   stepper?: number;
@@ -26,6 +27,8 @@ interface Props extends Omit<NumericFormatProps, "value" | "onValueChange"> {
   plusSlot?: React.ReactElement;
   minusSlot?: React.ReactElement;
   disabled?: boolean;
+  // Versão enxuta (botões/campo menores) para caber em colunas estreitas de tabela.
+  compact?: boolean;
 }
 
 export const FormInputQty = forwardRef<HTMLInputElement, Props>(
@@ -46,6 +49,7 @@ export const FormInputQty = forwardRef<HTMLInputElement, Props>(
       minusSlot,
       plusSlot,
       disabled,
+      compact = false,
       ...props
     },
     ref
@@ -130,7 +134,10 @@ export const FormInputQty = forwardRef<HTMLInputElement, Props>(
       <div className="flex items-center">
         <Button
           aria-label="Diminuir Valor"
-          className="px-2 h-9 rounded-r-none rounded-tr-none border-input border-r-0 focus-visible:relative"
+          className={cn(
+            "px-2 h-9 rounded-r-none rounded-tr-none border-input border-r-0 focus-visible:relative",
+            compact && "px-1.5 h-8 has-[>svg]:px-1.5"
+          )}
           variant="outline"
           onClick={handleDecrement}
           disabled={disabled || value === min}
@@ -152,7 +159,10 @@ export const FormInputQty = forwardRef<HTMLInputElement, Props>(
           prefix={prefix}
           customInput={Input}
           placeholder={placeholder}
-          className="[appearance:textfield] min-w-[60px] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-center rounded-none relative"
+          className={cn(
+            "[appearance:textfield] min-w-[60px] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-center rounded-none relative",
+            compact && "min-w-[40px] h-8 px-1"
+          )}
           getInputRef={inputRef}
           disabled={disabled}
           {...props}
@@ -161,7 +171,10 @@ export const FormInputQty = forwardRef<HTMLInputElement, Props>(
         <div className="flex flex-col">
           <Button
             aria-label="Aumentar Valor"
-            className="px-2 h-9 rounded-tl-none rounded-bl-none border-input border-l-0 border-b-[0.5px] focus-visible:relative"
+            className={cn(
+              "px-2 h-9 rounded-tl-none rounded-bl-none border-input border-l-0 border-b-[0.5px] focus-visible:relative",
+              compact && "px-1.5 h-8 has-[>svg]:px-1.5"
+            )}
             variant="outline"
             onClick={handleIncrement}
             disabled={disabled || value === max}

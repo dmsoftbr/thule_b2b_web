@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { DashboardsFilter, type DashboardFiltro } from "./-components/filter";
+import { DashboardSkeleton } from "../-components/route-skeleton";
 import {
   ChartContainer,
   ChartLegend,
@@ -30,6 +31,7 @@ type TipoItemAno = { Grupo: string; AnoAtual: number; AnoAnterior: number };
 
 export const Route = createFileRoute("/_app/dashboards/dashboard2")({
   component: RouteComponent,
+  pendingComponent: DashboardSkeleton,
 });
 
 function RouteComponent() {

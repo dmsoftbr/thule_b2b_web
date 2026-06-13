@@ -5,6 +5,7 @@ import {
 } from "@/components/server-table/server-table";
 import type { UserModel } from "@/models/user.model";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import { columns } from "./-components/columns";
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 import { UsersService } from "@/services/admin/users.service";
@@ -30,6 +31,7 @@ const searchFieldsList: ServerTableSearchField[] = [
 
 export const Route = createFileRoute("/_app/admin/users/")({
   component: GuardedUsersPage,
+  pendingComponent: TableSkeleton,
 });
 
 function GuardedUsersPage() {

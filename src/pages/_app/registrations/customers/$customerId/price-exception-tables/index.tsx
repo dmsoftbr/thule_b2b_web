@@ -8,6 +8,7 @@ import {
   useNavigate,
   useParams,
 } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { CustomerModel } from "@/models/registrations/customer.model";
@@ -19,6 +20,7 @@ export const Route = createFileRoute(
   "/_app/registrations/customers/$customerId/price-exception-tables/",
 )({
   component: CustomerIdPriceExceptionTablesPageComponent,
+  pendingComponent: TableSkeleton,
 });
 
 function CustomerIdPriceExceptionTablesPageComponent() {
@@ -73,7 +75,14 @@ function CustomerIdPriceExceptionTablesPageComponent() {
         />
       </div>
       <div className="my-4 max-w-xl ml-auto mr-auto">
-        <Button onClick={() => navigate({ to: "/registrations/customers" })}>
+        <Button
+          onClick={() =>
+            navigate({
+              to: "/registrations/customers",
+              search: { gd: [], gv: [] },
+            })
+          }
+        >
           Voltar p/Lista de Clientes
         </Button>
       </div>

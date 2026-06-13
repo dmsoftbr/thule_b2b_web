@@ -74,7 +74,7 @@ export const getOrderClassification = (id: number) => {
 export const getOrderClassificationCss = (id: number) => {
   if (id < 3) return "bg-emerald-600";
   if (id == 3) return "bg-purple-600";
-  if (id == 4) return "Consignação";
+  if (id == 4) return "bg-cyan-600";
   if (id == 5) return "bg-orange-400";
   if (id == 6) return "bg-blue-400";
 };
@@ -145,6 +145,42 @@ export const NEW_BUDGET_EMPTY: OrderModel = {
   origin: "",
   priceTypeId: 1,
   useCustomerCarrier: false,
+};
+
+// Monta um Pedido NOVO (ainda não gravado) a partir de uma Simulação já existente,
+// para abrir a tela de inclusão pré-preenchida. O pedido só é criado de fato quando
+// o usuário confirmar (fluxo normal de Concluir Pedido). Mantém o vínculo com a
+// simulação de origem via budgetId (= OrderId "S…"), que o backend usa para travar
+// a duplicidade e marcar a simulação como imutável ao gravar.
+export const buildOrderFromBudget = (budget: OrderModel): OrderModel => {
+  return {
+    ...budget,
+    // Identidade nova — é um pedido a ser criado, não a simulação.
+    id: "",
+    orderId: "",
+    isBudget: false,
+    statusId: 0, // backend aplica a regra de aprovação do portal na criação
+    erpOrderId: 0,
+    integratedAt: null,
+    integrationMessage: "",
+    isCompleted: false,
+    createdAt: new Date(),
+    // Vínculo com a simulação de origem (o pedido gerado).
+    budgetId: budget.orderId,
+    generatedOrderId: null,
+    generatedOrderInternalId: null,
+    // Mantém os ids dos itens/impostos: a UI usa item.id (chave React) e
+    // tax.itemId (associação imposto↔item) para renderizar a grade. O backend
+    // regenera todos esses ids ao gravar (Create), então preservá-los aqui é
+    // seguro e evita perder a coluna de impostos.
+    items: (budget.items ?? []).map((item) => ({
+      ...item,
+      orderId: "",
+      allocatedQuantity: 0,
+      deliveredQuantity: 0,
+      statusId: 1,
+    })),
+  };
 };
 
 export const generateOrderFromOutlet = async (
@@ -235,7 +271,10 @@ export const calcOrderTaxes = async (
       Quantity: item.orderQuantity,
       UnitaryValue: item.inputPrice * getItemDiscountFactor(item, order),
       TotalValue: item.inputPrice * item.orderQuantity,
-      TES: order.customer?.fiscalOperationId ?? "",
+      // TES = natureza de operação JÁ TRADUZIDA pela Matriz CFOP (gravada em
+      // item.fiscalOperationId ao adicionar o item). Fallback para o TES base
+      // do cliente caso a tradução não tenha sido preenchida.
+      TES: item.fiscalOperationId || (order.customer?.fiscalOperationId ?? ""),
       ItemDiscountPercentage: 0,
       PriceTableId: item.priceTableId,
     })),
@@ -403,6 +442,16 @@ export async function addProductToOrder(params: {
   const paymentConditionForTaxes =
     order.customer?.paymentConditionId ?? order.paymentConditionId;
 
+  // Produto em grupo de desconto (PriceExceptionTable): o unitPriceInTable já é o
+  // preço final pela margem do grupo. O imposto deve ser calculado POR ESSE preço,
+  // sem reaplicar o desconto padrão do cliente — senão o Datasul descontaria em
+  // dobro (margem do grupo + desconto do cliente). Itens fora de grupo seguem como
+  // antes: o desconto do cliente é enviado para o Datasul reduzir a base.
+  const isDiscountGroup = product.exceptionMarginPercent != null;
+  const itemDiscountForTaxes = isDiscountGroup
+    ? 0
+    : (order.customer?.discountPercent ?? 0);
+
   try {
     const taxesResponse = await calcSingleProductTaxes({
       branchId: effectiveBranchId,
@@ -410,7 +459,9 @@ export async function addProductToOrder(params: {
       paymentConditionId: paymentConditionForTaxes,
       freightValue: order.freightValue,
       discountPercentual: order.discountPercentual,
-      fiscalOperationId: fiscalOperationForOrder ?? "",
+      // TES traduzido pela Matriz CFOP (mesmo valor gravado no item).
+      // Fallback para o TES base do cliente caso a tradução venha vazia.
+      fiscalOperationId: fiscalOperationId || (fiscalOperationForOrder ?? ""),
       product: {
         sequence: newSequence,
         productId: product.id,
@@ -418,7 +469,7 @@ export async function addProductToOrder(params: {
         orderQuantity,
         inputPrice: product.unitPriceInTable,
         priceTableId: priceTable.id,
-        itemDiscountPercentage: order.customer?.discountPercent ?? 0,
+        itemDiscountPercentage: itemDiscountForTaxes,
       },
     });
 
@@ -430,10 +481,18 @@ export async function addProductToOrder(params: {
       (t) => normalize(t.produto.codigo_produto) === target,
     );
     if (!taxItem) {
+      // Datasul respondeu mas não retornou os tributos deste produto: tratamos
+      // como falha de cálculo. Marca o item com taxError para bloquear a
+      // gravação do pedido/simulação até recalcular com sucesso.
+      toast.error(
+        `Não foi possível calcular os impostos do produto ${product.id}. Remova e adicione o item novamente.`,
+      );
       setOrder((prev) => ({
         ...prev,
         items: prev.items.map((it) =>
-          it.id === newItemId ? { ...it, isLoadingTaxes: false } : it,
+          it.id === newItemId
+            ? { ...it, isLoadingTaxes: false, taxError: true }
+            : it,
         ),
       }));
       return;
@@ -481,17 +540,25 @@ export async function addProductToOrder(params: {
       ...prev,
       items: prev.items.map((it) =>
         it.id === newItemId
-          ? { ...it, taxes: itemTaxes, isLoadingTaxes: false }
+          ? { ...it, taxes: itemTaxes, isLoadingTaxes: false, taxError: false }
           : it,
       ),
     }));
   } catch (err) {
     console.error("[taxes] falha no cálculo", err);
+    // Falha na chamada de impostos (erro da API do Datasul). Avisa o usuário e
+    // marca o item com taxError — a gravação do pedido/simulação fica bloqueada
+    // enquanto houver item sem tributos calculados.
+    toast.error(
+      `Não foi possível calcular os impostos do produto ${product.id}: ${handleError(err)}`,
+    );
     // Limpa o loading mesmo em erro — senão o skeleton fica preso na tela.
     setOrder((prev) => ({
       ...prev,
       items: prev.items.map((it) =>
-        it.id === newItemId ? { ...it, isLoadingTaxes: false } : it,
+        it.id === newItemId
+          ? { ...it, isLoadingTaxes: false, taxError: true }
+          : it,
       ),
     }));
   }
@@ -600,23 +667,16 @@ export const getVisibleItemTaxes = (item: OrderItemModel) =>
     );
   });
 
-// Total de tributos visíveis do item (× quantidade × fator de desconto), como
-// exibido na coluna "Impostos" da tabela.
+// Total de tributos visíveis do item (× quantidade), como exibido na coluna
+// "Impostos" da tabela.
 //
-// applyDiscountFactor: durante a EDIÇÃO os tributos em memória estão CRUS (sem
-// desconto — ver addProductToOrder), então o fator é aplicado aqui. Na
-// VISUALIZAÇÃO os tributos vêm do banco JÁ com o desconto embutido (handleSendOrder
-// grava taxValue × discountFactor); reaplicar o fator descontaria em dobro e
-// mostraria impostos menores do que no momento da inclusão. Por isso o chamador
-// passa false em modo visualização.
-export const calcItemVisibleTaxesTotal = (
-  item: OrderItemModel,
-  order: OrderModel,
-  applyDiscountFactor: boolean = true,
-) =>
+// Os tributos em item.taxes JÁ vêm do Datasul com o desconto aplicado (o
+// add-path envia ItemDiscountPercentage e o Datasul desconta a base; ver
+// addProductToOrder/calcOrderTaxes). Portanto NÃO se reaplica o fator de
+// desconto aqui — fazer isso descontaria em dobro.
+export const calcItemVisibleTaxesTotal = (item: OrderItemModel) =>
   getVisibleItemTaxes(item).reduce((acc, t) => acc + (t.taxValue ?? 0), 0) *
-  item.orderQuantity *
-  (applyDiscountFactor ? getItemDiscountFactor(item, order) : 1);
+  item.orderQuantity;
 
 // Monta o detalhamento de impostos (TaxesDetail) a partir dos tributos já
 // gravados em order.items[].taxes — usado em modo VISUALIZAÇÃO, onde a API de
@@ -731,11 +791,10 @@ export const calcOrderTotalWithTaxes = (
     const icmsStValor = icmsSt?.taxValue ?? 0;
     const desembutidoIpi = item.inputPrice / (1 + ipiAliquota / 100);
     const desembutidoComDesconto = desembutidoIpi * discountFactor;
-    // IPI e ICMS-ST ("por fora") escalam com a base com desconto.
-    const unit =
-      desembutidoComDesconto +
-      ipiValor * discountFactor +
-      icmsStValor * discountFactor;
+    // IPI e ICMS-ST ("por fora") já vêm do Datasul COM o desconto aplicado —
+    // somados como estão, sem reaplicar o fator (senão desconta em dobro: era
+    // o que deixava o total em 1.119,93 em vez de 1.254,84).
+    const unit = desembutidoComDesconto + ipiValor + icmsStValor;
     return acc + unit * item.orderQuantity;
   }, 0);
 

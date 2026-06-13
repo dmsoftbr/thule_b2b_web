@@ -5,6 +5,7 @@ import {
 } from "@/components/server-table/server-table";
 import type { ItemTypeModel } from "@/models/registrations/item-type.model";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import { useState } from "react";
 import { columns } from "./-components/columns";
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
@@ -12,6 +13,7 @@ import { api } from "@/lib/api";
 
 export const Route = createFileRoute("/_app/registrations/item-types/")({
   component: RouteComponent,
+  pendingComponent: TableSkeleton,
 });
 
 const searchFieldsList: ServerTableSearchField[] = [

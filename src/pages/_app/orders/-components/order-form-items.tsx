@@ -35,20 +35,24 @@ import type { Dispatch, SetStateAction } from "react";
 
 export const OrderFormItems = () => {
   const { order, mode, setOrder } = useOrder();
-  const [showCard, setShowCard] = useState(false);
-  // Em telas < md (Tailwind: 768px) a tabela não cabe — força a visão em
-  // Card. matchMedia reage ao resize da janela em tempo real.
-  const [isSmallScreen, setIsSmallScreen] = useState(
-    typeof window !== "undefined" &&
-      window.matchMedia("(max-width: 767px)").matches,
+  // Default de visualização por largura: a tabela de itens (min-w ~1024) só cabe
+  // folgada, junto da sidebar, a partir de ~1280px. Abaixo disso (tablets em
+  // retrato/paisagem e mobile) a leitura em Card é muito melhor que rolar uma
+  // tabela de 11 colunas — então vira o DEFAULT. O usuário ainda pode alternar
+  // pelo toggle; matchMedia reage a resize/rotação e, ao cruzar o breakpoint,
+  // reverte ao default daquela faixa.
+  const fitsTableQuery = "(min-width: 1280px)";
+  const [showCard, setShowCard] = useState(
+    typeof window === "undefined" ||
+      !window.matchMedia(fitsTableQuery).matches,
   );
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 767px)");
-    const handler = (e: MediaQueryListEvent) => setIsSmallScreen(e.matches);
+    const mq = window.matchMedia(fitsTableQuery);
+    const handler = (e: MediaQueryListEvent) => setShowCard(!e.matches);
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
-  const useCardView = isSmallScreen || showCard;
+  const useCardView = showCard;
   const { showAppDialog } = useAppDialog();
   const productsComboRef = useRef<ProductsComboHandle>(null);
   const [priceTable, setPriceTable] = useState<PriceTableModel>(
@@ -73,6 +77,23 @@ export const OrderFormItems = () => {
       <div className="w-full p-2 flex flex-col items-center min-h-[100px]">
         <div className="my-4">
           Selecione o Cliente para poder selecionar os Produtos
+        </div>
+      </div>
+    );
+  }
+
+  // Cliente sem grupo de venda: os dados aparecem no cabeçalho (desabilitados),
+  // mas a inclusão de produtos fica bloqueada — não é possível incluir o pedido.
+  // Só vale ao EDITAR/INCLUIR: em VIEW o pedido já existe (logo já tinha grupo) e
+  // o customer carregado pode vir sem salesGroup hidratado — não bloquear a visão.
+  const hasSalesGroup =
+    !!order.customer?.salesGroup && order.customer.salesGroup.length > 0;
+  if (isEditing && !hasSalesGroup) {
+    return (
+      <div className="w-full p-2 flex flex-col items-center min-h-[100px]">
+        <div className="my-4 text-center text-neutral-600">
+          Cliente sem grupo de venda associado — não é possível incluir{" "}
+          {order.isBudget ? "a simulação" : "o pedido"}.
         </div>
       </div>
     );
@@ -206,75 +227,84 @@ export const OrderFormItems = () => {
   const sortedItems = order.items.sort((a, b) => a.sequence - b.sequence);
   //console.log("ITEMS PRE EXISTENTES", order);
   return (
-    <div className="w-full p-2 container flex flex-col items-center">
+    <div className="w-full p-2 container flex flex-col items-center flex-1 min-h-0 overflow-hidden">
       <div className="flex gap-x-4 mb-2 container w-full">
         <div className="flex flex-1 items-center justify-center">
-          <div className="flex gap-x-2 w-full items-end">
+          {/* Em telas grandes (>= xl) Tabela de Preço e a pesquisa de produto
+              ficam na MESMA linha (como era originalmente). Em tablets (retrato/
+              paisagem) e smartphones empilham em 2 linhas. */}
+          <div className="flex flex-col xl:flex-row xl:items-end gap-2 w-full">
             {order.orderClassificationId < 6 && isEditing ? (
               <>
-                <div className="flex-0 form-group">
-                  <Label>Tabela de Preço</Label>
+                {/* Tabela de Preço */}
+                <div className="form-group w-full xl:w-auto">
+                  <Label className="whitespace-nowrap">Tabela de Preço</Label>
                   <SearchCombo
-                    className="h-9.5 min-w-[200px]"
+                    className="h-9.5 w-full sm:min-w-[200px]"
                     defaultValue={order.customer?.priceTables[0].id}
                     staticItems={convertArrayToSearchComboItem(
                       order.customer?.priceTables ?? [],
                       "id",
-                      "portalName",
+                      // Algumas tabelas (ex.: PrBase) têm portalName vazio — cai no
+                      // nome cadastral para o combo não ficar em branco.
+                      (pt) => pt.portalName || pt.name,
                     )}
                     onSelectOption={(opt) => setPriceTable(opt[0].extra)}
                   />
                 </div>
-                {/* Combo de seleção rápida de produto: oculto em telas
-                    estreitas (< lg / 1024px). Nesses casos o usuário adiciona
-                    produtos pelo modal de pesquisa (OrderSearchProductModal). */}
-                <div className="hidden lg:block flex-1 form-group">
-                  <Label>Pesquisar Produto para Adicionar</Label>
-                  <ProductsCombo
-                    ref={productsComboRef}
-                    onSelect={handleAddItem}
-                    priceTableId={order.customer?.priceTables[0].id ?? ""}
-                    customerId={order.customerId}
-                    branchId={order.branchId || order.customer?.branchId || ""}
-                    closeOnSelect
-                  />
-                </div>
-                <OrderSearchProductModal initialPriceTable={priceTable} />
-                <div className="hidden md:flex items-center gap-x-1">
-                  <AppTooltip
-                    message="Ver em Tabela"
-                    className="bg-emerald-700"
-                    indicatorClassName="!bg-emerald-700 fill-emerald-700"
-                  >
-                    <button
-                      type="button"
-                      tabIndex={-1}
-                      onClick={() => setShowCard(false)}
-                      className={cn(
-                        "flex items-center justify-center p-1 bg-neutral-50 rounded-md size-9 border-neutral-200 border cursor-pointer hover:bg-emerald-600 hover:text-white transition-colors",
-                        !showCard && "bg-emerald-500 border-0 text-white",
-                      )}
+                {/* Pesquisa de produto + ações (ocupa o resto da linha em >= xl) */}
+                <div className="flex flex-wrap gap-2 w-full xl:flex-1 items-end">
+                  {/* Combo de seleção rápida de produto: oculto em telas
+                      estreitas (< lg / 1024px). Nesses casos o usuário adiciona
+                      produtos pelo modal de pesquisa (OrderSearchProductModal). */}
+                  <div className="hidden lg:block flex-1 form-group">
+                    <Label>Pesquisar Produto para Adicionar</Label>
+                    <ProductsCombo
+                      ref={productsComboRef}
+                      onSelect={handleAddItem}
+                      priceTableId={order.customer?.priceTables[0].id ?? ""}
+                      customerId={order.customerId}
+                      branchId={order.branchId || order.customer?.branchId || ""}
+                      closeOnSelect
+                    />
+                  </div>
+                  <OrderSearchProductModal initialPriceTable={priceTable} />
+                  <div className="hidden md:flex items-center gap-x-1">
+                    <AppTooltip
+                      message="Ver em Tabela"
+                      className="bg-emerald-700"
+                      indicatorClassName="!bg-emerald-700 fill-emerald-700"
                     >
-                      <Table2Icon className="size-4" />
-                    </button>
-                  </AppTooltip>
-                  <AppTooltip
-                    message="Ver em Cards"
-                    className="bg-emerald-700"
-                    indicatorClassName="!bg-emerald-700 fill-emerald-700"
-                  >
-                    <button
-                      type="button"
-                      tabIndex={-1}
-                      onClick={() => setShowCard(true)}
-                      className={cn(
-                        "flex items-center justify-center p-1 bg-neutral-50 rounded-md size-9 border-neutral-200 border cursor-pointer hover:bg-emerald-600 hover:text-white transition-colors",
-                        showCard && "bg-emerald-500 border-0 text-white",
-                      )}
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        onClick={() => setShowCard(false)}
+                        className={cn(
+                          "flex items-center justify-center p-1 bg-neutral-50 rounded-md size-9 border-neutral-200 border cursor-pointer hover:bg-emerald-600 hover:text-white transition-colors",
+                          !showCard && "bg-emerald-500 border-0 text-white",
+                        )}
+                      >
+                        <Table2Icon className="size-4" />
+                      </button>
+                    </AppTooltip>
+                    <AppTooltip
+                      message="Ver em Cards"
+                      className="bg-emerald-700"
+                      indicatorClassName="!bg-emerald-700 fill-emerald-700"
                     >
-                      <StretchHorizontalIcon className="size-4" />
-                    </button>
-                  </AppTooltip>
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        onClick={() => setShowCard(true)}
+                        className={cn(
+                          "flex items-center justify-center p-1 bg-neutral-50 rounded-md size-9 border-neutral-200 border cursor-pointer hover:bg-emerald-600 hover:text-white transition-colors",
+                          showCard && "bg-emerald-500 border-0 text-white",
+                        )}
+                      >
+                        <StretchHorizontalIcon className="size-4" />
+                      </button>
+                    </AppTooltip>
+                  </div>
                 </div>
               </>
             ) : (
@@ -287,15 +317,13 @@ export const OrderFormItems = () => {
       {useCardView && (
         <div
           className={cn(
-            "grid grid-cols-1 md:grid-cols-[70%_30%] border-y w-full",
+            // Em telas estreitas (tablet retrato/mobile) os cards ocupam a largura
+            // toda e o resumo vai abaixo; o painel lateral 70/30 só a partir de lg.
+            "grid grid-cols-1 lg:grid-cols-[70%_30%] border-y w-full flex-1 min-h-0",
             !order.items && "grid-cols-1 border-0",
           )}
         >
-          <ScrollArea
-            className={""}
-            style={{ height: "calc(100vh - 330px)" }}
-            type="always"
-          >
+          <ScrollArea className="h-full min-h-0" type="always">
             {!order.items?.length && <EmptyOrder />}
             {sortedItems.map((item: OrderItemModel, index) => (
               <OrderItemCard
@@ -306,7 +334,7 @@ export const OrderFormItems = () => {
             ))}
           </ScrollArea>
           {sortedItems && (
-            <div className="border-x  flex items-center justify-center flex-col">
+            <div className="border-t lg:border-t-0 lg:border-x flex items-center justify-center flex-col gap-1 py-3">
               <div className="flex items-center gap-2 text-lg font-semibold">
                 Total {order.isBudget ? "da Simulação" : "do Pedido"}:{" "}
                 {anyItemLoadingTaxes ? (

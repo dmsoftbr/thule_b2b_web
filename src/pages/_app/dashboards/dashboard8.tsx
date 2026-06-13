@@ -1,5 +1,6 @@
 import { AppPageHeader } from "@/components/layout/app-page-header";
 import { createFileRoute } from "@tanstack/react-router";
+import { DashboardSkeleton } from "../-components/route-skeleton";
 import { DashboardsFilter, type DashboardFiltro } from "./-components/filter";
 import { useState } from "react";
 import { api, handleError } from "@/lib/api";
@@ -19,6 +20,7 @@ type TipoItemAno = {
 
 export const Route = createFileRoute("/_app/dashboards/dashboard8")({
   component: RouteComponent,
+  pendingComponent: DashboardSkeleton,
 });
 
 function RouteComponent() {

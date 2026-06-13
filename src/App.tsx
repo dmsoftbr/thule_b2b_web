@@ -1,12 +1,30 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { NuqsAdapter } from "nuqs/adapters/react";
 
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./route-tree.gen";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "./contexts/auth-context";
 import { AppDialogProvider } from "./components/app-dialog/app-dialog-context";
-const router = createRouter({ routeTree, basepath: "/b2b" });
+import RouteSkeleton from "./pages/_app/-components/route-skeleton";
+const router = createRouter({
+  routeTree,
+  basepath: "/b2b",
+  // Pré-carrega a rota no hover/touchstart de um <Link>. Em navegações já
+  // "intencionadas" o código/dados da rota chegam antes do clique, reduzindo
+  // a aparição do pending.
+  defaultPreload: "intent",
+  // O carregamento de dados deste app acontece dentro dos componentes via
+  // useQuery (React Query), não em loaders de rota. Zeramos o stale time do
+  // preload do router para que o React Query continue sendo a única fonte de
+  // verdade do cache — sem uma segunda camada de "frescor" competindo.
+  defaultPreloadStaleTime: 0,
+  // Skeleton de conteúdo nas transições de rota. Como as rotas ficam sob o
+  // layout `_app`, ele renderiza dentro do <Outlet/>, preservando sidebar +
+  // header. Aparece rápido (150ms) e fica visível no mínimo 400ms p/ não piscar.
+  defaultPendingComponent: RouteSkeleton,
+  defaultPendingMs: 150,
+  defaultPendingMinMs: 400,
+});
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -20,11 +38,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <NuqsAdapter>
-          <AppDialogProvider>
-            <RouterProvider router={router} />
-          </AppDialogProvider>
-          <Toaster
+        <AppDialogProvider>
+          <RouterProvider router={router} />
+        </AppDialogProvider>
+        <Toaster
             richColors
             closeButton
             toastOptions={{
@@ -39,7 +56,6 @@ function App() {
               },
             }}
           />
-        </NuqsAdapter>
       </AuthProvider>
     </QueryClientProvider>
   );

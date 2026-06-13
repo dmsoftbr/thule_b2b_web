@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import { AppPageHeader } from "@/components/layout/app-page-header";
 import {
   ServerTable,
@@ -16,6 +17,7 @@ export const Route = createFileRoute(
   "/_app/registrations/price-exception-tables/",
 )({
   component: PriceExceptionTablesPageComponent,
+  pendingComponent: TableSkeleton,
 });
 
 const searchFieldsList: ServerTableSearchField[] = [

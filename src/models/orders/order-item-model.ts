@@ -38,4 +38,8 @@ export type OrderItemModel = {
   // Flag transitória usada apenas na UI para exibir skeleton enquanto a
   // API de impostos é chamada. Não é persistida no backend.
   isLoadingTaxes?: boolean;
+  // Flag transitória: o cálculo de impostos deste item falhou (erro na API do
+  // Datasul ou item ausente na resposta). Bloqueia a gravação do pedido/
+  // simulação até que os tributos sejam recalculados com sucesso. Não persistida.
+  taxError?: boolean;
 };

@@ -13,7 +13,7 @@ export class OrdersService {
 
   static async getById(id: string): Promise<OrderModel> {
     const response = await api.get<OrderModel>(
-      `/${this.basePath}/id/${encodeURIComponent(id)}`,
+      `/${this.basePath}/${encodeURIComponent(id)}`,
     );
     return response.data;
   }
@@ -54,4 +54,22 @@ export class OrdersService {
     );
     return response.data;
   }
+
+  // Reintegra o pedido no Datasul (b2b_SetOrders). Idempotente no backend.
+  static async reintegrate(id: string): Promise<OrderIntegrationResult> {
+    const response = await api.post<OrderIntegrationResult>(
+      `/${this.basePath}/${encodeURIComponent(id)}/integrate`,
+    );
+    return response.data;
+  }
 }
+
+// Resultado de uma tentativa de integração (espelha o DTO da API).
+export type OrderIntegrationResult = {
+  ok: boolean;
+  alreadyIntegrated: boolean;
+  orderId: string;
+  erpOrderId: number;
+  integratedAt?: string | null;
+  message: string;
+};

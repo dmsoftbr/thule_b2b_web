@@ -19,6 +19,24 @@ interface Props {
 export const TaxesModal = ({ data }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  // MVA não vem do Datasul como campo próprio — é derivado das bases:
+  // a base da ST = (mercadoria + IPI) × (1 + MVA), logo
+  //   MVA% = base_ST / (base_ICMS + IPI) − 1.
+  // Os campos existem no TaxesDetail tanto em edição (resposta do Datasul, onde
+  // a linha de ST chama "ST") quanto em visualização (buildTaxesDetailFromOrderItems,
+  // onde chama "ICMS-ST").
+  const detail = data?.TaxesDetail ?? [];
+  const findRow = (...names: string[]) =>
+    detail.find((r: any) =>
+      names.includes((r?.descricao ?? "").trim().toUpperCase()),
+    );
+  const stRow = findRow("ST", "ICMS-ST", "ICMS ST");
+  const baseSt = stRow?.base_calculo ?? 0;
+  const baseIcms = findRow("ICMS")?.base_calculo ?? 0;
+  const ipiValor = findRow("IPI")?.valor ?? 0;
+  const mvaBase = baseIcms + ipiValor;
+  const mvaPercent = stRow && mvaBase > 0 ? (baseSt / mvaBase - 1) * 100 : 0;
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -54,13 +72,14 @@ export const TaxesModal = ({ data }: Props) => {
           <DialogDescription></DialogDescription>
         </DialogHeader>
         <div className="flex flex-col border">
-          <div className="grid grid-cols-4 text-sm border-b bg-neutral-200 border-neutral-300">
+          <div className="grid grid-cols-5 text-sm border-b bg-neutral-200 border-neutral-300">
             <div className="border-r border-neutral-300 px-1">Imposto</div>
             <div className="border-r border-neutral-300 px-1">Valor</div>
             <div className="border-r border-neutral-300 px-1">
               Base de Cálculo
             </div>
-            <div className="px-1">Alíquota</div>
+            <div className="border-r border-neutral-300 px-1">Alíquota</div>
+            <div className="px-1">MVA %</div>
           </div>
           {data?.TaxesDetail.filter((item: any) => {
             // Oculta tributos da reforma (CBS e variantes de IBS — "IBS",
@@ -69,17 +88,22 @@ export const TaxesModal = ({ data }: Props) => {
             if (name === "CBS" || name.startsWith("CBS ")) return false;
             if (name === "IBS" || name.startsWith("IBS ")) return false;
             return true;
-          }).map((item: any) => (
-            <div
-              className="grid grid-cols-4 border-b py-1.5 px-1 last:border-b-0 first:border-t text-sm even:bg-neutral-50"
-              key={item.descricao}
-            >
-              <div>{item.descricao}</div>
-              <div>{formatNumber(item.valor, 2)}</div>
-              <div>{formatNumber(item.base_calculo, 2)}</div>
-              <div>{formatNumber(item.aliquota, 2)}</div>
-            </div>
-          ))}
+          }).map((item: any) => {
+            const name = (item?.descricao ?? "").trim().toUpperCase();
+            const isSt = name === "ST" || name === "ICMS-ST" || name === "ICMS ST";
+            return (
+              <div
+                className="grid grid-cols-5 border-b py-1.5 px-1 last:border-b-0 first:border-t text-sm even:bg-neutral-50"
+                key={item.descricao}
+              >
+                <div>{item.descricao}</div>
+                <div>{formatNumber(item.valor, 2)}</div>
+                <div>{formatNumber(item.base_calculo, 2)}</div>
+                <div>{formatNumber(item.aliquota, 2)}</div>
+                <div>{isSt && mvaPercent > 0 ? formatNumber(mvaPercent, 2) : ""}</div>
+              </div>
+            );
+          })}
         </div>
         <DialogFooter>
           <Button onClick={() => setIsOpen(false)}>Fechar</Button>

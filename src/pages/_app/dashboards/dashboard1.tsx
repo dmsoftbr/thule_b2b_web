@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { DashboardsFilter, type DashboardFiltro } from "./-components/filter";
+import { DashboardSkeleton } from "../-components/route-skeleton";
 import {
   ChartContainer,
   ChartTooltip,
@@ -58,6 +59,7 @@ const ANO_CORES = [
 
 export const Route = createFileRoute("/_app/dashboards/dashboard1")({
   component: RouteComponent,
+  pendingComponent: DashboardSkeleton,
 });
 
 type TotalVendaAno = {

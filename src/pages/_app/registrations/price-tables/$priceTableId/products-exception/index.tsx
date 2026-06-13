@@ -9,6 +9,7 @@ import {
   useNavigate,
   useParams,
 } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import { useState } from "react";
 import { ProductExceptionModal } from "./-components/product-exception-modal";
 import { exceptionTableColumns } from "./-components/exception-table-columns";
@@ -17,6 +18,7 @@ export const Route = createFileRoute(
   "/_app/registrations/price-tables/$priceTableId/products-exception/",
 )({
   component: PriceTableProductsExceptionComponent,
+  pendingComponent: TableSkeleton,
 });
 
 function PriceTableProductsExceptionComponent() {
@@ -58,7 +60,7 @@ function PriceTableProductsExceptionComponent() {
           columns={exceptionTableColumns({ fnDelete: handleDelete })}
           defaultSearchField="productId"
           searchFields={[{ id: "productId", label: "Código Longo do Produto" }]}
-          dataUrl={`/registrations/price-table-products-exception/list-paged/${priceTableId}`}
+          dataUrl={`/registrations/price-table-products-exception/list-paged/${encodeURIComponent(priceTableId)}`}
           additionalInfo={{ priceTableId }}
         />
       </div>

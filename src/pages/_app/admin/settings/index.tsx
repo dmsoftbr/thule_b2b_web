@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 
 import {
   ServerTable,
@@ -21,6 +22,7 @@ const searchFieldsList: ServerTableSearchField[] = [
 
 export const Route = createFileRoute("/_app/admin/settings/")({
   component: SettingsComponent,
+  pendingComponent: TableSkeleton,
 });
 
 function SettingsComponent() {

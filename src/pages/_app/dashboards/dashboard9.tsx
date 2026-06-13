@@ -1,6 +1,7 @@
 import { formatNumber } from "@/lib/number-utils";
 import { cn } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
+import { DashboardSkeleton } from "../-components/route-skeleton";
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { useState, type JSX } from "react";
 import { DashboardsFilter } from "./-components/filter";
@@ -23,6 +24,7 @@ type HierarchyData = {
 
 export const Route = createFileRoute("/_app/dashboards/dashboard9")({
   component: RouteComponent,
+  pendingComponent: DashboardSkeleton,
 });
 
 // const { data: hierarchyData } = useQuery({

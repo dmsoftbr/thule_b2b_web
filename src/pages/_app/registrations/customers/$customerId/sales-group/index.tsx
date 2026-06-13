@@ -8,6 +8,7 @@ import {
   useNavigate,
   useParams,
 } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import { useState } from "react";
 import type { CustomerModel } from "@/models/registrations/customer.model";
 import type { CustomerSalesGroupModel } from "@/models/registrations/customer-sales-group-model";
@@ -18,6 +19,7 @@ export const Route = createFileRoute(
   "/_app/registrations/customers/$customerId/sales-group/",
 )({
   component: CustomerIdSalesGroupPageComponent,
+  pendingComponent: TableSkeleton,
 });
 
 function CustomerIdSalesGroupPageComponent() {
@@ -67,7 +69,14 @@ function CustomerIdSalesGroupPageComponent() {
         />
       </div>
       <div className="my-4 max-w-lg ml-auto mr-auto">
-        <Button onClick={() => navigate({ to: "/registrations/customers" })}>
+        <Button
+          onClick={() =>
+            navigate({
+              to: "/registrations/customers",
+              search: { gd: [], gv: [] },
+            })
+          }
+        >
           Voltar p/Lista de Clientes
         </Button>
       </div>

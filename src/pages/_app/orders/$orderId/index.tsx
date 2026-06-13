@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { OrderForm } from "../-components/order-form";
 import { api } from "@/lib/api";
 import { OrderProvider } from "../-context/order-context";
+import { orderDisplayNumber } from "@/lib/order-number";
 
 export const Route = createFileRoute("/_app/orders/$orderId/")({
   component: OrderIdPage,
@@ -18,7 +19,7 @@ function OrderIdPage() {
   return (
     <div className="m-2 bg-white border shadow rounded h-full">
       <h1 className="font-semibold text-lg px-2 bg-neutral-200">
-        Pedido de Venda: {order.orderId}
+        Pedido de Venda: {orderDisplayNumber(order)}
       </h1>
       <OrderProvider initialOrder={order} formMode="VIEW">
         <OrderForm />

@@ -6,7 +6,7 @@ import { TopCommercialFamilies } from "./top-commercial-families";
 import { TopCustomers } from "./top-customers";
 import IMask from "imask";
 import { useEffect, useRef, useState } from "react";
-import { api } from "@/lib/api";
+import { api, handleError } from "@/lib/api";
 import type { DashboardFilter2 } from "../types/dashboard-filter";
 import { useAuth } from "@/hooks/use-auth";
 import { AppPageHeader } from "@/components/layout/app-page-header";
@@ -54,10 +54,19 @@ export const DashboardRepresentative = ({}: Props) => {
   const { data: representativeData } = useQuery({
     queryKey: ["representative", session?.user.representativeId],
     queryFn: async () => {
-      const { data } = await api.get<RepresentativeModel[]>(
-        "/registrations/representatives/all",
-      );
-      return data.find((r) => r.id === session?.user.representativeId) ?? null;
+      // Erro tratado aqui (e não via estado de erro da query) para evitar
+      // os retries padrão do React Query disparando vários toasts.
+      try {
+        const { data } = await api.get<RepresentativeModel[]>(
+          "/registrations/representatives/all",
+        );
+        return (
+          data.find((r) => r.id === session?.user.representativeId) ?? null
+        );
+      } catch (error) {
+        toast.error(handleError(error));
+        return null;
+      }
     },
     enabled: !!session?.user.representativeId,
   });
@@ -80,24 +89,30 @@ export const DashboardRepresentative = ({}: Props) => {
 
   const handleApplyFilter = async () => {
     setIsLoading(true);
-    const { data } = await api.post(`/dashboards/dashboard2`, filter);
-    if (data) {
-      setGrossRevenue(data.grossRevenue);
-      setPercGrossRevenue(data.percGrossRevenue);
+    try {
+      const { data } = await api.post(`/dashboards/dashboard2`, filter);
+      if (data) {
+        setGrossRevenue(data.grossRevenue);
+        setPercGrossRevenue(data.percGrossRevenue);
 
-      setOrderQuantity(data.orderQuantity);
-      setPercOrderQuantity(data.percOrderQuantity);
+        setOrderQuantity(data.orderQuantity);
+        setPercOrderQuantity(data.percOrderQuantity);
 
-      setAverageTicket(data.averageTicket);
-      setPercAverageTicket(data.percAverageTicket);
+        setAverageTicket(data.averageTicket);
+        setPercAverageTicket(data.percAverageTicket);
 
-      setAnnualRevenue(data.annualRevenue);
-      setPercAnnualRevenue(data.percAnnualRevenue);
-      setFamilies(data.families);
-      setCustomerGroups(data.customerGroups ?? []);
-      setMonthlySales(data.monthlySales);
+        setAnnualRevenue(data.annualRevenue);
+        setPercAnnualRevenue(data.percAnnualRevenue);
+        setFamilies(data.families);
+        setCustomerGroups(data.customerGroups ?? []);
+        setMonthlySales(data.monthlySales);
+      }
+    } catch (error) {
+      toast.error(handleError(error));
+    } finally {
+      // Sem o finally, uma falha na chamada deixava o dashboard preso no spinner.
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   // useEffect(() => {

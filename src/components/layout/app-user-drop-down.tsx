@@ -40,14 +40,14 @@ export const AppUserDropDown = ({ className }: { className?: string }) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className={cn("h-12", className)}>
-            <Avatar>
+            <Avatar className="shrink-0">
               <AvatarImage src="https://github.com/shadcn1.png" />
               <AvatarFallback className="bg-black text-white">
                 {getInitials(session?.user.name ?? "")}
               </AvatarFallback>
             </Avatar>
-            {session?.user.name}
-            <ChevronDownIcon />
+            <span className="truncate min-w-0">{session?.user.name}</span>
+            <ChevronDownIcon className="shrink-0" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-56">

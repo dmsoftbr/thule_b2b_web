@@ -22,11 +22,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { api, handleError } from "@/lib/api";
+import { api, handleError, setAccessToken } from "@/lib/api";
 import { useNavigate } from "@tanstack/react-router";
 import { LoginSchema } from "./schemas";
 import { useAuth } from "@/hooks/use-auth";
-import type { SessionModel } from "@/models/auth/session-model";
+import type { LoginResponse } from "@/models/auth/session-model";
 
 interface Props {
   onGotoForgotPassword: () => void;
@@ -50,12 +50,14 @@ export const LoginForm = ({ onGotoForgotPassword }: Props) => {
     try {
       setError("");
 
-      const { data } = await api.post<SessionModel>("/auth/login", {
+      const { data } = await api.post<LoginResponse>("/auth/login", {
         ...values,
         clientType: "web",
       });
 
-      login(data);
+      // Access token só em memória; o refresh já veio no cookie HttpOnly.
+      setAccessToken(data.token);
+      login({ user: data.user });
 
       navigate({ to: "/dashboard", replace: true });
     } catch (error) {

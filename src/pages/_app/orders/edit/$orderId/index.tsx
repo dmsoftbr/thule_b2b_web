@@ -4,6 +4,7 @@ import { OrderForm } from "../../-components/order-form";
 import { OrderProvider } from "../../-context/order-context";
 import { api } from "@/lib/api";
 import { getOrderClassification } from "../../-utils/order-utils";
+import { orderDisplayNumber } from "@/lib/order-number";
 import type { OrderModel } from "@/models/orders/order-model";
 
 export const Route = createFileRoute("/_app/orders/edit/$orderId/")({
@@ -23,7 +24,7 @@ function EditOrderPageComponent() {
 
   return (
     <AppPageHeader
-      titleSlot={`Alterar Pedido de Venda: ${order?.orderId} ${orderType != "Venda" ? " - " + orderType : ""}`}
+      titleSlot={`Alterar Pedido de Venda: ${order ? orderDisplayNumber(order) : ""} ${orderType != "Venda" ? " - " + orderType : ""}`}
     >
       <OrderProvider initialOrder={order} formMode="EDIT">
         <OrderForm />

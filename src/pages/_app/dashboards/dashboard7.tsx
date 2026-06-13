@@ -1,5 +1,6 @@
 import { AppPageHeader } from "@/components/layout/app-page-header";
 import { createFileRoute } from "@tanstack/react-router";
+import { DashboardSkeleton } from "../-components/route-skeleton";
 import { DashboardsFilter, type DashboardFiltro } from "./-components/filter";
 import { useState } from "react";
 import { LoaderIcon } from "lucide-react";
@@ -18,6 +19,7 @@ type GeralData = {
 
 export const Route = createFileRoute("/_app/dashboards/dashboard7")({
   component: RouteComponent,
+  pendingComponent: DashboardSkeleton,
 });
 
 function RouteComponent() {

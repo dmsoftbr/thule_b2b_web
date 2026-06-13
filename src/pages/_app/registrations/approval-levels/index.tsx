@@ -7,12 +7,14 @@ import {
 import type { ApprovalLevelModel } from "@/models/registrations/approval-level.model";
 import { ApprovalLevelLimitsService } from "@/services/registrations/approval-level-limits.service";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import { useState } from "react";
 import { columns } from "./-components/columns";
 import { LimitsModal } from "./-components/limits-modal";
 
 export const Route = createFileRoute("/_app/registrations/approval-levels/")({
   component: ApprovalLevelsPageComponent,
+  pendingComponent: TableSkeleton,
 });
 
 const searchFieldsList: ServerTableSearchField[] = [

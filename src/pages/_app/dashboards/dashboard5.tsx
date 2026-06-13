@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { DashboardSkeleton } from "../-components/route-skeleton";
 import { LoaderIcon } from "lucide-react";
 import { useState } from "react";
 import { DashboardsFilter, type DashboardFiltro } from "./-components/filter";
@@ -13,6 +14,7 @@ import {
 
 export const Route = createFileRoute("/_app/dashboards/dashboard5")({
   component: RouteComponent,
+  pendingComponent: DashboardSkeleton,
 });
 
 function RouteComponent() {

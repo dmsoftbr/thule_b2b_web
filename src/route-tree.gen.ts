@@ -11,11 +11,13 @@
 import { Route as rootRouteImport } from './pages/__root'
 import { Route as AppLayoutRouteImport } from './pages/_app/layout'
 import { Route as AppIndexRouteImport } from './pages/_app/index'
+import { Route as AuthResetPasswordRouteImport } from './pages/auth/reset-password'
 import { Route as AuthLoginRouteImport } from './pages/auth/login'
 import { Route as AppOutletIndexRouteImport } from './pages/_app/outlet/index'
 import { Route as AppOrdersIndexRouteImport } from './pages/_app/orders/index'
 import { Route as AppOrderConfirmationIndexRouteImport } from './pages/_app/order-confirmation/index'
 import { Route as AppNotificationsIndexRouteImport } from './pages/_app/notifications/index'
+import { Route as AppMlaIndexRouteImport } from './pages/_app/mla/index'
 import { Route as AppDashboardIndexRouteImport } from './pages/_app/dashboard/index'
 import { Route as AppBudgetsIndexRouteImport } from './pages/_app/budgets/index'
 import { Route as AppApprovalsIndexRouteImport } from './pages/_app/approvals/index'
@@ -107,6 +109,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppLayoutRoute,
 } as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/auth/reset-password',
+  path: '/auth/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/auth/login',
   path: '/auth/login',
@@ -131,6 +138,11 @@ const AppOrderConfirmationIndexRoute =
 const AppNotificationsIndexRoute = AppNotificationsIndexRouteImport.update({
   id: '/notifications/',
   path: '/notifications/',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
+const AppMlaIndexRoute = AppMlaIndexRouteImport.update({
+  id: '/mla/',
+  path: '/mla/',
   getParentRoute: () => AppLayoutRoute,
 } as any)
 const AppDashboardIndexRoute = AppDashboardIndexRouteImport.update({
@@ -604,6 +616,7 @@ const AppAdminUsersUserIdCustomersIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/': typeof AppIndexRoute
   '/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
   '/dashboards/dashboard1': typeof AppDashboardsDashboard1Route
@@ -620,6 +633,7 @@ export interface FileRoutesByFullPath {
   '/approvals': typeof AppApprovalsIndexRoute
   '/budgets': typeof AppBudgetsIndexRoute
   '/dashboard': typeof AppDashboardIndexRoute
+  '/mla': typeof AppMlaIndexRoute
   '/notifications': typeof AppNotificationsIndexRoute
   '/order-confirmation': typeof AppOrderConfirmationIndexRoute
   '/orders': typeof AppOrdersIndexRoute
@@ -693,6 +707,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/': typeof AppIndexRoute
   '/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
   '/dashboards/dashboard1': typeof AppDashboardsDashboard1Route
@@ -709,6 +724,7 @@ export interface FileRoutesByTo {
   '/approvals': typeof AppApprovalsIndexRoute
   '/budgets': typeof AppBudgetsIndexRoute
   '/dashboard': typeof AppDashboardIndexRoute
+  '/mla': typeof AppMlaIndexRoute
   '/notifications': typeof AppNotificationsIndexRoute
   '/order-confirmation': typeof AppOrderConfirmationIndexRoute
   '/orders': typeof AppOrdersIndexRoute
@@ -784,6 +800,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppLayoutRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/_app/': typeof AppIndexRoute
   '/_app/budgets/new-budget': typeof AppBudgetsNewBudgetRoute
   '/_app/dashboards/dashboard1': typeof AppDashboardsDashboard1Route
@@ -800,6 +817,7 @@ export interface FileRoutesById {
   '/_app/approvals/': typeof AppApprovalsIndexRoute
   '/_app/budgets/': typeof AppBudgetsIndexRoute
   '/_app/dashboard/': typeof AppDashboardIndexRoute
+  '/_app/mla/': typeof AppMlaIndexRoute
   '/_app/notifications/': typeof AppNotificationsIndexRoute
   '/_app/order-confirmation/': typeof AppOrderConfirmationIndexRoute
   '/_app/orders/': typeof AppOrdersIndexRoute
@@ -875,6 +893,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/auth/login'
+    | '/auth/reset-password'
     | '/'
     | '/budgets/new-budget'
     | '/dashboards/dashboard1'
@@ -891,6 +910,7 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/budgets'
     | '/dashboard'
+    | '/mla'
     | '/notifications'
     | '/order-confirmation'
     | '/orders'
@@ -964,6 +984,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth/login'
+    | '/auth/reset-password'
     | '/'
     | '/budgets/new-budget'
     | '/dashboards/dashboard1'
@@ -980,6 +1001,7 @@ export interface FileRouteTypes {
     | '/approvals'
     | '/budgets'
     | '/dashboard'
+    | '/mla'
     | '/notifications'
     | '/order-confirmation'
     | '/orders'
@@ -1054,6 +1076,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/auth/login'
+    | '/auth/reset-password'
     | '/_app/'
     | '/_app/budgets/new-budget'
     | '/_app/dashboards/dashboard1'
@@ -1070,6 +1093,7 @@ export interface FileRouteTypes {
     | '/_app/approvals/'
     | '/_app/budgets/'
     | '/_app/dashboard/'
+    | '/_app/mla/'
     | '/_app/notifications/'
     | '/_app/order-confirmation/'
     | '/_app/orders/'
@@ -1145,6 +1169,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AppLayoutRoute: typeof AppLayoutRouteWithChildren
   AuthLoginRoute: typeof AuthLoginRoute
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1162,6 +1187,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppLayoutRoute
+    }
+    '/auth/reset-password': {
+      id: '/auth/reset-password'
+      path: '/auth/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/auth/login': {
       id: '/auth/login'
@@ -1196,6 +1228,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof AppNotificationsIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
+    }
+    '/_app/mla/': {
+      id: '/_app/mla/'
+      path: '/mla'
+      fullPath: '/mla'
+      preLoaderRoute: typeof AppMlaIndexRouteImport
       parentRoute: typeof AppLayoutRoute
     }
     '/_app/dashboard/': {
@@ -1785,6 +1824,7 @@ interface AppLayoutRouteChildren {
   AppApprovalsIndexRoute: typeof AppApprovalsIndexRoute
   AppBudgetsIndexRoute: typeof AppBudgetsIndexRoute
   AppDashboardIndexRoute: typeof AppDashboardIndexRoute
+  AppMlaIndexRoute: typeof AppMlaIndexRoute
   AppNotificationsIndexRoute: typeof AppNotificationsIndexRoute
   AppOrderConfirmationIndexRoute: typeof AppOrderConfirmationIndexRoute
   AppOrdersIndexRoute: typeof AppOrdersIndexRoute
@@ -1874,6 +1914,7 @@ const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppApprovalsIndexRoute: AppApprovalsIndexRoute,
   AppBudgetsIndexRoute: AppBudgetsIndexRoute,
   AppDashboardIndexRoute: AppDashboardIndexRoute,
+  AppMlaIndexRoute: AppMlaIndexRoute,
   AppNotificationsIndexRoute: AppNotificationsIndexRoute,
   AppOrderConfirmationIndexRoute: AppOrderConfirmationIndexRoute,
   AppOrdersIndexRoute: AppOrdersIndexRoute,
@@ -1987,6 +2028,7 @@ const AppLayoutRouteWithChildren = AppLayoutRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   AppLayoutRoute: AppLayoutRouteWithChildren,
   AuthLoginRoute: AuthLoginRoute,
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -3,9 +3,11 @@ import { useAuth } from "@/hooks/use-auth";
 import { DashboardAdministrative } from "./-components/dashboard-administrative";
 import { DashboardRepresentative } from "./-components/dashboard-representative";
 import { DashboardCustomer } from "./-components/dashboard-customer";
+import { DashboardSkeleton } from "../-components/route-skeleton";
 
 export const Route = createFileRoute("/_app/dashboard/")({
   component: DashboardPageComponent,
+  pendingComponent: DashboardSkeleton,
 });
 
 function DashboardPageComponent() {

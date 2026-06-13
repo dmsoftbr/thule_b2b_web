@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { DashboardsFilter, type DashboardFiltro } from "./-components/filter";
+import { DashboardSkeleton } from "../-components/route-skeleton";
 import { formatNumber } from "@/lib/number-utils";
 import {
   ChartContainer,
@@ -40,6 +41,7 @@ type VendaAgrupada = {
 
 export const Route = createFileRoute("/_app/dashboards/dashboard4")({
   component: RouteComponent,
+  pendingComponent: DashboardSkeleton,
 });
 
 function RouteComponent() {

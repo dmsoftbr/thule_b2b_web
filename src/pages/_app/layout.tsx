@@ -25,9 +25,12 @@ function AppLayout() {
     <AppContext.Provider value={{}}>
       <SidebarProvider>
         <AppSideBar />
-        <div className="w-full">
+        {/* min-w-0: permite que este flex-child encolha abaixo da largura do
+            conteúdo (ex.: tabela de itens com min-w), evitando scroll horizontal
+            na PÁGINA inteira — o overflow fica contido nos containers internos. */}
+        <div className="w-full min-w-0">
           <AppHeader />
-          <main className="w-full flex flex-1 bg-neutral-100">
+          <main className="w-full flex flex-1 bg-neutral-100 min-w-0">
             <Outlet />
             {/* <TanStackRouterDevtools /> */}
           </main>

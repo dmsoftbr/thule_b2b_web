@@ -6,6 +6,7 @@ import {
 } from "@/components/server-table/server-table";
 import { useState } from "react";
 import { columns } from "./-components/columns";
+import { BillingModal } from "./-components/billing-modal";
 import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 import type { OrderModel } from "@/models/orders/order-model";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ import { add } from "date-fns";
 import { useRouter } from "@tanstack/react-router";
 import { OrdersService } from "@/services/orders/orders.service";
 import { toast } from "sonner";
+import { TableSkeleton } from "../-components/route-skeleton";
 
 const searchFieldsList: ServerTableSearchField[] = [
   {
@@ -53,6 +55,7 @@ const searchFieldsList: ServerTableSearchField[] = [
 
 export const Route = createFileRoute("/_app/orders/")({
   component: ListOrdersPage,
+  pendingComponent: TableSkeleton,
 });
 
 function ListOrdersPage() {
@@ -67,6 +70,10 @@ function ListOrdersPage() {
   const [selectedReps, setSelectedReps] = useState<number[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  // Pedido cuja modal de Faturamento (notas/DANFE/XML/Boleto) está aberta.
+  const [notasOrder, setNotasOrder] = useState<OrderModel | null>(null);
+
+  const handleViewNota = (order: OrderModel) => setNotasOrder(order);
 
   const handleAdd = () => {
     navigate({ to: "/orders/new-order" });
@@ -92,11 +99,17 @@ function ListOrdersPage() {
   const handleView = (data: OrderModel, anotherTab?: boolean) => {
     if (anotherTab) {
       const url = router.buildLocation({
-        to: `/orders/view/${data.id}`,
+        to: "/orders/view/$orderId",
+        params: { orderId: data.id },
+        search: { from: "/orders" },
       });
       window.open(url.url, "_blank");
     } else {
-      navigate({ to: `/orders/view/${data.id}` });
+      navigate({
+        to: "/orders/view/$orderId",
+        params: { orderId: data.id },
+        search: { from: "/orders" },
+      });
     }
   };
 
@@ -121,6 +134,27 @@ function ListOrdersPage() {
     }
   };
 
+  const handleReintegrate = async (data: OrderModel) => {
+    try {
+      setIsLoading(true);
+      const result = await OrdersService.reintegrate(data.id);
+      if (result.ok) {
+        toast.success(
+          result.alreadyIntegrated
+            ? `Pedido ${result.orderId} já estava integrado.`
+            : result.message || `Pedido ${result.orderId} integrado com sucesso.`,
+        );
+      } else {
+        toast.warning(result.message || "Não foi possível integrar o pedido.");
+      }
+      setTableToken(new Date().valueOf());
+    } catch (error) {
+      toast.error(handleError(error));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const { data: representativesData } = useQuery({
     queryKey: ["representatives"],
     queryFn: async () => {
@@ -135,24 +169,22 @@ function ListOrdersPage() {
 
   const renderAdvancedFilter = () => {
     return (
-      <div className="mt-2 flex gap-x-2 flex-wrap bg-blue-100 p-2 rounded-md">
-        <div>
-          <div className="form-group">
-            <Label>Período de Inclusão</Label>
-            <div className="flex items-center gap-x-2">
-              <DatePicker
-                defaultValue={createdAtFrom}
-                onValueChange={(date) => setCreatedAtFrom(date)}
-              />{" "}
-              a{" "}
-              <DatePicker
-                defaultValue={createdAtTo}
-                onValueChange={(date) => setCreatedAtTo(date)}
-              />
-            </div>
+      <div className="mt-2 flex flex-wrap items-end gap-3 rounded-md border border-neutral-200 bg-neutral-50 p-3">
+        <div className="form-group">
+          <Label>Período de Inclusão</Label>
+          <div className="flex items-center gap-x-2">
+            <DatePicker
+              defaultValue={createdAtFrom}
+              onValueChange={(date) => setCreatedAtFrom(date)}
+            />
+            <span className="text-sm text-neutral-500">a</span>
+            <DatePicker
+              defaultValue={createdAtTo}
+              onValueChange={(date) => setCreatedAtTo(date)}
+            />
           </div>
         </div>
-        <div className="form-group flex-1">
+        <div className="form-group flex-1 min-w-[200px]">
           <Label>Representante</Label>
           <SearchCombo
             multipleSelect
@@ -168,7 +200,7 @@ function ListOrdersPage() {
             showSelectButtons
           />
         </div>
-        <div className="form-group flex-1">
+        <div className="form-group flex-1 min-w-[200px]">
           <Label>Situação do Pedido</Label>
           <SearchCombo
             multipleSelect
@@ -190,7 +222,7 @@ function ListOrdersPage() {
             showSelectButtons
           />
         </div>
-        <div className="flex gap-x-2 mt-5">
+        <div className="flex gap-x-2">
           <Button
             onClick={() => {
               handleApplyAdvancedFilter();
@@ -199,6 +231,7 @@ function ListOrdersPage() {
             Aplicar Filtro
           </Button>
           <Button
+            variant="outline"
             onClick={() => {
               setTableToken(new Date().valueOf());
             }}
@@ -225,10 +258,13 @@ function ListOrdersPage() {
             fnCancel: handleCancel,
             fnView: handleView,
             fnCopy: handleCopy,
+            fnViewNota: handleViewNota,
+            fnReintegrate: handleReintegrate,
           })}
           showAddButton
           onAdd={() => handleAdd()}
           dataUrl="/orders/list-paged"
+          tableClassNames="min-w-[1150px]"
           advancedFilterSlot={renderAdvancedFilter()}
           showAdvancedFilter
           additionalInfo={{
@@ -240,6 +276,8 @@ function ListOrdersPage() {
           }}
         />
       </div>
+
+      <BillingModal order={notasOrder} onClose={() => setNotasOrder(null)} />
     </AppPageHeader>
   );
 }

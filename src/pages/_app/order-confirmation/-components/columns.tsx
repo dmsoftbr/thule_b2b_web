@@ -1,84 +1,140 @@
-import { AppTooltip } from "@/components/layout/app-tooltip";
 import type { ServerTableColumn } from "@/components/server-table/server-table";
-import { Button } from "@/components/ui/button";
-import type { OrderItemModel } from "@/models/orders/order-item-model";
-import type { OrderModel } from "@/models/orders/order-model";
-import { CheckIcon, SearchIcon, XIcon } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { formatNumber } from "@/lib/number-utils";
+import { cn } from "@/lib/utils";
+import type { OrderConfirmation } from "@/models/orders/order-confirmation-model";
 
 interface Props {
-  fnView: (order: OrderItemModel, anotherTab?: boolean) => void;
-  fnConfirm: (order: OrderItemModel) => void;
-  fnReject: (order: OrderItemModel) => void;
+  selectedIds: Set<string>;
+  onToggle: (row: OrderConfirmation, checked: boolean) => void;
+  allSelected: boolean;
+  someSelected: boolean;
+  hasRows: boolean;
+  onToggleAll: (checked: boolean) => void;
 }
 
 export const columns = ({
-  fnConfirm,
-  fnView,
-  fnReject,
+  selectedIds,
+  onToggle,
+  allSelected,
+  someSelected,
+  hasRows,
+  onToggleAll,
 }: Props): ServerTableColumn[] => [
   {
-    key: "repName",
-    dataIndex: "repName",
-    title: "Representante",
-    cellClassName: "text-xs",
-    renderItem: (order: OrderModel) => (
-      <span>
-        {order.representativeId} - {order.representative?.abbreviation}
-      </span>
-    ),
-    sortable: true,
-  },
-  {
-    key: "orderId",
-    dataIndex: "orderId",
-    title: "Pedido",
-    renderItem: (order: OrderModel) => (
-      <span className="font-semibold text-blue-600 ">{order.orderId}</span>
-    ),
-    sortable: true,
-  },
-  {
-    key: "customerId",
-    dataIndex: "customerId",
-    title: "Cliente",
-    cellClassName: "text-xs",
-    renderItem: (order: OrderModel) => (
-      <span>
-        {order.customerId} - {order.customer?.abbreviation}
-      </span>
-    ),
-    sortable: true,
-  },
-  {
-    key: "orderRepId",
-    dataIndex: "orderRepId",
-    title: "Ped. Distribuidor",
-    cellClassName: "text-xs",
-    renderItem: (order: OrderModel) => <span>{order.orderRepId}</span>,
-    sortable: true,
-  },
-  {
-    key: "actions",
+    key: "select",
     dataIndex: "id",
-    title: "Ações",
-    renderItem: (item: OrderItemModel) => (
-      <div className="flex justify-end">
-        <AppTooltip message="Confirmar">
-          <Button onClick={() => fnConfirm(item)} variant="secondary" size="sm">
-            <CheckIcon className="size-4" />
-          </Button>
-        </AppTooltip>
-        <AppTooltip message="Rejeitar">
-          <Button onClick={() => fnReject(item)} variant="secondary" size="sm">
-            <XIcon className="size-4" />
-          </Button>
-        </AppTooltip>
-        <AppTooltip message="Visualizar Pedido">
-          <Button onClick={() => fnView(item)} variant="secondary" size="sm">
-            <SearchIcon className="size-4" />
-          </Button>
-        </AppTooltip>
+    className: "w-10",
+    title: (
+      <div className="flex items-center justify-center">
+        <Checkbox
+          disabled={!hasRows}
+          checked={allSelected ? true : someSelected ? "indeterminate" : false}
+          onCheckedChange={(v) => onToggleAll(v === true)}
+          aria-label="Selecionar todos"
+        />
       </div>
     ),
+    renderItem: (row: OrderConfirmation) => (
+      <div className="flex items-center justify-center">
+        <Checkbox
+          checked={selectedIds.has(row.id)}
+          onCheckedChange={(v) => onToggle(row, v === true)}
+          aria-label="Selecionar item"
+        />
+      </div>
+    ),
+  },
+  {
+    key: "representante",
+    dataIndex: "representante",
+    title: "Representante",
+    className: "text-xs whitespace-nowrap",
+    cellClassName: "text-xs",
+    renderItem: (row: OrderConfirmation) => <span>{row.representante}</span>,
+    sortable: true,
+  },
+  {
+    key: "pedido",
+    dataIndex: "pedido",
+    title: "Pedido",
+    className: "w-[110px] text-xs whitespace-nowrap",
+    cellClassName: "w-[110px] text-xs",
+    renderItem: (row: OrderConfirmation) => (
+      <span className="font-semibold text-blue-600">{row.pedido}</span>
+    ),
+    sortable: true,
+  },
+  {
+    key: "cliente",
+    dataIndex: "clienteNome",
+    title: "Cliente",
+    className: "text-xs whitespace-nowrap",
+    cellClassName: "text-xs",
+    renderItem: (row: OrderConfirmation) => (
+      <span>{row.clienteAbrev || row.clienteNome}</span>
+    ),
+    sortable: true,
+  },
+  {
+    key: "seq",
+    dataIndex: "sequencia",
+    title: "Seq",
+    className: "w-[70px] text-xs whitespace-nowrap",
+    cellClassName: "text-xs",
+    renderItem: (row: OrderConfirmation) => (
+      <div className="text-center">{row.sequencia}</div>
+    ),
+    sortable: true,
+  },
+  {
+    key: "item",
+    dataIndex: "item",
+    title: "Item",
+    className: "w-[110px] text-xs whitespace-nowrap",
+    cellClassName: "text-xs",
+    renderItem: (row: OrderConfirmation) => <span>{row.item}</span>,
+    sortable: true,
+  },
+  {
+    key: "descricao",
+    dataIndex: "descricao",
+    title: "Descrição",
+    className: "text-xs whitespace-nowrap",
+    cellClassName: "text-xs",
+    renderItem: (row: OrderConfirmation) => <span>{row.descricao}</span>,
+    sortable: true,
+  },
+  {
+    key: "saldoPedido",
+    dataIndex: "saldoPedido",
+    title: "Saldo Pedido",
+    className: "w-[110px] text-xs whitespace-nowrap",
+    cellClassName: "text-xs",
+    renderItem: (row: OrderConfirmation) => (
+      <div className="text-right tabular-nums">
+        {formatNumber(row.saldoPedido, 2)}
+      </div>
+    ),
+    sortable: true,
+  },
+  {
+    key: "qtEstoque",
+    dataIndex: "qtEstoque",
+    title: "Qt Estoque",
+    className: "w-[110px] text-xs whitespace-nowrap",
+    cellClassName: "text-xs",
+    renderItem: (row: OrderConfirmation) => (
+      <div
+        className={cn(
+          "text-right tabular-nums",
+          // destaca estoque insuficiente para o saldo do pedido
+          row.qtEstoque < row.saldoPedido && "font-semibold text-red-600"
+        )}
+      >
+        {formatNumber(row.qtEstoque, 2)}
+      </div>
+    ),
+    sortable: true,
   },
 ];

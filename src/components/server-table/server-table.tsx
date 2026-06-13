@@ -34,7 +34,7 @@ export type ServerTableSearchField = {
 };
 
 export type ServerTableColumn = {
-  title: string;
+  title: React.ReactNode;
   dataIndex: string;
   key: string;
   className?: string;
@@ -79,6 +79,8 @@ interface ServerTableProps<T> {
   groupedBy?: string;
   showAdvancedFilter?: boolean;
   advancedFilterSlot?: React.ReactNode;
+  // Destaca o botão de filtro (cornsilk) quando há filtro avançado aplicado.
+  advancedFilterActive?: boolean;
   groupConfig?: ServerTableGroupConfig;
   refreshDataToken?: string | number | Date | undefined;
   additionalButtons?: React.ReactNode | React.ReactNode[];
@@ -115,6 +117,7 @@ export const ServerTable = <T,>({
   isPending = false,
   showAdvancedFilter = false,
   advancedFilterSlot,
+  advancedFilterActive = false,
   searchSlot,
   additionalInfo = {},
   tableClassNames = "",
@@ -545,7 +548,7 @@ export const ServerTable = <T,>({
           {columns.map((column, index) => (
             <td
               className={cn(
-                "border px-1.5 py-2 text-sm break-words break-all",
+                "border px-1.5 py-2 text-sm align-middle break-words",
                 column.cellClassName,
               )}
               key={index}
@@ -642,7 +645,7 @@ export const ServerTable = <T,>({
                 {columns.map((column, index) => (
                   <td
                     className={cn(
-                      "border px-1.5 py-2 text-sm break-words break-all",
+                      "border px-1.5 py-2 text-sm align-middle break-words",
                       column.cellClassName,
                       index === 0 && "pl-8", // Indentação para mostrar hierarquia
                     )}
@@ -663,7 +666,7 @@ export const ServerTable = <T,>({
   return (
     <div className="w-full relative min-h-full">
       <div className={cn("flex flex-col w-full", hideToolbar && "hidden")}>
-        <div className="flex flex-wrap md:flex-nowrap gap-y-1.5 items-center justify-between gap-x-2">
+        <div className="flex flex-wrap md:flex-nowrap items-center gap-2">
           <AppTooltip message="Atualizar Lista">
             <Button
               size="sm"
@@ -704,29 +707,27 @@ export const ServerTable = <T,>({
                 </AppTooltip>
               </div>
             )}
-          <div>{searchSlot}</div>
-          <div>
-            {showAddButton && (
-              <Button
-                type="button"
-                onClick={() => {
-                  onAdd?.();
-                }}
-                className="w-full md:w-fit"
-              >
-                {addButtonContent}
-              </Button>
-            )}
-          </div>
-          <div className="relative flex items-center justify-center w-full">
-            <div className="absolute left-3 select-none text-neutral-600">
-              <SearchIcon className="size-3" />
+          {searchSlot && <div>{searchSlot}</div>}
+          {showAddButton && (
+            <Button
+              type="button"
+              onClick={() => {
+                onAdd?.();
+              }}
+              className="h-9 w-full md:w-fit"
+            >
+              {addButtonContent}
+            </Button>
+          )}
+          <div className="relative flex flex-1 items-center min-w-[180px]">
+            <div className="pointer-events-none absolute left-3 select-none text-neutral-500">
+              <SearchIcon className="size-3.5" />
             </div>
             <Input
               placeholder={searchPlaceHolder}
               defaultValue={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              className={cn(searchText && "bg-yellow-50", "pl-8")}
+              className={cn(searchText && "bg-yellow-50", "h-9 pl-8")}
               type="search"
               autoFocus={searchAutoFocus}
             />
@@ -740,7 +741,7 @@ export const ServerTable = <T,>({
               }}
               value={searchField}
             >
-              <SelectTrigger className="flex-1">
+              <SelectTrigger className="h-9 w-full md:w-[170px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -758,15 +759,23 @@ export const ServerTable = <T,>({
             {additionalButtons}
 
             {showAdvancedFilter && (
-              <Button
-                type="button"
-                onClick={() => {
-                  setShowAdvancedFilterSlot(!showAdvancedFilterSlot);
-                }}
-                className="w-full md:w-fit"
-              >
-                <FilterIcon className="size-4" />
-              </Button>
+              <AppTooltip message="Filtro Avançado">
+                <Button
+                  type="button"
+                  variant={showAdvancedFilterSlot ? "default" : "outline"}
+                  onClick={() => {
+                    setShowAdvancedFilterSlot(!showAdvancedFilterSlot);
+                  }}
+                  className={cn(
+                    "h-9 w-full md:w-fit",
+                    // Filtro aplicado: destaca em cornsilk (sobrepõe a variante).
+                    advancedFilterActive &&
+                      "!bg-[#fff8dc] !text-black !border-amber-300 hover:!bg-[#f6efce]",
+                  )}
+                >
+                  <FilterIcon className="size-4" />
+                </Button>
+              </AppTooltip>
             )}
           </div>
         </div>
@@ -784,10 +793,10 @@ export const ServerTable = <T,>({
           </div>
         </div>
       )}
-      <div className="rounded-t-md mt-2 overflow-hidden">
+      <div className="rounded-t-md mt-2 overflow-x-auto border-x border-neutral-300">
         <table
           id={tableId}
-          className={cn("w-full table-fixed", tableClassNames)}
+          className={cn("w-full min-w-[900px] table-fixed", tableClassNames)}
         >
           <thead>
             <tr>
@@ -800,7 +809,9 @@ export const ServerTable = <T,>({
                   key={column.key}
                 >
                   {!column.sortable && (
-                    <span className="p-1">{column.title}</span>
+                    <div className="flex items-center h-full w-full p-1">
+                      {column.title}
+                    </div>
                   )}
                   {column.sortable && (
                     <div
@@ -841,14 +852,14 @@ export const ServerTable = <T,>({
         </table>
       </div>
 
-      <div className="mt-1 flex justify-between">
-        <div className="text-xs flex items-center gap-x-1">
-          Exibir:
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-x-1.5 text-xs text-neutral-600">
+          <span>Exibir:</span>
           <Select
             onValueChange={(e) => setPageSize(parseInt(e))}
             value={pageSize.toString()}
           >
-            <SelectTrigger className="text-xs">
+            <SelectTrigger className="h-8 w-[72px] text-xs">
               <SelectValue placeholder="" />
             </SelectTrigger>
             <SelectContent>
@@ -875,12 +886,17 @@ export const ServerTable = <T,>({
               </SelectItem>
             </SelectContent>
           </Select>
-          <span className="hidden md:block ml-1 text-xs">
-            Total de Registros: {data?.totalRecords}
+          <span className="ml-1.5 text-xs">
+            Total de Registros:{" "}
+            <span className="font-semibold text-neutral-800 tabular-nums">
+              {data?.totalRecords ?? 0}
+            </span>
           </span>
         </div>
-        <div className="flex items-center gap-x-2 justify-end text-xs">
-          Página: {currentPage + 1} / {totalPages == 0 ? 1 : totalPages}
+        <div className="flex items-center justify-end gap-x-2 text-xs text-neutral-600">
+          <span className="tabular-nums">
+            Página: {currentPage + 1} / {totalPages == 0 ? 1 : totalPages}
+          </span>
           <Button
             size="sm"
             variant="secondary"

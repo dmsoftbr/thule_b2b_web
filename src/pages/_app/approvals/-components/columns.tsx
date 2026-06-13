@@ -1,6 +1,7 @@
 import { AppTooltip } from "@/components/layout/app-tooltip";
 import type { ServerTableColumn } from "@/components/server-table/server-table";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { formatDate } from "@/lib/datetime-utils";
 import { formatNumber } from "@/lib/number-utils";
 import {
@@ -12,16 +13,57 @@ import type { OrderModel } from "@/models/orders/order-model";
 import { SearchIcon } from "lucide-react";
 
 interface Props {
+  selectedIds: Set<string>;
+  onToggle: (orderId: string, checked: boolean) => void;
   fnView: (order: OrderModel) => void;
+  allSelected: boolean;
+  someSelected: boolean;
+  hasRows: boolean;
+  onToggleAll: (checked: boolean) => void;
 }
 
-export const columns = ({ fnView }: Props): ServerTableColumn[] => [
+export const columns = ({
+  selectedIds,
+  onToggle,
+  fnView,
+  allSelected,
+  someSelected,
+  hasRows,
+  onToggleAll,
+}: Props): ServerTableColumn[] => [
+  {
+    key: "select",
+    dataIndex: "id",
+    className: "w-10",
+    // Checkbox de "selecionar todos" (da página atual) no cabeçalho.
+    title: (
+      <div className="flex items-center justify-center">
+        <Checkbox
+          disabled={!hasRows}
+          checked={allSelected ? true : someSelected ? "indeterminate" : false}
+          onCheckedChange={(v) => onToggleAll(v === true)}
+          aria-label="Selecionar todos"
+        />
+      </div>
+    ),
+    renderItem: (order: OrderModel) => (
+      <div className="flex items-center justify-center">
+        <Checkbox
+          checked={selectedIds.has(order.id)}
+          onCheckedChange={(v) => onToggle(order.id, v === true)}
+          aria-label="Selecionar pedido"
+        />
+      </div>
+    ),
+  },
   {
     key: "id",
-    dataIndex: "id",
+    dataIndex: "orderId",
     title: "Pedido",
     renderItem: (order: OrderModel) => (
-      <span className="font-semibold text-blue-600 ">{order.id}</span>
+      <span className="font-semibold text-blue-600 ">
+        {order.orderId ?? order.id}
+      </span>
     ),
     sortable: true,
   },

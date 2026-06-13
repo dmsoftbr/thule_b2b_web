@@ -74,18 +74,19 @@ export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
         isSelected && "bg-blue-100 hover:bg-blue-100 even:bg-blue-100",
       )}
     >
-      <TableCell className="border-r border-l p-1 w-[72px] flex items-center justify-center">
+      <TableCell className="border-r border-l p-1 w-[56px] flex items-center justify-center">
         <ProductImage
           productId={item.productId}
+          productName={item.product?.description}
           alt={item.productId}
           isThumb
           expandOnClick
-          className="hover:bg-neutral-100 cursor-pointer max-w-[64px] max-h-[64px]"
+          className="hover:bg-neutral-100 cursor-pointer max-w-[48px] max-h-[48px]"
         />
       </TableCell>
       <TableCell
         className={cn(
-          "flex-1 border-r flex flex-col justify-center",
+          "flex-1 min-w-[150px] border-r flex flex-col justify-center",
           isDiscountGroup && "bg-yellow-50",
         )}
       >
@@ -94,8 +95,9 @@ export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
           {item.product?.description}
         </span>
       </TableCell>
-      <TableCell className="border-r w-[155px] flex items-center justify-center">
+      <TableCell className="border-r w-[116px] px-1 flex items-center justify-center">
         <FormInputQty
+          compact
           plusSlot={<PlusIcon className="size-3" />}
           minusSlot={<MinusIcon className="size-3" />}
           disabled={!isEditing}
@@ -103,13 +105,13 @@ export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
           onValueChange={(value) => handleUpdateQuantity(value ?? 0)}
         />
       </TableCell>
-      <TableCell className="w-[110px] border-r flex items-center justify-end tabular-nums">
+      <TableCell className="w-[92px] border-r flex items-center justify-end tabular-nums">
         {formatNumber(item.suggestPrice, 2)}
       </TableCell>
-      <TableCell className="w-[110px] border-r flex items-center justify-end tabular-nums">
+      <TableCell className="w-[92px] border-r flex items-center justify-end tabular-nums">
         {formatNumber(item.inputPrice, 2)}
       </TableCell>
-      <TableCell className="w-[140px] border-r flex items-center justify-end">
+      <TableCell className="w-[100px] border-r flex items-center justify-end">
         {item.isLoadingTaxes ? (
           <div className="flex items-center justify-end gap-2">
             <Skeleton className="h-4 w-20" />
@@ -125,10 +127,7 @@ export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
               <div className="flex items-center justify-end gap-2 tabular-nums">
                 <span>
                   R${" "}
-                  {formatNumber(
-                    calcItemVisibleTaxesTotal(item, order, isEditing),
-                    2,
-                  )}
+                  {formatNumber(calcItemVisibleTaxesTotal(item), 2)}
                 </span>
                 <OrderItemTaxesModal
                   productId={item.productId}
@@ -141,7 +140,7 @@ export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
         )}
       </TableCell>
 
-      <TableCell className="w-[120px] border-r flex items-center justify-end tabular-nums">
+      <TableCell className="w-[104px] border-r flex items-center justify-end tabular-nums">
         {item.isLoadingTaxes ? (
           <div className="flex justify-end">
             <Skeleton className="h-4 w-20" />
@@ -150,7 +149,7 @@ export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
           formatNumber(calcItemTotalWithDiscount(item, order), 2)
         )}
       </TableCell>
-      <TableCell className="w-[120px] border-r flex flex-col items-start justify-center gap-1">
+      <TableCell className="w-[100px] border-r flex flex-col items-start justify-center gap-1">
         {format(item.deliveryDate, "dd/MM/yyyy")}{" "}
         <AppTooltip
           message={<AvailabilityInfo />}
@@ -168,17 +167,33 @@ export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
           </Badge>
         </AppTooltip>
       </TableCell>
-      <TableCell className="w-[100px] border-r flex items-center justify-end tabular-nums">
+      <TableCell className="w-[84px] border-r flex flex-col items-end justify-center gap-1 tabular-nums">
         {item.isLoadingTaxes ? (
           <div className="flex justify-end">
             <Skeleton className="h-4 w-14" />
           </div>
         ) : (
-          <>{formatNumber(calcItemMarginPercent(item, order), 2)}%</>
+          <>
+            <span>{formatNumber(calcItemMarginPercent(item, order), 2)}%</span>
+            {isDiscountGroup && (
+              <AppTooltip
+                message="Margem calculada pelo Grupo de Desconto"
+                className="bg-neutral-100 text-black shadow-lg border"
+                indicatorClassName="fill-neutral-100 bg-neutral-100 shadow"
+              >
+                <Badge
+                  variant="outline"
+                  className="select-none border-yellow-500 bg-yellow-50 text-yellow-700"
+                >
+                  G/D
+                </Badge>
+              </AppTooltip>
+            )}
+          </>
         )}
       </TableCell>
 
-      <TableCell className="w-[100px] border-r flex items-center justify-end tabular-nums">
+      <TableCell className="w-[84px] border-r flex items-center justify-end tabular-nums">
         {item.isLoadingTaxes ? (
           <div className="flex justify-end">
             <Skeleton className="h-4 w-14" />
@@ -188,7 +203,7 @@ export const OrderItemTableRow = ({ item, isSelected, onSelect }: Props) => {
         )}
       </TableCell>
 
-      <TableCell className="border-r w-[60px] flex items-center justify-center">
+      <TableCell className="border-r w-[48px] flex items-center justify-center">
         {isEditing && (
           <div className="flex flex-wrap gap-1.5 justify-center">
             {/* <Button size="icon" variant="blue">

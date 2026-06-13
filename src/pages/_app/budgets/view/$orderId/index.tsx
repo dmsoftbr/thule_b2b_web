@@ -6,6 +6,9 @@ import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/budgets/view/$orderId/")({
   component: RouteComponent,
+  // `from`: rota de retorno do botão Voltar. Opcional — ver useReturnTo.
+  validateSearch: (search: Record<string, unknown>): { from?: string } =>
+    typeof search.from === "string" ? { from: search.from } : {},
   loader: async ({ params }) => {
     const { orderId } = params;
     const { data } = await api.get(`/orders/${encodeURIComponent(orderId)}`);

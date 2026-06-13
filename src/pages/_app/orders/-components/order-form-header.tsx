@@ -40,7 +40,17 @@ export const OrderFormHeader = () => {
   const canEditBranch = has("309");
   const canEditRepresentative = has("319");
   const isEditing = mode == "NEW" || mode == "EDIT";
-  const isNew = isEditing && order.orderId == "";
+  // "Novo" = ainda não gravado (sem GUID). Não usar orderId, que agora também fica
+  // vazio em pedidos gravados offline (numeração deferida até integrar no Datasul).
+  const isNew = isEditing && (order.id ?? "") == "";
+  // Pedido gerado a partir de uma Simulação: cliente e estabelecimento ficam
+  // travados (o pedido herda os da simulação de origem e não podem ser trocados).
+  const fromBudget = !!order.budgetId;
+  // Cliente selecionado, porém sem grupo de venda: dados são exibidos, mas os
+  // campos ficam desabilitados e o pedido não pode ser incluído.
+  const isCustomerBlocked =
+    !!order.customer &&
+    (!order.customer.salesGroup || order.customer.salesGroup.length === 0);
   const customersComboRef = useRef<CustomersComboHandle>(null);
 
   // Foca o combo de cliente ao entrar na tela de novo pedido — economiza um
@@ -64,21 +74,24 @@ export const OrderFormHeader = () => {
       return false;
     }
 
+    // Aplica os dados do cliente (representante, % desconto e estabelecimento
+    // padrão) mesmo quando ele NÃO tem grupo de venda — só para exibição. Nesse
+    // caso os campos ficam desabilitados (isCustomerBlocked) e a inclusão de
+    // produtos é bloqueada no OrderFormItems.
+    setCustomer(customer);
+    if (customer.representative) setRepresentative(customer.representative);
+    setDiscountPercentual(customer.discountPercent);
+
+    if (customer.deliveryLocations && customer.deliveryLocations.length > 0) {
+      setDeliveryLocation(customer.deliveryLocations[0]);
+    }
+
     if (!customer.salesGroup || customer.salesGroup.length === 0) {
       showAppDialog({
         title: "Cliente",
         message: `Cliente não possui grupo de venda associado. Não é possível incluir ${isBudget ? "simulação" : "pedido"} para este cliente.`,
         type: "warning",
       });
-      return false;
-    }
-
-    setCustomer(customer);
-    setRepresentative(customer.representative);
-    setDiscountPercentual(customer.discountPercent);
-
-    if (customer.deliveryLocations && customer.deliveryLocations.length > 0) {
-      setDeliveryLocation(customer.deliveryLocations[0]);
     }
 
     return true;
@@ -155,11 +168,11 @@ export const OrderFormHeader = () => {
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-5 gap-x-4 gap-y-3 p-2 bg-neutral-50">
-        <div className="space-y-2 sm:col-span-2 min-w-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-x-4 gap-y-3 p-2 bg-neutral-50">
+        <div className="space-y-2 sm:col-span-2 xl:col-span-2 min-w-0">
           <div className="form-group min-w-0">
             <Label>Cliente</Label>
-            {(!isEditing || !isNew) && (
+            {(!isEditing || !isNew || fromBudget) && (
               <div className="truncate text-sm border px-2.5 rounded-md py-1.5 bg-neutral-100 text-black font-medium">
                 {`${order.customerId} - ${order.customer?.abbreviation}`}
                 {" - "}
@@ -169,7 +182,7 @@ export const OrderFormHeader = () => {
                 </span>
               </div>
             )}
-            {isNew && (
+            {isNew && !fromBudget && (
               <CustomersCombo
                 ref={customersComboRef}
                 defaultValue={order.customerId || undefined}
@@ -189,7 +202,12 @@ export const OrderFormHeader = () => {
               apiEndpoint="/registrations/representatives/all"
               labelProp="abbreviation"
               valueProp="id"
-              disabled={!isEditing || !canEditRepresentative}
+              disabled={
+                !isEditing ||
+                !canEditRepresentative ||
+                isCustomerBlocked ||
+                fromBudget
+              }
               showValueInSelectedItem
             />
           </div>
@@ -206,7 +224,7 @@ export const OrderFormHeader = () => {
               decimalSeparator=","
               decimalScale={2}
               fixedDecimalScale
-              readOnly={!isEditing || !canEditDiscount}
+              readOnly={!isEditing || !canEditDiscount || isCustomerBlocked}
               max={100}
               min={0}
               maxLength={6}
@@ -228,13 +246,13 @@ export const OrderFormHeader = () => {
         <div className="space-y-2">
           <div className="form-group">
             <Label>Estabelecimento</Label>
-            <div className="flex items-center gap-x-2">
+            <div className="flex items-center gap-2 min-w-0">
               <Select
                 value={order.branchId}
                 onValueChange={(value) => handleChangeBranch(value)}
                 disabled
               >
-                <SelectTrigger className="w-full bg-white">
+                <SelectTrigger className="w-full min-w-0 bg-white">
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
@@ -243,9 +261,11 @@ export const OrderFormHeader = () => {
                   <SelectItem value="11">11</SelectItem>
                 </SelectContent>
               </Select>
-              <Label className="whitespace-nowrap">
+              <Label className="whitespace-nowrap shrink-0">
                 <Checkbox
-                  disabled={!isEditing || !canEditBranch}
+                  disabled={
+                    !isEditing || !canEditBranch || isCustomerBlocked || fromBudget
+                  }
                   checked={order.branchId == "1"}
                   onCheckedChange={(checked) => {
                     if (!!checked) {

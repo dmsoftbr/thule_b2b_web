@@ -5,10 +5,12 @@ import {
 } from "@/components/server-table/server-table";
 import type { PriceTableModel } from "@/models/registrations/price-table.model";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import { columns } from "./-components/columns";
 
 export const Route = createFileRoute("/_app/registrations/price-tables/")({
   component: PriceTablesPageComponent,
+  pendingComponent: TableSkeleton,
 });
 
 const searchFieldsList: ServerTableSearchField[] = [

@@ -41,41 +41,42 @@ export const OrderItemTable = () => {
   );
 
   return (
-    <Table className="w-full table-fixed text-xs flex flex-col [&_th]:shrink-0 [&_th]:min-w-0 [&_td]:shrink-0 [&_td]:min-w-0">
+    <div className="w-full overflow-x-auto">
+    <Table className="w-full min-w-[1024px] table-fixed text-xs flex flex-col [&_th]:shrink-0 [&_th]:min-w-0 [&_td]:shrink-0 [&_td]:min-w-0">
       <TableHeader className="flex">
         <TableRow
           className="flex w-full hover:bg-neutral-300 bg-neutral-300"
           style={{ paddingRight: scrollbarWidth }}
         >
-          <TableHead className="w-[72px] border flex items-center text-xs text-black">
+          <TableHead className="w-[56px] border flex items-center text-xs text-black">
             Imagem
           </TableHead>
-          <TableHead className="flex-1 border flex items-center text-xs text-black">
+          <TableHead className="flex-1 min-w-[150px] border flex items-center text-xs text-black">
             Produto
           </TableHead>
-          <TableHead className="w-[155px] border flex items-center text-xs text-black">
+          <TableHead className="w-[116px] border flex items-center justify-center text-xs text-black">
             Qtde
           </TableHead>
-          <TableHead className="w-[110px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
+          <TableHead className="w-[92px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
             <span>Preço Venda</span>
             <span>Sugerido Unit.</span>
           </TableHead>
-          <TableHead className="w-[110px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
+          <TableHead className="w-[92px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
             <span>Preço</span>
             <span>Compra Unit</span>
           </TableHead>
-          <TableHead className="w-[140px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
+          <TableHead className="w-[100px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
             <span>Impostos</span>
           </TableHead>
-          <TableHead className="w-[120px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
+          <TableHead className="w-[104px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
             <span>Total Compra</span>
             <span>c/ Desconto</span>
           </TableHead>
-          <TableHead className="w-[120px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
+          <TableHead className="w-[100px] border flex items-center justify-center text-center flex-col break-words text-xs text-black">
             Prev. Entrega
           </TableHead>
 
-          <TableHead className="w-[100px] border text-xs text-black">
+          <TableHead className="w-[84px] border text-xs text-black">
             <div className="flex items-center justify-center gap-1 h-full">
               <span>Margem</span>
               <AppTooltip
@@ -97,7 +98,7 @@ export const OrderItemTable = () => {
               </AppTooltip>
             </div>
           </TableHead>
-          <TableHead className="w-[100px] border text-xs text-black">
+          <TableHead className="w-[84px] border text-xs text-black">
             <div className="flex items-center justify-center gap-1 h-full">
               <span>Markup</span>
               <AppTooltip
@@ -118,7 +119,7 @@ export const OrderItemTable = () => {
               </AppTooltip>
             </div>
           </TableHead>
-          <TableHead className="w-[60px] border flex items-center justify-center text-xs text-black">
+          <TableHead className="w-[48px] border flex items-center justify-center text-xs text-black">
             Ações
           </TableHead>
         </TableRow>
@@ -154,29 +155,30 @@ export const OrderItemTable = () => {
           className="flex w-full bg-neutral-300 align-middle text-sm hover:bg-neutral-300 font-semibold"
           style={{ paddingRight: scrollbarWidth }}
         >
-          {/* Imagem (72) + Produto (flex-1) — label "Total" */}
-          <TableHead className="w-[72px] border-[0.5px] flex items-center justify-center">
+          {/* Imagem (56) + Produto (flex-1) — label "Total" */}
+          <TableHead className="w-[56px] border-[0.5px] flex items-center justify-center">
             Total
           </TableHead>
-          <TableHead className="flex-1 border-[0.5px]"></TableHead>
-          {/* Qtde (155) — soma das quantidades */}
-          <TableHead className="w-[155px] border-[0.5px] flex items-center justify-end pr-2">
+          <TableHead className="flex-1 min-w-[150px] border-[0.5px]"></TableHead>
+          {/* Qtde (116) — soma das quantidades */}
+          <TableHead className="w-[116px] border-[0.5px] flex items-center justify-end pr-2">
             {totalQuantity}
           </TableHead>
-          {/* Preço Sugerido (110) + Preço Tabela (110) + Impostos (140) = 360 */}
-          <TableHead className="w-[360px] border-[0.5px]"></TableHead>
-          {/* Total c/Desconto (120) — soma c/ fórmula da linha */}
-          <TableHead className="w-[120px] border-[0.5px] flex items-center justify-end pr-2 tabular-nums">
+          {/* Preço Sugerido (92) + Preço Compra (92) + Impostos (100) = 284 */}
+          <TableHead className="w-[284px] border-[0.5px]"></TableHead>
+          {/* Total c/Desconto (104) — soma c/ fórmula da linha */}
+          <TableHead className="w-[104px] border-[0.5px] flex items-center justify-end pr-2 tabular-nums">
             {anyItemLoadingTaxes ? (
               <Skeleton className="h-4 w-20" />
             ) : (
               formatNumber(grandTotalWithDiscount, 2)
             )}
           </TableHead>
-          {/* Prev. Entrega (120) + Margem (100) + Markup (100) + Ações (60) = 380 */}
-          <TableHead className="w-[380px] border-[0.5px]"></TableHead>
+          {/* Prev. Entrega (100) + Margem (84) + Markup (84) + Ações (48) = 316 */}
+          <TableHead className="w-[316px] border-[0.5px]"></TableHead>
         </TableRow>
       </TableFooter>
     </Table>
+    </div>
   );
 };

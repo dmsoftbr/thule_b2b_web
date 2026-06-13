@@ -8,6 +8,7 @@ import {
   useNavigate,
   useParams,
 } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { UserModel } from "@/models/user.model";
@@ -17,6 +18,7 @@ import { AddUserCustomerModal } from "./-components/add-user-customer-modal";
 
 export const Route = createFileRoute("/_app/admin/users/$userId/customers/")({
   component: UserCustomersPageComponent,
+  pendingComponent: TableSkeleton,
 });
 
 function UserCustomersPageComponent() {

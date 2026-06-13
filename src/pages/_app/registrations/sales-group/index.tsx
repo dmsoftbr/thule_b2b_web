@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import { AppPageHeader } from "@/components/layout/app-page-header";
 import {
   ServerTable,
@@ -13,6 +14,7 @@ import { useAppDialog } from "@/components/app-dialog/use-app-dialog";
 
 export const Route = createFileRoute("/_app/registrations/sales-group/")({
   component: SalesGroupPageComponent,
+  pendingComponent: TableSkeleton,
 });
 
 const searchFieldsList: ServerTableSearchField[] = [

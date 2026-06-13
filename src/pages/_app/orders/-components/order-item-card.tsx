@@ -75,11 +75,18 @@ export const OrderItemCard = ({ data, className }: Props) => {
           key={`${data.sequence}_${data.productId}`}
           className="overflow-hidden rounded-none border-none"
         >
-          <CardContent className="px-6 w-full">
-            <div className="grid grid-cols-[200px_1fr]">
+          <CardContent className="px-3 sm:px-6 w-full">
+            <div className="grid grid-cols-[96px_1fr] sm:grid-cols-[160px_1fr] lg:grid-cols-[200px_1fr] gap-3">
               {/* Item Image */}
               <div className="flex-shrink-0">
-                <ProductImage productId={data.productId} alt={""} />
+                <ProductImage
+                  productId={data.productId}
+                  productName={data.product?.description}
+                  alt={data.productId}
+                  isThumb
+                  expandOnClick
+                  className="cursor-pointer hover:bg-neutral-100"
+                />
               </div>
 
               {/* Item Details */}
@@ -109,17 +116,17 @@ export const OrderItemCard = ({ data, className }: Props) => {
                     {data.priceTableId}
                   </Badge>
                 </div> */}
-                <div className="text-lg font-bold text-gray-900">
+                <div className="text-sm sm:text-base font-semibold text-gray-900">
                   Preço Venda Sugerido Unit.: R${" "}
                   {formatNumber(data.suggestPrice, 2)}
                 </div>
 
-                <div className="text-lg font-bold text-gray-900">
+                <div className="text-sm sm:text-base font-semibold text-gray-900">
                   Preço Compra Unit.: R$ {formatNumber(data.inputPrice, 2)}
                 </div>
 
                 {/* Price and Quantity Controls */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   {/* Quantity Controls */}
                   <div className="flex items-center gap-3">
                     <div className="flex items-center border rounded-lg gap-x-4">
@@ -133,12 +140,12 @@ export const OrderItemCard = ({ data, className }: Props) => {
                       />
                     </div>
                   </div>
-                  <div className="flex flex-col items-end font-bold text-lg">
+                  <div className="flex flex-col items-end font-bold text-base sm:text-lg">
                     {/* <div>
                       Total: R${" "}
                       {formatNumber(data.orderQuantity * data.inputPrice, 2)}
                     </div> */}
-                    <div className="text-emerald-700 text-base flex items-center gap-2">
+                    <div className="text-emerald-700 text-sm sm:text-base flex items-center gap-2">
                       Total Compra c/ Desconto:{" "}
                       {data.isLoadingTaxes ? (
                         <Skeleton className="h-5 w-28" />

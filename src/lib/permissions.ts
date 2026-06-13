@@ -53,8 +53,9 @@ export const PERMISSIONS_REPORTS: PermissionItem[] = [
 ];
 
 export const PERMISSIONS_APPROVALS: PermissionItem[] = [
-  { id: "9", label: "Aprovações", path: "/approvals" },
-  { id: "10", label: "Aprovações" },
+  // Espelha o submenu "Aprovações > Pedidos" (rota /approvals).
+  { id: "9", label: "Pedidos", path: "/approvals" },
+  { id: "23", label: "Aprovações MLA", path: "/mla" },
 ];
 
 export const PERMISSIONS_REGISTRATIONS: PermissionItem[] = [

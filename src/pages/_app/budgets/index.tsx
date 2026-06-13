@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 
 import {
   ServerTable,
@@ -53,6 +54,7 @@ const searchFieldsList: ServerTableSearchField[] = [
 
 export const Route = createFileRoute("/_app/budgets/")({
   component: BudgetsPage,
+  pendingComponent: TableSkeleton,
 });
 
 function BudgetsPage() {
@@ -74,7 +76,11 @@ function BudgetsPage() {
   };
 
   const handleView = (data: OrderModel) => {
-    navigate({ to: `/budgets/view/${data.id}` });
+    navigate({
+      to: "/budgets/view/$orderId",
+      params: { orderId: data.id },
+      search: { from: "/budgets" },
+    });
   };
 
   const handleCancel = async (data: OrderModel) => {
@@ -175,6 +181,21 @@ function BudgetsPage() {
     }
   };
 
+  // Gera um Pedido a partir da Simulação: abre a tela de inclusão PRÉ-PREENCHIDA.
+  // O pedido só nasce quando o usuário confirmar; o backend resolve o vínculo e a
+  // trava anti-duplicidade ao gravar (a partir do budgetId).
+  const handleGenerateOrder = (data: OrderModel) => {
+    if (data.generatedOrderId) {
+      toast.warning(`Esta simulação já gerou o pedido ${data.generatedOrderId}.`);
+      return;
+    }
+    // A tela de inclusão busca a simulação completa pelo id e hidrata o formulário.
+    navigate({
+      to: "/orders/new-order",
+      search: { fromBudget: data.id },
+    });
+  };
+
   return (
     <AppPageHeader titleSlot="Simulações">
       <div className="p-2">
@@ -189,6 +210,7 @@ function BudgetsPage() {
             fnCancel: handleCancel,
             fnView: handleView,
             fnCopy: handleCopy,
+            fnGenerateOrder: handleGenerateOrder,
             isBudget: true,
           })}
           showAddButton

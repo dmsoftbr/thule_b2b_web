@@ -15,6 +15,7 @@ import {
 import { FormInput } from "@/components/form/form-input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { api, handleError } from "@/lib/api";
 
 interface Props {
   onGotoBackToLogin: () => void;
@@ -22,6 +23,8 @@ interface Props {
 
 export const ForgotPasswordForm = ({ onGotoBackToLogin }: Props) => {
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof RecoveryPasswordSchema>>({
     resolver: zodResolver(RecoveryPasswordSchema),
@@ -31,9 +34,25 @@ export const ForgotPasswordForm = ({ onGotoBackToLogin }: Props) => {
   });
   const onRecovery = async (values: z.infer<typeof RecoveryPasswordSchema>) => {
     setError("");
-    //await new AuthService().getRecoveryPasswordToken(values.email);
-    console.log(values);
-    //TODO: implementar o RecoveryPassword
+    setSuccess("");
+    try {
+      setIsSubmitting(true);
+      // E-mail vai como segmento de path → encodeURIComponent obrigatório
+      // (caracteres como "+" viram espaço se não forem encodados).
+      const { data } = await api.get<{ message: string }>(
+        `/auth/recovery-password-token/${encodeURIComponent(values.email)}`
+      );
+      // Resposta genérica do backend (anti-enumeração): exibimos como veio.
+      setSuccess(
+        data?.message ??
+          "Se o e-mail informado estiver cadastrado, enviaremos as instruções de redefinição de senha."
+      );
+      form.reset();
+    } catch (e) {
+      setError(handleError(e));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   return (
     <Card>
@@ -69,8 +88,12 @@ export const ForgotPasswordForm = ({ onGotoBackToLogin }: Props) => {
               />
             </div>
             <div className="flex items-center justify-between">
-              <Button type="submit" className="text-sm font-normal uppercase">
-                Recuperar minha senha
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="text-sm font-normal uppercase"
+              >
+                {isSubmitting ? "Enviando..." : "Recuperar minha senha"}
               </Button>
               <div className="flex justify-end">
                 <a
@@ -85,6 +108,11 @@ export const ForgotPasswordForm = ({ onGotoBackToLogin }: Props) => {
             {error && (
               <div className="text-center text-sm text-red-800 bg-red-300 p-2 rounded-md">
                 {error}
+              </div>
+            )}
+            {success && (
+              <div className="text-center text-sm text-emerald-800 bg-emerald-200 p-2 rounded-md">
+                {success}
               </div>
             )}
           </form>

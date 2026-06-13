@@ -1,5 +1,6 @@
 import { AppPageHeader } from "@/components/layout/app-page-header";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import type { ProductModel } from "@/models/product.model";
 import {
   ServerTable,
@@ -22,6 +23,7 @@ const searchFieldsList: ServerTableSearchField[] = [
 
 export const Route = createFileRoute("/_app/registrations/products/")({
   component: ProductsPageComponent,
+  pendingComponent: TableSkeleton,
 });
 
 function ProductsPageComponent() {

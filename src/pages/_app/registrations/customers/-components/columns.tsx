@@ -25,6 +25,8 @@ export const columns = ({
     key: "id",
     dataIndex: "id",
     title: "Código",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (group) => (
       <span className="font-semibold text-blue-600 ">{group.id}</span>
     ),
@@ -34,6 +36,8 @@ export const columns = ({
     key: "abbreviation",
     dataIndex: "abbreviation",
     title: "Nome Abreviado",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer) => <span>{customer.abbreviation}</span>,
     sortable: true,
   },
@@ -41,6 +45,8 @@ export const columns = ({
     key: "name",
     dataIndex: "name",
     title: "Nome",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer) => <span>{customer.name}</span>,
     sortable: true,
   },
@@ -48,6 +54,8 @@ export const columns = ({
     key: "documentNumber",
     dataIndex: "documentNumber",
     title: "CPF/CNPJ",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: any) => <span>{customer.documentNumber}</span>,
     sortable: true,
   },
@@ -55,6 +63,8 @@ export const columns = ({
     key: "discountPercent",
     dataIndex: "discountPercent",
     title: "% Desconto",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: any) => (
       <div className="text-right">
         {formatNumber(customer.discountPercent, 2)}
@@ -66,6 +76,8 @@ export const columns = ({
     key: "representative",
     dataIndex: "representative.name",
     title: "Representante",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: any) => (
       <span>
         {customer.representativeId} - {customer.representative?.abbreviation}
@@ -77,6 +89,8 @@ export const columns = ({
     key: "carrier",
     dataIndex: "carrier.abbreviation",
     title: "Transportadora Padrão",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: any) => (
       <span>
         {customer.carrierId} - {customer.carrier?.abbreviation}
@@ -88,6 +102,8 @@ export const columns = ({
     key: "salesGroup",
     dataIndex: "salesGroup",
     title: "Grupos de Venda",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: any) => (
       <span>
         {(customer.salesGroup ?? [])
@@ -98,9 +114,27 @@ export const columns = ({
     sortable: false,
   },
   {
+    key: "priceExceptionTables",
+    dataIndex: "priceExceptionTables",
+    title: "Grupo de Desconto",
+    className: "text-xs",
+    cellClassName: "text-xs",
+    renderItem: (customer: any) => (
+      <span>
+        {(customer.priceExceptionTables ?? [])
+          .map((e: any) => e.exceptionTableId)
+          .filter(Boolean)
+          .join(", ")}
+      </span>
+    ),
+    sortable: false,
+  },
+  {
     key: "priceTables",
     dataIndex: "priceTables",
     title: "Tabelas de Preço",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: any) => (
       <span>
         {(customer.priceTables ?? [])
@@ -114,6 +148,8 @@ export const columns = ({
     key: "group",
     dataIndex: "group.name",
     title: "Grupo do Cliente",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: any) =>
       customer.group ? (
         <span>
@@ -128,6 +164,8 @@ export const columns = ({
     key: "actions",
     dataIndex: "id",
     title: "Ações",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: any) => (
       <div className="flex justify-end">
         <DropdownMenu>

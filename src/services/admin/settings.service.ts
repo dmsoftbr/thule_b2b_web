@@ -12,7 +12,9 @@ export class SettingsService {
   }
 
   async getById(id: string): Promise<SettingModel> {
-    const response = await api.get<SettingModel>(`/${this.basePath}/${id}`);
+    const response = await api.get<SettingModel>(
+      `/${this.basePath}/${encodeURIComponent(id)}`
+    );
     return response.data;
   }
 
@@ -32,6 +34,6 @@ export class SettingsService {
   }
 
   async delete(id: string): Promise<void> {
-    await api.delete(`/${this.basePath}/${id}`);
+    await api.delete(`/${this.basePath}/${encodeURIComponent(id)}`);
   }
 }

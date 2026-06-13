@@ -5,6 +5,7 @@ import type { PriceTableModel } from "./price-table.model";
 import type { RepresentativeModel } from "../representative.model";
 import type { CustomerGroupModel } from "./customer-group.model";
 import type { CustomerSalesGroupModel } from "./customer-sales-group-model";
+import type { CustomerPriceExceptionTableModel } from "./customer-price-exception-table.model";
 
 export type CustomerModel = {
   id: number;
@@ -47,6 +48,8 @@ export type CustomerModel = {
   paymentConditions: PaymentConditionModel[];
   group?: CustomerGroupModel;
   salesGroup: CustomerSalesGroupModel[];
+  // Grupos de Desconto (tabelas de exceção) do cliente — distinto de salesGroup.
+  priceExceptionTables?: CustomerPriceExceptionTableModel[];
 
   contactName: string;
   contactPhone: string;

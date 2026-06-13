@@ -7,6 +7,7 @@ import {
   useNavigate,
   useParams,
 } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import { useState } from "react";
 import { exceptionTableColumns } from "./-components/exception-table-columns";
 import { BranchExceptionModal } from "./-components/branch-exception-modal";
@@ -15,6 +16,7 @@ export const Route = createFileRoute(
   "/_app/registrations/price-tables/$priceTableId/branches-exception/",
 )({
   component: PriceTableBranchesExceptionComponent,
+  pendingComponent: TableSkeleton,
 });
 
 function PriceTableBranchesExceptionComponent() {
@@ -49,7 +51,7 @@ function PriceTableBranchesExceptionComponent() {
           searchFields={[
             { id: "branchId", label: "Código do Estabelecimento" },
           ]}
-          dataUrl={`/registrations/price-table-branches-exception/list-paged/${priceTableId}`}
+          dataUrl={`/registrations/price-table-branches-exception/list-paged/${encodeURIComponent(priceTableId)}`}
           additionalInfo={{ priceTableId }}
         />
       </div>

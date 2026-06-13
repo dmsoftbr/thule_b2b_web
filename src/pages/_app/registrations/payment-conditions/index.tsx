@@ -7,12 +7,14 @@ import {
 import type { PaymentConditionModel } from "@/models/registrations/payment-condition.model";
 import { PaymentConditionsService } from "@/services/registrations/payment-conditions.service";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import { useState } from "react";
 import { columns } from "./-components/columns";
 
 export const Route = createFileRoute("/_app/registrations/payment-conditions/")(
   {
     component: PaymentConditionsComponent,
+    pendingComponent: TableSkeleton,
   }
 );
 

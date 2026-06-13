@@ -1,2 +1,7 @@
 node_modules
 dist
+
+# Certificados de dev e segredos
+*.pem
+ssl/
+.env

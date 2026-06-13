@@ -8,6 +8,8 @@ export const columns = (): ServerTableColumn[] => [
     key: "id",
     dataIndex: "id",
     title: "Código",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: CustomerModel) => (
       <span className="font-semibold text-blue-600 ">{customer.id}</span>
     ),
@@ -17,6 +19,8 @@ export const columns = (): ServerTableColumn[] => [
     key: "abbreviation",
     dataIndex: "abbreviation",
     title: "Nome Abreviado",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: CustomerModel) => (
       <span className="font-semibold text-blue-600 ">
         {customer.abbreviation}
@@ -28,6 +32,8 @@ export const columns = (): ServerTableColumn[] => [
     key: "name",
     dataIndex: "name",
     title: "Razão Social",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: CustomerModel) => <span>{customer.name}</span>,
     sortable: true,
   },
@@ -35,15 +41,35 @@ export const columns = (): ServerTableColumn[] => [
     key: "groupName",
     dataIndex: "groupName",
     title: "Descr.Grupo Cliente",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: CustomerModel) => (
       <span>{customer.group?.name}</span>
     ),
     sortable: true,
   },
   {
+    key: "priceExceptionTables",
+    dataIndex: "priceExceptionTables",
+    title: "Grupo de Desconto",
+    className: "text-xs",
+    cellClassName: "text-xs",
+    renderItem: (customer: CustomerModel) => (
+      <span>
+        {customer.priceExceptionTables
+          ?.map((e) => e.exceptionTableId)
+          .filter(Boolean)
+          .join(", ")}
+      </span>
+    ),
+    sortable: false,
+  },
+  {
     key: "address",
     dataIndex: "address",
     title: "Endereço",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: CustomerModel) => <span>{customer.address}</span>,
     sortable: true,
   },
@@ -51,6 +77,8 @@ export const columns = (): ServerTableColumn[] => [
     key: "city",
     dataIndex: "city",
     title: "Cidade",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: CustomerModel) => <span>{customer.city}</span>,
     sortable: true,
   },
@@ -58,6 +86,8 @@ export const columns = (): ServerTableColumn[] => [
     key: "state",
     dataIndex: "state",
     title: "UF",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: CustomerModel) => <span>{customer.state}</span>,
     sortable: true,
   },
@@ -65,6 +95,8 @@ export const columns = (): ServerTableColumn[] => [
     key: "documentNumber",
     dataIndex: "documentNumber",
     title: "CPF/CNPJ",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: CustomerModel) => (
       <span>{formatCpfCnpj(customer.documentNumber)}</span>
     ),
@@ -74,6 +106,8 @@ export const columns = (): ServerTableColumn[] => [
     key: "contactName",
     dataIndex: "contactName",
     title: "Contato",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: CustomerModel) => (
       <span>{customer.contactName}</span>
     ),
@@ -83,6 +117,8 @@ export const columns = (): ServerTableColumn[] => [
     key: "carrierId",
     dataIndex: "carrierId",
     title: "Transportadora",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: CustomerModel) => (
       <span>{customer.carrier.abbreviation}</span>
     ),
@@ -92,6 +128,8 @@ export const columns = (): ServerTableColumn[] => [
     key: "discountPercent",
     dataIndex: "discountPercent",
     title: "% Desconto",
+    className: "text-xs",
+    cellClassName: "text-xs",
     renderItem: (customer: CustomerModel) => (
       <span>{formatNumber(customer.discountPercent, 2)}</span>
     ),

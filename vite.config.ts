@@ -26,6 +26,16 @@ export default defineConfig({
     },
     host: "localhost", // ou '0.0.0.0' se quiser acesso externo
     port: 3000,
+    // Proxy same-origin em dev: o cookie HttpOnly de refresh é first-party porque o
+    // navegador fala só com https://localhost:3000. O backend (https://localhost:7019)
+    // recebe as chamadas /api por baixo. Em produção já é same-domain (remote.thule.com).
+    proxy: {
+      "/api": {
+        target: "https://localhost:7019",
+        changeOrigin: true,
+        secure: false, // cert self-signed do backend em dev
+      },
+    },
   },
   resolve: {
     alias: {

@@ -7,6 +7,7 @@ import { api, handleError } from "@/lib/api";
 import { convertArrayToSearchComboItem } from "@/lib/search-combo-utils";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import { useState } from "react";
 import { columns } from "./-components/columns";
 import { toast } from "sonner";
@@ -21,6 +22,7 @@ import {
 
 export const Route = createFileRoute("/_app/reports/customers-list/")({
   component: CustomersListComponent,
+  pendingComponent: TableSkeleton,
 });
 
 function CustomersListComponent() {

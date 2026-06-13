@@ -9,6 +9,7 @@ import {
   useNavigate,
   useParams,
 } from "@tanstack/react-router";
+import { TableSkeleton } from "@/pages/_app/-components/route-skeleton";
 import { priceTableColumns } from "./-components/price-table-columns";
 import { useState } from "react";
 import { AddPriceTableModal } from "./-components/add-price-table-modal";
@@ -18,6 +19,7 @@ export const Route = createFileRoute(
   "/_app/registrations/customers/$customerId/price-tables/",
 )({
   component: CustomerIdPageComponent,
+  pendingComponent: TableSkeleton,
 });
 
 function CustomerIdPageComponent() {
@@ -80,7 +82,14 @@ function CustomerIdPageComponent() {
         />
       </div>
       <div className="my-4 max-w-lg ml-auto mr-auto">
-        <Button onClick={() => navigate({ to: "/registrations/customers" })}>
+        <Button
+          onClick={() =>
+            navigate({
+              to: "/registrations/customers",
+              search: { gd: [], gv: [] },
+            })
+          }
+        >
           Voltar p/Lista de Clientes
         </Button>
       </div>
